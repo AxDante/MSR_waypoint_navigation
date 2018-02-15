@@ -1,7 +1,7 @@
 
 void Forward(int i, bool isRotate){
   if (debugMotorActive){
-  int power = (isRotate)? rotatePower: 64;
+  int power = (isRotate)? rotatePower: linearPower;
   switch(i){
     case 0:
       digitalWrite(rp1, LOW);
@@ -29,7 +29,7 @@ void Forward(int i, bool isRotate){
 
 void Backward(int i, bool isRotate){
   if (debugMotorActive){
-  int power = (isRotate)? rotatePower: 64;
+  int power = (isRotate)? rotatePower: linearPower;
   switch(i){
     case 0:
       digitalWrite(rp1, LOW);
@@ -57,7 +57,7 @@ void Backward(int i, bool isRotate){
 
 void Right(int i, bool isRotate){
   if (debugMotorActive){
-  int power = (isRotate)? rotatePower: 64;
+  int power = (isRotate)? rotatePower: linearPower;
   switch(i){
     case 0:
       digitalWrite(rp1, HIGH);
@@ -85,7 +85,7 @@ void Right(int i, bool isRotate){
 
 void Left(int i, bool isRotate){
   if (debugMotorActive){
-  int power = (isRotate)? rotatePower: 64;
+  int power = (isRotate)? rotatePower: linearPower;
   switch(i){
     case 0:
       digitalWrite(rp1, HIGH);
@@ -109,5 +109,17 @@ void Left(int i, bool isRotate){
       break;
   }
   }
+}
+
+void RobotStop()
+{
+  roboclaw.ForwardM1(address1,0);
+  roboclaw.ForwardM2(address1,0);
+  roboclaw.ForwardM1(address2,0);
+  roboclaw.ForwardM2(address2,0);
+  roboclaw.ForwardM1(address3,0);
+  roboclaw.ForwardM2(address3,0);
+  roboclaw.ForwardM1(address4,0);
+  roboclaw.ForwardM2(address4,0);
 }
 

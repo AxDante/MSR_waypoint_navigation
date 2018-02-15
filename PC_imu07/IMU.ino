@@ -5,12 +5,12 @@ void imuRead()
    magY = imu.calcMag(imu.my);
 
   heading_raw = atan2(magY,magX)*rad_to_deg*2;
-  Total_angle[2] = 0.8*Total_angle[2] + 0.2*heading_raw ;
+  heading_filtered = 0.8*heading_filtered + 0.2*heading_raw ;
 
 }
 
 
-int reachTargetArea( float currentAng){
+int reachTargetHeading( float currentAng){
 
   degreeToPos = rotateTargetHeading - currentAng;
 

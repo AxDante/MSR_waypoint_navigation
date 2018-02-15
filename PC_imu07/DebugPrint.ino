@@ -4,7 +4,7 @@ void debugPrint(){
   Serial.println("Char Input: " + String(charInput));
   Serial.println("Current Shape: " + String(S_Shape[RobotForm-1]));
   //Serial.println("mx:" + String(magX) + "my:" + String(magY);
-  Serial.println("Heading_raw: " + String(heading_raw) +  ", Heading_cal: " + String(Total_angle[2]));
+  Serial.println("Heading_raw: " + String(heading_raw) +  ", Heading_cal: " + String(heading_filtered));
   if (isRobotRotating){
     Serial.println("degToTurn:" + String(degreeToPos));
     Serial.println("target: " + String(rotateTargetHeading) + ", upperTol: " + String(rotateTargetUpper) +  ", lowerTol: " + String(rotateTargetLower));

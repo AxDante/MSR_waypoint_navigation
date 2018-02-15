@@ -11,14 +11,6 @@ MPU9250_DMP imu;
 #define address3 0x82
 #define address4 0x83
 
-#define debugPrintActive true
-#define debugMotorSetupActive true
-#define debugMotorActive true
-#define headingAutoCorrection false
-
-
-int rotatePower = 50;
-
 int rp1 = 25;
 int rp2 = 24;
 int rp3 = 26;
@@ -37,56 +29,80 @@ char* R_LeftTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "rffr"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 
+//****************************************
+/////////////  Definitions  //////////////
+//****************************************
+#define debugPrintActive true
+#define debugMotorSetupActive true
+#define debugMotorActive true
+#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
+
+#define linearPower 64  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
+#define rotatePower 50  // Power provided to DC motors during robot rotation (r, l) (max: 128)
+
+#define angleTolerance 7  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+
+#define timerSerialPeriod 990  // The time interval between two input readings from serial port (ms)
+#define timerDebugPeriod 1000  // The time interval for printing debug information to the serial port (ms)
+
+//****************************************
+///////// Variables Declaration //////////
+//****************************************
+
 int RobotForm;
 char charInput;
 char prevCharInput;
 
+
+// timers
 int timerSerial;
 int timerMotion;
 int timerDebug;
 
-float heading_raw;
 
-float rad_to_deg = 180/3.141592654;
-float Total_angle[3];
-
+// IMU Related
 float magX ;
 float magY ;
-  
-int imuTime;
 
+// rotation related
+float rad_to_deg = 180/3.141592654;
+float heading_raw;
+float heading_filtered;
 bool isRobotRotating;
 bool isFinishRotation;
-bool isUpdatingNextValue = true;
 float rotateStartHeading;
 float rotateTargetHeading;
 float degreeToPos;
 float rotateTargetLower;
 float rotateTargetUpper;
-int angleTolerance = 5;
 int robotDir = 0;
+
+
 
 void setup()
 { 
- 
 
-if (imu.begin() != INV_SUCCESS)
+  Serial.begin(9600);
+  RobotForm = 1;   // Default shape: straight
+
+  // IMU Setup
+  if (imu.begin() != INV_SUCCESS)
   {
     while (1)
     {
-      Serial.println("Unable to communicate with MPU-9250");
-      Serial.println("Check connections, and try again.");
-      Serial.println();
+      if (debugPrintActive){
+        Serial.println("Unable to communicate with MPU-9250");
+        Serial.println("Check connections, and try again.");
+        Serial.println();
+      }
       delay(5000);
     }
   }
-  
+  // Only enabling magnetometer readings from the IMU sensors
   imu.setSensors(INV_XYZ_COMPASS);
   imu.setCompassSampleRate(10); // Set mag rate to 10Hz
-  
-  RobotForm = 1;
 
-  Serial.begin(9600);
+  
   
   if (debugMotorSetupActive){
     roboclaw.begin(38400);
@@ -108,10 +124,10 @@ if (imu.begin() != INV_SUCCESS)
   pinMode(rp3, OUTPUT);
   pinMode(rp4, OUTPUT);
 
+  // timer setup
   timerSerial = millis();
   timerMotion = millis();
   timerDebug = millis();
-  imuTime = millis();
 }
 
 void threadSerial()
@@ -122,238 +138,19 @@ void threadSerial()
   };
 }
 
-void threadMotion(){
-
-  switch(charInput)
-  {
-    case '1':
-    {
-      straight();
-      RobotForm = 1;
-      break;
-    }
-    case '2':
-    {
-      square();
-      RobotForm = 2;
-      break;
-    }
-    case '3':
-    {
-      L_4th();
-      RobotForm = 3;
-      break;
-    }
-    case '4':
-    {
-      L_1st();
-      RobotForm = 4;
-      break;
-    }
-    case '5':
-    {
-      Z_1_4();
-      RobotForm = 5;
-      break;
-    }
-    case '6':
-    {
-      plus();
-      RobotForm = 6;
-      break;
-    }
-    case '7':
-    {
-      S_1_3();
-      RobotForm = 7;
-      break;
-    }
-  }
-  if (charInput == 'F')
-  {  
-    for (char j = 0; j < 4; j ++){
-      switch(M_Forward[RobotForm-1][j]){
-        case 'f':
-          Forward(j,false);
-          break;
-        case 'b':
-          Backward(j,false);
-          break;
-        case 'r':
-          Right(j,false);
-          break;
-        case 'l':
-          Left(j,false);
-          break;
-        case '0':
-          break;
-      }
-    }
-  }
-  if (charInput == 'B')
-  {  
-    for (char j = 0; j < 4; j ++){
-      switch(M_Backward[RobotForm-1][j]){
-        case 'f':
-          Forward(j,false);
-          break;
-        case 'b':
-          Backward(j,false);
-          break;
-        case 'r':
-          Right(j,false);
-          break;
-        case 'l':
-          Left(j,false);
-          break;
-        case '0':
-          break;
-      }
-    }
-  }
-  if (charInput == 'R')
-  {  
-    for (char j = 0; j < 4; j ++){
-      switch(M_Right[RobotForm-1][j]){
-        case 'f':
-          Forward(j,false);
-          break;
-        case 'b':
-          Backward(j,false);
-          break;
-        case 'r':
-          Right(j,false);
-          break;
-        case 'l':
-          Left(j,false);
-          break;
-        case '0':
-          break;
-      }
-    }
-  }
-  if (charInput == 'L')
-  {  
-    for (char j = 0; j < 4; j ++){
-      switch(M_Left[RobotForm-1][j]){
-        case 'f':
-          Forward(j,false);
-          break;
-        case 'b':
-          Backward(j,false);
-          break;
-        case 'r':
-          Right(j,false);
-          break;
-        case 'l':
-          Left(j,false);
-          break;
-        case '0':
-          break;
-      }
-    }
-  }
-  if (charInput == 'r' || charInput == 'l'){
-    if (!isRobotRotating && !isFinishRotation){
-      isRobotRotating = true;
-      rotateStartHeading = Total_angle[2]+0.01;
-
-      if (charInput == 'r') robotDir = 1;
-      if (charInput == 'l') robotDir = -1;
-      
-      rotateTargetHeading = rotateStartHeading + robotDir * 90;
-      rotateTargetLower = rotateTargetHeading - angleTolerance;
-      rotateTargetUpper = rotateTargetHeading + angleTolerance;
-
-      if (rotateTargetHeading > 360) rotateTargetHeading -= 360;
-      if (rotateTargetHeading < 360) rotateTargetHeading += 360;
-
-      Serial.println("=====Start Rotation=====");
-      Serial.println("Start Heading : " + String(rotateStartHeading));
-      Serial.println("Target Heading : " + String(rotateTargetHeading));
-    }
-    else{
-      if (reachTargetArea(Total_angle[2]) == 1){
-        for (char j = 0; j < 4; j ++){
-          switch(R_LeftTurn[RobotForm-1][j]){
-            case 'f':
-              Forward(j,true);
-              break;
-            case 'b':
-              Backward(j,true);
-              break;
-            case 'r':
-              Right(j,true);
-              break;
-            case 'l':
-              Left(j,true);
-              break;
-            case '0':
-              break;
-          }
-        }
-        secureShape(RobotForm);
-      }
-      else if (reachTargetArea( Total_angle[2]) == -1){
-        for (char j = 0; j < 4; j ++){
-          switch(R_RightTurn[RobotForm-1][j]){
-            case 'f':
-              Forward(j,true);
-              break;
-            case 'b':
-              Backward(j,true);
-              break;
-            case 'r':
-              Right(j,true);
-              break;
-            case 'l':
-              Left(j,true);
-              break;
-            case '0':
-              break;
-          }
-        }
-        secureShape(RobotForm);
-      }
-      else if (reachTargetArea( Total_angle[2]) == 0){
-         isRobotRotating = false;
-         isFinishRotation = true;
-         Stop();
-         Serial.println("=====End Rotation=====");
-      }
-    }
-  }
-  if (charInput == 'k')
-  {
-    secureShape(RobotForm);
-  }
-  if (charInput == 'S')
-  {
-      isRobotRotating = false;
-      isFinishRotation = true;
-      Stop();
-  }
-  if (prevCharInput != charInput){
-    isFinishRotation = false;
-    prevCharInput = charInput;
-  }
-}
-
+// Main Loop
 void loop() {
-
   
   delay(500);
   
-  if (millis() - timerSerial > 990){
+  if (millis() - timerSerial > timerSerialPeriod){
     if(Serial.available() > 0){
   
       charInput = Serial.read();   
       //Serial.print(charInput);
       
     }
-
     timerSerial = millis();
-    
   }
   
   if ( imu.dataReady() )
@@ -361,23 +158,14 @@ void loop() {
     imu.update(UPDATE_COMPASS);
     imuRead();
   }
+  
   threadMotion();
+  
   if (debugPrintActive){
-    if (millis() - timerDebug > 1000){
+    if (millis() - timerDebug > timerDebugPeriod){
       debugPrint();
       timerDebug = millis();
     }
   }
 }
 
-void Stop()
-{
-  roboclaw.ForwardM1(address1,0);
-  roboclaw.ForwardM2(address1,0);
-  roboclaw.ForwardM1(address2,0);
-  roboclaw.ForwardM2(address2,0);
-  roboclaw.ForwardM1(address3,0);
-  roboclaw.ForwardM2(address3,0);
-  roboclaw.ForwardM1(address4,0);
-  roboclaw.ForwardM2(address4,0);
-}
