@@ -24,3 +24,10 @@ void debugPrint(){
   
   }
 }
+
+void threadSerial()
+{
+  if(Serial.available() > 0){
+    charInput = Serial.read();  
+  };
+}

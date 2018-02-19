@@ -77,14 +77,10 @@ float rotateTargetLower;
 float rotateTargetUpper;
 int robotDir = 0;
 
-
-
 void setup()
 { 
-
   Serial.begin(9600);
   RobotForm = 1;   // Default shape: straight
-
   // IMU Setup
   if (imu.begin() != INV_SUCCESS)
   {
@@ -103,7 +99,7 @@ void setup()
   imu.setCompassSampleRate(10); // Set mag rate to 10Hz
 
   
-  
+  // Robot Motors Setup
   if (debugMotorSetupActive){
     roboclaw.begin(38400);
     
@@ -118,24 +114,17 @@ void setup()
     Herkulex.initialize(); //initialize motors
     delay(200);
   }
-  
+
+  // Robot Realy setup
   pinMode(rp1, OUTPUT);
   pinMode(rp2, OUTPUT);
   pinMode(rp3, OUTPUT);
   pinMode(rp4, OUTPUT);
 
-  // timer setup
+  // timers setup
   timerSerial = millis();
   timerMotion = millis();
   timerDebug = millis();
-}
-
-void threadSerial()
-{
-  if(Serial.available() > 0){
-    charInput = Serial.read();  
-    Serial.print(charInput); 
-  };
 }
 
 // Main Loop
@@ -144,12 +133,7 @@ void loop() {
   delay(500);
   
   if (millis() - timerSerial > timerSerialPeriod){
-    if(Serial.available() > 0){
-  
-      charInput = Serial.read();   
-      //Serial.print(charInput);
-      
-    }
+    threadSerial();
     timerSerial = millis();
   }
   
@@ -168,4 +152,7 @@ void loop() {
     }
   }
 }
+
+
+
 
