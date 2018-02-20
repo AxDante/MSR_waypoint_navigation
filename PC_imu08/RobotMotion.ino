@@ -1,14 +1,27 @@
-
 void threadMotion(){
+  // List of input characters:
+
+  // Transformation: '1': straight, '2': square, '3': L-shape (4th), '4': L-shape (1st)
+  //                 '5': Z-shape; '6': T-shape, '7': S-shape
+  // Liner Motion: 'R': right, 'L': left, 'B': backward, 'F': forward
+  // Rotation: 'r': right turn(clockwise), 'l': left turn(counterclockwise)
+  // 'S': stop all DC motors
+  // '-': previous motion completed, awaiting next char input
+  // 'k': secure shape (activate servo motors)
   
   // Always stop first while receiving stop command
   if (charInput == 'S')
   {
       isRobotRotating = false;
       isFinishRotation = true;
-      RobotStop();
+      stopMotorDC();
   }
 
+  if (isRobotLinearMotion && timerLinearMotion - millis() > linerMotionStopTime){
+    isRobotLinearMotion = false;
+    charInput = '-';
+  }
+ 
   // Priotorise heading correction before performing any motion when headingCorrection is ON.
   if (headingCorrectionDuringMotion){
     if (reachTargetHeading(heading_filtered) == 1){
@@ -64,7 +77,7 @@ void threadMotion(){
   }
 }
 void CharInputMotion(){
-    switch(charInput)
+   switch(charInput)
   {
     case '1':
     {
@@ -111,6 +124,8 @@ void CharInputMotion(){
   }
   if (charInput == 'F')
   {  
+    isRobotLinearMotion = true;
+    timerLinearMotion = millis();
     for (char j = 0; j < 4; j ++){
       switch(M_Forward[RobotForm-1][j]){
         case 'f':
@@ -132,6 +147,8 @@ void CharInputMotion(){
   }
   if (charInput == 'B')
   {  
+    isRobotLinearMotion = true;
+    timerLinearMotion = millis();
     for (char j = 0; j < 4; j ++){
       switch(M_Backward[RobotForm-1][j]){
         case 'f':
@@ -153,6 +170,8 @@ void CharInputMotion(){
   }
   if (charInput == 'R')
   {  
+    isRobotLinearMotion = true;
+    timerLinearMotion = millis();
     for (char j = 0; j < 4; j ++){
       switch(M_Right[RobotForm-1][j]){
         case 'f':
@@ -174,6 +193,8 @@ void CharInputMotion(){
   }
   if (charInput == 'L')
   {  
+    isRobotLinearMotion = true;
+    timerLinearMotion = millis();
     for (char j = 0; j < 4; j ++){
       switch(M_Left[RobotForm-1][j]){
         case 'f':
@@ -258,7 +279,7 @@ void CharInputMotion(){
       else if (reachTargetHeading( heading_filtered) == 0){
          isRobotRotating = false;
          isFinishRotation = true;
-         Stop();
+         stopMotorDC();
          Serial.println("=====End Rotation=====");
       }
     }

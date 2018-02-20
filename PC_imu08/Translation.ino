@@ -1,4 +1,4 @@
-
+// DC motor commands
 void Forward(int i, bool isRotate){
   if (debugMotorActive){
   int power = (isRotate)? rotatePower: linearPower;
@@ -111,7 +111,7 @@ void Left(int i, bool isRotate){
   }
 }
 
-void RobotStop()
+void stopMotorDC()
 {
   roboclaw.ForwardM1(address1,0);
   roboclaw.ForwardM2(address1,0);

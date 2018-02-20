@@ -1,3 +1,4 @@
+// Activates the servo motors while rotating or transforming.
 void secureShape(int form){
   switch(form){
     case 1:
@@ -25,6 +26,7 @@ void secureShape(int form){
       break;
   }
 }
+
 void straight()
 {
   if (debugMotorActive){

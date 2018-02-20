@@ -29,21 +29,31 @@ char* R_LeftTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "rffr"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 
+String StringStream = "FRBLLF";
+int linerMotionStopTime = 5000;
+
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive true
-#define debugMotorSetupActive true
+#define debugPrintActive true                 // Printing Debug information on Serial Port
+#define debugMotorSetupActive true           
 #define debugMotorActive true
 #define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
+
+#define robotMode 3
+// ( 1: Read one input char from serial port every time, motion not stopping unless receieves next input)
+// ( 2: Read one input char from serial port every time, motion automatically stops after meeting certain conditions) 
+// ( 3: Read and move following string input (static, for debug use), motion automatically stops after meeting certain conditions)
+// ( 4: Read and move following string input, receives new char input which will be added to the end of string, motion automatically 
+//      stops after meeting certain conditions)
 
 #define linearPower 64  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
 #define rotatePower 50  // Power provided to DC motors during robot rotation (r, l) (max: 128)
 
 #define angleTolerance 7  // Angle tolerance for robot rotation (+- degree away from targeted heading)
 
-#define timerSerialPeriod 990  // The time interval between two input readings from serial port (ms)
-#define timerDebugPeriod 1000  // The time interval for printing debug information to the serial port (ms)
+#define timerSerialThreadPeriod 990  // The time interval between two input readings from serial port (ms)
+#define timerDebugThreadPeriod 1000  // The time interval for printing debug information to the serial port (ms)
 
 //****************************************
 ///////// Variables Declaration //////////
@@ -55,14 +65,20 @@ char prevCharInput;
 
 
 // timers
-int timerSerial;
-int timerMotion;
-int timerDebug;
-
+int timerSerialThread;
+int timerMotionThread;
+int timerDebugThread;
+int timerLinearMotion;
 
 // IMU Related
 float magX ;
 float magY ;
+
+
+
+bool isRobotLinearMotion;
+
+
 
 // rotation related
 float rad_to_deg = 180/3.141592654;
@@ -122,9 +138,10 @@ void setup()
   pinMode(rp4, OUTPUT);
 
   // timers setup
-  timerSerial = millis();
-  timerMotion = millis();
-  timerDebug = millis();
+  timerSerialThread = millis();
+  timerMotionThread = millis();
+  timerDebugThread = millis();
+  timerLinearMotion = millis();
 }
 
 // Main Loop
@@ -132,9 +149,9 @@ void loop() {
   
   delay(500);
   
-  if (millis() - timerSerial > timerSerialPeriod){
+  if (millis() - timerSerialThread > timerSerialThreadPeriod){
     threadSerial();
-    timerSerial = millis();
+    timerSerialThread = millis();
   }
   
   if ( imu.dataReady() )
@@ -146,9 +163,9 @@ void loop() {
   threadMotion();
   
   if (debugPrintActive){
-    if (millis() - timerDebug > timerDebugPeriod){
+    if (millis() - timerDebugThread > timerDebugThreadPeriod){
       debugPrint();
-      timerDebug = millis();
+      timerDebugThread = millis();
     }
   }
 }
