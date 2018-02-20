@@ -12,32 +12,38 @@ void threadMotion(){
   // Always stop first while receiving stop command
   if (charInput == 'S')
   {
-      isRobotRotating = false;
+      isRobotRotation = false;
       isFinishRotation = true;
       stopMotorDC();
   }
 
-  if (isRobotLinearMotion && timerLinearMotion - millis() > linerMotionStopTime){
-    isRobotLinearMotion = false;
-    charInput = '-';
+  if (robotMode == 3 || robotMode == 4){
+    if (isRobotLinearMotion &&  millis() - timerLinearMotion > linerMotionStopTime){
+      isRobotLinearMotion = false;
+      charInput = '-';
+      stopMotorDC();
+    }
   }
  
   // Priotorise heading correction before performing any motion when headingCorrection is ON.
   if (headingCorrectionDuringMotion){
     if (reachTargetHeading(heading_filtered) == 1){
+        isRobotRotationAdjust = true;
+        if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning right)");
+        
         for (char j = 0; j < 4; j ++){
           switch(R_LeftTurn[RobotForm-1][j]){
             case 'f':
-              Forward(j,true);
+              Forward(j);
               break;
             case 'b':
-              Backward(j,true);
+              Backward(j);
               break;
             case 'r':
-              Right(j,true);
+              Right(j);
               break;
             case 'l':
-              Left(j,true);
+              Left(j);
               break;
             case '0':
               break;
@@ -46,19 +52,22 @@ void threadMotion(){
         secureShape(RobotForm);
       }
       else if (reachTargetHeading( heading_filtered) == -1){
+        isRobotRotationAdjust = true;
+        if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning left)");
+        
         for (char j = 0; j < 4; j ++){
           switch(R_RightTurn[RobotForm-1][j]){
             case 'f':
-              Forward(j,true);
+              Forward(j);
               break;
             case 'b':
-              Backward(j,true);
+              Backward(j);
               break;
             case 'r':
-              Right(j,true);
+              Right(j);
               break;
             case 'l':
-              Left(j,true);
+              Left(j);
               break;
             case '0':
               break;
@@ -67,7 +76,12 @@ void threadMotion(){
         secureShape(RobotForm);
       }
       else{
-        CharInputMotion();
+        if (isRobotRotationAdjust){
+          isRobotRotationAdjust = false;
+          stopMotorDC();
+        } else{
+           CharInputMotion();
+        }
       }
   }
 
@@ -124,21 +138,23 @@ void CharInputMotion(){
   }
   if (charInput == 'F')
   {  
-    isRobotLinearMotion = true;
-    timerLinearMotion = millis();
+    if (!isRobotLinearMotion){
+      isRobotLinearMotion = true;
+      timerLinearMotion = millis();
+    }
     for (char j = 0; j < 4; j ++){
       switch(M_Forward[RobotForm-1][j]){
         case 'f':
-          Forward(j,false);
+          Forward(j);
           break;
-        case 'b':
-          Backward(j,false);
+        case 'b': 
+          Backward(j);
           break;
         case 'r':
-          Right(j,false);
+          Right(j);
           break;
         case 'l':
-          Left(j,false);
+          Left(j);
           break;
         case '0':
           break;
@@ -147,21 +163,23 @@ void CharInputMotion(){
   }
   if (charInput == 'B')
   {  
-    isRobotLinearMotion = true;
-    timerLinearMotion = millis();
+    if (!isRobotLinearMotion){
+      isRobotLinearMotion = true;
+      timerLinearMotion = millis();
+    }
     for (char j = 0; j < 4; j ++){
       switch(M_Backward[RobotForm-1][j]){
         case 'f':
-          Forward(j,false);
+          Forward(j);
           break;
         case 'b':
-          Backward(j,false);
+          Backward(j);
           break;
         case 'r':
-          Right(j,false);
+          Right(j);
           break;
         case 'l':
-          Left(j,false);
+          Left(j);
           break;
         case '0':
           break;
@@ -170,21 +188,23 @@ void CharInputMotion(){
   }
   if (charInput == 'R')
   {  
-    isRobotLinearMotion = true;
-    timerLinearMotion = millis();
+    if (!isRobotLinearMotion){
+      isRobotLinearMotion = true;
+      timerLinearMotion = millis();
+    }
     for (char j = 0; j < 4; j ++){
       switch(M_Right[RobotForm-1][j]){
         case 'f':
-          Forward(j,false);
+          Forward(j);
           break;
         case 'b':
-          Backward(j,false);
+          Backward(j);
           break;
         case 'r':
-          Right(j,false);
+          Right(j);
           break;
         case 'l':
-          Left(j,false);
+          Left(j);
           break;
         case '0':
           break;
@@ -193,21 +213,23 @@ void CharInputMotion(){
   }
   if (charInput == 'L')
   {  
-    isRobotLinearMotion = true;
-    timerLinearMotion = millis();
+    if (!isRobotLinearMotion){
+      isRobotLinearMotion = true;
+      timerLinearMotion = millis();
+    }
     for (char j = 0; j < 4; j ++){
       switch(M_Left[RobotForm-1][j]){
         case 'f':
-          Forward(j,false);
+          Forward(j);
           break;
         case 'b':
-          Backward(j,false);
+          Backward(j);
           break;
         case 'r':
-          Right(j,false);
+          Right(j);
           break;
         case 'l':
-          Left(j,false);
+          Left(j);
           break;
         case '0':
           break;
@@ -215,39 +237,45 @@ void CharInputMotion(){
     }
   }
   if (charInput == 'r' || charInput == 'l'){
-    if (!isRobotRotating && !isFinishRotation){
-      isRobotRotating = true;
+    if (!isRobotRotation && !isFinishRotation){
+      isRobotRotation = true;
       rotateStartHeading = heading_filtered+0.01;
 
       if (charInput == 'r') robotDir = 1;
       if (charInput == 'l') robotDir = -1;
       
-      rotateTargetHeading = rotateStartHeading + robotDir * 90;
+      if (initialPositionAsWorldFrame){
+        rotateTargetHeading = rotateStartHeading + robotDir * 90;
+      }else{
+        worldRobotTargetHeading +=  robotDir * 90;
+        rotateTargetHeading = worldRobotTargetHeading;
+      }
       rotateTargetLower = rotateTargetHeading - angleTolerance;
       rotateTargetUpper = rotateTargetHeading + angleTolerance;
 
       if (rotateTargetHeading > 360) rotateTargetHeading -= 360;
       if (rotateTargetHeading < 360) rotateTargetHeading += 360;
-
-      Serial.println("=====Start Rotation=====");
-      Serial.println("Start Heading : " + String(rotateStartHeading));
-      Serial.println("Target Heading : " + String(rotateTargetHeading));
+      if (debugPrintActive){
+        Serial.println("=====Start Rotation=====");
+        Serial.println("Start Heading : " + String(rotateStartHeading));
+        Serial.println("Target Heading : " + String(rotateTargetHeading));
+      }
     }
     else{
       if (reachTargetHeading(heading_filtered) == 1){
         for (char j = 0; j < 4; j ++){
           switch(R_LeftTurn[RobotForm-1][j]){
             case 'f':
-              Forward(j,true);
+              Forward(j);
               break;
             case 'b':
-              Backward(j,true);
+              Backward(j);
               break;
             case 'r':
-              Right(j,true);
+              Right(j);
               break;
             case 'l':
-              Left(j,true);
+              Left(j);
               break;
             case '0':
               break;
@@ -259,16 +287,16 @@ void CharInputMotion(){
         for (char j = 0; j < 4; j ++){
           switch(R_RightTurn[RobotForm-1][j]){
             case 'f':
-              Forward(j,true);
+              Forward(j);
               break;
             case 'b':
-              Backward(j,true);
+              Backward(j);
               break;
             case 'r':
-              Right(j,true);
+              Right(j);
               break;
             case 'l':
-              Left(j,true);
+              Left(j);
               break;
             case '0':
               break;
@@ -276,11 +304,12 @@ void CharInputMotion(){
         }
         secureShape(RobotForm);
       }
-      else if (reachTargetHeading( heading_filtered) == 0){
-         isRobotRotating = false;
+      else if (reachTargetHeading(heading_filtered) == 0){
+         isRobotRotation = false;
          isFinishRotation = true;
          stopMotorDC();
-         Serial.println("=====End Rotation=====");
+         charInput = '-';
+         if (debugPrintActive) Serial.println("=====End Rotation=====");
       }
     }
   }
@@ -288,7 +317,6 @@ void CharInputMotion(){
   {
     secureShape(RobotForm);
   }
-
   if (prevCharInput != charInput){
     isFinishRotation = false;
     prevCharInput = charInput;

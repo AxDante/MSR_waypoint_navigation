@@ -29,8 +29,9 @@ char* R_LeftTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "rffr"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 
-String StringStream = "FRBLLF";
+String StringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
+float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
@@ -38,7 +39,7 @@ int linerMotionStopTime = 5000;
 #define debugPrintActive true                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 #define debugMotorActive true
-#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
+#define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
 
 #define robotMode 3
 // ( 1: Read one input char from serial port every time, motion not stopping unless receieves next input)
@@ -47,10 +48,15 @@ int linerMotionStopTime = 5000;
 // ( 4: Read and move following string input, receives new char input which will be added to the end of string, motion automatically 
 //      stops after meeting certain conditions)
 
-#define linearPower 64  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
-#define rotatePower 50  // Power provided to DC motors during robot rotation (r, l) (max: 128)
+#define initialPositionAsWorldFrame false     // When this is set true, the robot will recognize its initial heading as world coordinate 
+                                              // and perform rotations based on it; while set false, the initial heading can be either given
+                                              // in advance or be set through serial ports.
 
-#define angleTolerance 7  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+#define linearPower 55  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
+#define rotatePower 50  // Power provided to DC motors during robot rotation (r, l) (max: 128)
+#define rotateAdjustPower 42 // Power provided to DC motors during robot heading self adjustment (max: 128)
+
+#define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
 
 #define timerSerialThreadPeriod 990  // The time interval between two input readings from serial port (ms)
 #define timerDebugThreadPeriod 1000  // The time interval for printing debug information to the serial port (ms)
@@ -65,27 +71,25 @@ char prevCharInput;
 
 
 // timers
-int timerSerialThread;
-int timerMotionThread;
-int timerDebugThread;
-int timerLinearMotion;
+unsigned long timerSerialThread;
+unsigned long timerMotionThread;
+unsigned long timerDebugThread;
+unsigned long timerLinearMotion;
 
 // IMU Related
 float magX ;
 float magY ;
 
-
-
-bool isRobotLinearMotion;
-
-
-
-// rotation related
-float rad_to_deg = 180/3.141592654;
-float heading_raw;
-float heading_filtered;
-bool isRobotRotating;
+// Robot motion boolean
+bool isRobotRotation;
 bool isFinishRotation;
+bool isRobotLinearMotion;
+bool isRobotRotationAdjust;
+
+// Robot rotation related
+float rad_to_deg = 180/3.141592654;
+float heading_raw;                  // raw heading values in angle from imu
+float heading_filtered;              
 float rotateStartHeading;
 float rotateTargetHeading;
 float degreeToPos;
@@ -142,6 +146,13 @@ void setup()
   timerMotionThread = millis();
   timerDebugThread = millis();
   timerLinearMotion = millis();
+
+  // Heading setup
+  if (!initialPositionAsWorldFrame){
+    rotateTargetHeading = worldRobotTargetHeading;   
+    rotateTargetLower = rotateTargetHeading - angleTolerance;
+    rotateTargetUpper = rotateTargetHeading + angleTolerance; 
+  }
 }
 
 // Main Loop
