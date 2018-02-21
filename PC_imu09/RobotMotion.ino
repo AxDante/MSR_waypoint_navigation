@@ -10,7 +10,7 @@ void threadMotion(){
   // 'k': secure shape (activate servo motors)
   
   // Always stop first while receiving stop command
-  if (charInput == 'S')
+  if (charInput == 'S' || charInput == '1' ||charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7' )
   {
       isRobotRotation = false;
       isFinishRotation = true;
@@ -315,17 +315,17 @@ void CharInputMotion(){
     isFinishRotation = false;
     prevCharInput = charInput;
   }
-  Serial.print("k");
+  //Serial.print("k");
   if (robotMode == 3 || robotMode == 4){
     if (isRobotLinearMotion &&  millis() - timerLinearMotion > linerMotionStopTime){
       isRobotLinearMotion = false;
       stopMotorDC();
     }
-    Serial.print("s");
+    //Serial.print("s");
     if (robotMode >= 4){
-      Serial.print("i");
+      //Serial.print("i");
       if (!isRobotLinearMotion && !isRobotRotation && !isRobotRotationAdjust){
-        Serial.print("t");
+        //Serial.print("t");
         charInput = stringStream[0];
         stringStream.remove(0, 1);
       }
