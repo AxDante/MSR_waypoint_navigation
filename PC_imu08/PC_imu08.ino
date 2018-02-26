@@ -39,7 +39,7 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define debugPrintActive true                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 #define debugMotorActive true
-#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
+#define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
 
 #define robotMode 3
 // ( 1: Read one input char from serial port every time, motion not stopping unless receieves next input)

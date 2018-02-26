@@ -37,7 +37,7 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 /////////////  Definitions  //////////////
 //****************************************
 #define debugPrintActive true                 // Printing Debug information on Serial Port
-#define debugMotorSetupActive true           
+#define debugMotorSetupActive false           
 #define debugMotorActive true
 #define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
 
@@ -179,7 +179,6 @@ void loop() {
       timerDebugThread = millis();
     }
   }
-  
 }
 
 
