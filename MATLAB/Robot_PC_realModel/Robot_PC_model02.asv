@@ -27,7 +27,9 @@ Dy_v = zeros(4, 2, max_step);
 
 %Wp = [100 200; 225 40; 50 170];
 Wp = [];
+wp_current = 1;
 Circle_Wp = [];
+
 Line_Robot = [];
 Line_Robot_area = [];
 Line_Border = [];
@@ -120,7 +122,6 @@ if ( strcmp( Algorithm, 'square_zigzag'))
         pos_ny = pos_uwb(2, step+1);
         
         
-        
         % plot robot centre
         line([pos_x pos_nx], [pos_y pos_ny])
         
@@ -160,7 +161,7 @@ end
 
 %% Square Waypoint  (SW)
 
-wp_current = 1;
+
 
 if ( strcmp( Algorithm, 'square_waypoint'))
     
