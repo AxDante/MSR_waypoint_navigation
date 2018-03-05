@@ -1,0 +1,22 @@
+%{
+for intidx = 1:100
+    fid = fopen('C:\Marvelmind\dashboard\logs\hedgehogs.log','rt');
+    A = textscan(fid, '%f %f', 'Delimiter', ',' , 'collectoutput', true, 'HeaderLines', );
+    x(intidx) = A(4)
+    y(intidx) = A(5)
+    pause(2);
+    fclose(fid);
+end
+%}
+
+figur
+for intidx = 1:100
+    fid = fopen('C:\Marvelmind\dashboard\logs\TestLog.txt','rt');
+    A = textscan(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', 'delimiter', ',','collectoutput',true);
+    A=A{1};
+    fclose(fid);
+    n=size(A,1);
+    NewA=A(:, 5:6);
+    
+end
+

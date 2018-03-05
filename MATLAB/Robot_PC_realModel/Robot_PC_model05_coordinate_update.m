@@ -24,8 +24,6 @@ Dy_angv_transform = pi/10;
 time_pause = time_interval/50;
 
 
-
-
 pos_uwb_offset = [25 25];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
@@ -195,6 +193,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 end
             end
             [Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
+            
+            
             pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+...
                                             0.2* (pos_uwb(:, step) + rand * 10 - 5) + 0.8* pos_uwb(:, step);
            % for rbtidx = 1:4
