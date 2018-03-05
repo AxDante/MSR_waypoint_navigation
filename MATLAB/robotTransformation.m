@@ -1,14 +1,15 @@
-function  Dy_v_t = robotTransformation(char_command_t, robot_heading_t, speed_t)
+function  new_heading = robotTransformation(new_shape, heading_t, RobotShapes_t, tol_t, Dy_angv_transform_t)
+    new_heading = zeros(4,1);
     for idx_t = 1:4
-        switch char_command_t
-            case 'F'
-                Dy_v_t(idx_t, :) = [sin(robot_heading_t) cos(robot_heading_t)]* speed_t;
-            case 'R'
-                Dy_v_t(idx_t, :) = [cos(robot_heading_t) -sin(robot_heading_t)]* speed_t;
-            case 'B'
-                Dy_v_t(idx_t, :) = [-sin(robot_heading_t) -cos(robot_heading_t)]* speed_t;
-            case 'L'
-                Dy_v_t(idx_t, :) = [-cos(robot_heading_t) sin(robot_heading_t)]* speed_t;
+        if (idx_t == 2)
+            [heading_t(idx_t)  RobotShapes_t(new_shape, idx_t)]
+        end
+        if heading_t(idx_t) > RobotShapes_t(new_shape, idx_t) + tol_t
+            new_heading (idx_t) = heading_t(idx_t) - Dy_angv_transform_t;
+        elseif heading_t(idx_t) < RobotShapes_t(new_shape, idx_t) - tol_t
+            new_heading (idx_t) = heading_t(idx_t) + Dy_angv_transform_t;
+        else
+            new_heading (idx_t) = heading_t(idx_t) ;
         end
     end
 end
