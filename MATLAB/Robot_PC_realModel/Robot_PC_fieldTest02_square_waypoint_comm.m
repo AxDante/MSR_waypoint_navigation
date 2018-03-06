@@ -21,9 +21,11 @@ robot_Form = 2;
 
 time_interval = 3;
 
+max_pos_initialize = 30;
+
 Dy_angv_transform = pi/10;
 
-time_pause = time_interval/50;
+time_pause = time_interval/10;
 
 
 pos_uwb_offset = [25 25];
@@ -66,14 +68,18 @@ RobotShapes = [0 0 0 0 ;
 Cvg = [];
 count_cvg_point = 0;
 cvg_sample_w = grid_w*[grid_size(1)/cvg_sample_side(1) grid_size(2)/cvg_sample_side(2)];
+grid_dhw = sqrt(2) / 2 * grid_w;
+
+count_pos_initialize = 0;
+is_pos_initialized = false;
+pos_initial = [];
+
+
 for idxx = 1:(cvg_sample_side(2)+1)
     for idxy = 1:(cvg_sample_side(1)+1)
         Cvg = [Cvg; cvg_sample_w(1)*(idxy-1) cvg_sample_w(2)*(idxx-1) 0];
     end
 end
-
-
-grid_dhw = sqrt(2) / 2 * grid_w;
 
     for idx = 1: 10
         if (mod(idx, 4) == 1)
@@ -142,7 +148,33 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         %Wp(wp_current, :) 
         %norm(pos_uwb(:, step) - Wp(wp_current, :))
 
-        if (norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
+        
+        % streaming input
+        fid = fopen('C:\Marvelmind\dashboard\logs\TestLog.txt','rt');
+        txt_Streaming = textscan(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', 'delimiter', ',','collectoutput',true...
+              , 'HeaderLines', 3);
+        txt_Streaming=txt_Streaming{1};
+        fclose(fid);
+        txt_rows=size(txt_Streaming,1);
+        txt_endLine = txt_Streaming(end, 5:6);
+        
+        if (~is_pos_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
+            count_pos_initialize = count_pos_initialize+1;
+            pos_initial = [pos_initial; txt_endLine]
+            if count_pos_initialize >= max_pos_initialize
+                txt_endLine_new = mean(pos_initial)
+                is_pos_initialized = true;
+            end
+        elseif  (is_pos_initialized && txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
+            %if (txt_endLine_new(1) ~= txt_endLine(1) || txt_endLine_new(2) ~= txt_endLine(2)) 
+                if norm(txt_endLine_new - txt_endLine) < 0.2
+                    line([txt_endLine_new(1) txt_endLine(1)], [txt_endLine_new(2) txt_endLine(2)]);
+                    txt_endLine_new = 0.6*txt_endLine_new + 0.4*txt_endLine ;
+                end
+            %end
+        end
+        
+        if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_wp_disappear_upon_reach)
                 delete(Circle_Wp(wp_current));
             end
@@ -164,7 +196,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             is_transforming = false;
         end
         
-        if (is_transforming)
+        if (~is_pos_initialized)
+            pos_uwb(:, step+1) = pos_uwb(:, step);
+        elseif (is_transforming)
             heading = robotTransformation(Wp(wp_current, 3), heading, RobotShapes, tol_transform, Dy_angv_transform);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         elseif (heading(2) > tol_heading && is_heading_correction ) 
@@ -200,6 +234,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
            %heading(3) = heading(2);
            %heading(4) = heading(2);
         end
+        
+        
+        char_command
         
         % update uwb here
         %pos_uwb(1, step+1) = pos_uwb(1, step) + (1+ 0.1* step)* sin(step / 5);

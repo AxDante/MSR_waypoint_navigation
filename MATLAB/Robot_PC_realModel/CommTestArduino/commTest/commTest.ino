@@ -1,5 +1,6 @@
 void setup() {
   Serial.begin(9600);
+  Serial.print("Begin");
   pinMode(LED_BUILTIN, OUTPUT);
 }
 char inChar;
