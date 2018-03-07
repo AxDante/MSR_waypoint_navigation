@@ -6,9 +6,7 @@ void setup(){
   Serial.println("Ready");       
 }
  void loop() {
-  digitalWrite(LED_BUILTIN,LOW); //turn off LED
   if (Serial.available() > 0) { 
-   digitalWrite(LED_BUILTIN,HIGH); //flash LED everytime data is available
    inChar = Serial.read(); //read incoming data
   }   
   if (inChar != lastChar){
