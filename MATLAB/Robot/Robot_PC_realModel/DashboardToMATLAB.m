@@ -3,8 +3,8 @@ txt_endLine_new = [0 0];
 
 is_initialized = false;
 is_grid_on = true;
-
-
+grid_w = 25;
+grid_size = [10 10];
 figure(1)
 hold on
 axis([-grid_w grid_w*11 -grid_w grid_w*11])
@@ -28,13 +28,15 @@ for intidx = 1:400000
     txt_endLine = txt_Streaming(end, 5:6);
     
     if (~is_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
-        txt_endLine_new = txt_endLine;
+        txt_endLine_new = txt_endLine
         is_initialized = true;
+        disp("isinitial")
     elseif  (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
         if (txt_endLine_new(1) ~= txt_endLine(1) || txt_endLine_new(2) ~= txt_endLine(2)) 
-            if norm(txt_endLine_new - txt_endLine) < 0.4
-                line([txt_endLine_new(1) txt_endLine(1)], [txt_endLine_new(2) txt_endLine(2)]);
+            if norm(txt_endLine_new - txt_endLine) < 1000
+                line([txt_endLine_new(1) txt_endLine(1)]*100, [txt_endLine_new(2) txt_endLine(2)]*100);
                 txt_endLine_new = txt_endLine;
+                txt_endLine_new*100
             end
         end
     end

@@ -112,8 +112,7 @@ hold on
 for idx = 1: size(Wp,1)
     Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
 end
-txt_endLine = [0 0];
-txt_endLine_new = [0 0];
+
 
 %% Square Waypoint  (SW)
 
@@ -128,6 +127,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
     end 
     pos_uwb_raw(:, 1) = pos_uwb_offset;
     pos_uwb(:, 1) = pos_uwb_raw(:, 1);
+    
 
     % Algorithm Main Loop
     for step = 1:max_step
@@ -157,7 +157,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         fclose(fid);
         txt_rows=size(txt_Streaming,1);
         txt_endLine = txt_Streaming(end, 5:6);
-        txt_endLine = [str2double(txt_endLine(1))*100  str2double(txt_endLine(2))*100]
+        txt_endLine = []
         
         if (~is_pos_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
             count_pos_initialize = count_pos_initialize+1;
@@ -166,16 +166,11 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 txt_endLine_new = mean(pos_initial)
                 is_pos_initialized = true;
             end
-            pos_uwb(:, step+1) = pos_uwb(:, step);
         elseif  (is_pos_initialized && txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
             %if (txt_endLine_new(1) ~= txt_endLine(1) || txt_endLine_new(2) ~= txt_endLine(2)) 
                 if norm(txt_endLine_new - txt_endLine) < 0.5
                     line([txt_endLine_new(1) txt_endLine(1)]*100, [txt_endLine_new(2) txt_endLine(2)]*100);
                     txt_endLine_new = txt_endLine;
-                    
-                    pos_uwb(:, step+1) = txt_endLine_new.'*0.8 + 0.2*pos_uwb(:, step);
-                else
-                    pos_uwb(:, step+1) = pos_uwb(:, step);
                 end
             %end
         end
@@ -187,6 +182,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             wp_current = wp_current + 1;
         end
         
+        pos_uwb(:, step+1) = txt_endLine_new*0.8 + 0.2*txt_endLine
           
         
         

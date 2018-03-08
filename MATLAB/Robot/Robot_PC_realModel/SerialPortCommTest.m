@@ -18,19 +18,18 @@ delete(instrfindall);
 
 arduino=serial('COM12','BaudRate',9600);
 fopen(arduino);
-pause(3);
-readData = fscanf(arduino, '%s', 1) %reads "Ready" 
+%pause(3);
+%readData = fscanf(arduino, '%s', 1) %reads "Ready" 
 %writedata=uint16(500); %0x01F4
 
 %fwrite(arduino,writedata,'uint16') %write data
-
-fwrite(arduino,writedata,'char')
+%fwrite(arduino,writedata,'char')
 
  for i=1:8 %read 2 lines of data
     writedata= char(writeDataSeries(i));
     fwrite(arduino,writedata,'char')
-    pause(10);
-    %readData = fscanf(arduino, '%c', 1)
+    pause(2);
+    readData = fscanf(arduino, '%c', 1)
  end
 
  fclose(arduino);
