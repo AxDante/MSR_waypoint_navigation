@@ -9,6 +9,8 @@ tol_heading = pi/7;
 cvg_sample_side = [20 20];
 
 Algorithm = 'square_waypoint';
+Serial_port = 'COM12';
+baudrate = 9600;
 
 is_heading_correction = true;
 is_coverage_map = false;
@@ -23,10 +25,14 @@ time_interval = 3;
 
 max_pos_initialize = 15;
 
+%% Variable initialization
+
+
+heading = [0 0 pi pi];
+
 Dy_angv_transform = pi/10;
 
 time_pause = time_interval/10;
-
 
 pos_uwb_offset = [25 25];
 pos_uwb_raw =  zeros(2, max_step);
@@ -35,8 +41,6 @@ pos_uwb = zeros(2, max_step);
 pos_center = zeros(4, 2, max_step);
 
 heading = zeros(4, max_step);
-
-heading = [0 0 pi pi];
 
 Grid_setup = zeros(grid_size(1),  grid_size(2));
 Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
@@ -64,6 +68,7 @@ RobotShapes = [0 0 0 0 ;
                         pi/2 0 pi pi*3/4
                         pi 0 0 pi
                         pi 0 pi pi*3/4];
+                    
 char_command = '';
 Cvg = [];
 count_cvg_point = 0;
@@ -73,6 +78,10 @@ grid_dhw = sqrt(2) / 2 * grid_w;
 count_pos_initialize = 0;
 is_pos_initialized = false;
 pos_initial = [];
+
+delete(instrfindall);
+arduino = serial(Serial_port,'BaudRate',baudrate);
+fopen(arduino);
 
 
 for idxx = 1:(cvg_sample_side(2)+1)
@@ -101,9 +110,8 @@ end
             Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
         end
     end
-    
 
-%% DRAW MAP!
+%% DRAW MAP
 figure(1)
 axis([-grid_w grid_w*11 -grid_w grid_w*11])
 hold on
@@ -246,7 +254,12 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         
+        % Robot Commands
         char_command
+        writedata = char(char_command);
+        fwrite(arduino,writedata,'char');
+        %readData = fscanf(arduino, '%c', 1)
+        
         
         % update uwb here
         %pos_uwb(1, step+1) = pos_uwb(1, step) + (1+ 0.1* step)* sin(step / 5);
