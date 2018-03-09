@@ -19,6 +19,8 @@ end
 
 
 for intidx = 1:400000
+    
+    % Input UWB Data
     fid = fopen('C:\Marvelmind\dashboard\logs\TestLog.txt','rt');
     txt_Streaming = textscan(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', 'delimiter', ',','collectoutput',true...
           , 'HeaderLines', 10);

@@ -17,13 +17,17 @@ is_coverage_map = false;
 is_calculate_coverage = false;
 is_wp_disappear_upon_reach = false;
 is_grid_on = true;
+is_xbee_on = false;
+is_fixed_offset = true;
 
+fixed_offset = [96.5 -54.5];
+starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 2;
 
 time_interval = 3;
 
-max_pos_initialize = 15;
+max_pos_initialize = 5;
 
 %% Variable initialization
 
@@ -34,7 +38,7 @@ Dy_angv_transform = pi/10;
 
 time_pause = time_interval/10;
 
-pos_uwb_offset = [25 25];
+pos_uwb_offset = [0 -3];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
 
@@ -79,10 +83,11 @@ count_pos_initialize = 0;
 is_pos_initialized = false;
 pos_initial = [];
 
-delete(instrfindall);
-arduino = serial(Serial_port,'BaudRate',baudrate);
-fopen(arduino);
-
+if (is_xbee_on)
+    delete(instrfindall);
+    arduino = serial(Serial_port,'BaudRate',baudrate);
+    fopen(arduino);
+end
 
 for idxx = 1:(cvg_sample_side(2)+1)
     for idxy = 1:(cvg_sample_side(1)+1)
@@ -121,7 +126,7 @@ for idx = 1: size(Wp,1)
     Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
 end
 txt_endLine = [0 0];
-txt_endLine_new = [0 0];
+txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
 
@@ -165,27 +170,40 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         fclose(fid);
         txt_rows=size(txt_Streaming,1);
         txt_endLine = txt_Streaming(end, 5:6);
-        txt_endLine = [str2double(txt_endLine(1))*100  str2double(txt_endLine(2))*100]
+        %txt_endLine = [txt_endLine(1)*100  txt_endLine(2)*100] - pos_uwb_offset;
+        if (is_fixed_offset) 
+            txt_endLine = txt_endLine*100 + fixed_offset
+        end
         
         if (~is_pos_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
-            count_pos_initialize = count_pos_initialize+1;
-            pos_initial = [pos_initial; txt_endLine];
-            if count_pos_initialize >= max_pos_initialize
-                txt_endLine_new = mean(pos_initial)
-                is_pos_initialized = true;
+            if (txt_endLine(1) < 1000 && txt_endLine(2) < 1000)
+                count_pos_initialize = count_pos_initialize+1;
+                pos_initial = [pos_initial; txt_endLine];
+                if count_pos_initialize >= max_pos_initialize
+                    txt_endLine_last = mean(pos_initial);
+                    is_pos_initialized = true;
+                    disp('Position initialized!');
+                    pos_uwb_offset = txt_endLine_last - starting_grid * grid_w;
+                    txt_endLine_last = starting_grid * grid_w;
+                end
+                pos_uwb(:, step+1) = pos_uwb(:, step);
             end
-            pos_uwb(:, step+1) = pos_uwb(:, step);
         elseif  (is_pos_initialized && txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
-            %if (txt_endLine_new(1) ~= txt_endLine(1) || txt_endLine_new(2) ~= txt_endLine(2)) 
-                if norm(txt_endLine_new - txt_endLine) < 0.5
-                    line([txt_endLine_new(1) txt_endLine(1)]*100, [txt_endLine_new(2) txt_endLine(2)]*100);
-                    txt_endLine_new = txt_endLine;
-                    
-                    pos_uwb(:, step+1) = txt_endLine_new.'*0.8 + 0.2*pos_uwb(:, step);
+            if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
+                %txt_endLine_last
+                %txt_endLine
+                if norm(txt_endLine_last - txt_endLine) < 30
+                    line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
+                    txt_endLine_last = txt_endLine;
+                    pos_uwb(:, step+1) = txt_endLine_last.'*0.8 + 0.2*pos_uwb(:, step);
                 else
                     pos_uwb(:, step+1) = pos_uwb(:, step);
                 end
-            %end
+            else
+                pos_uwb(:, step+1) = pos_uwb(:, step);
+            end
+        else
+             pos_uwb(:, step+1) = pos_uwb(:, step);
         end
         
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
@@ -253,11 +271,13 @@ if ( strcmp( Algorithm, 'square_waypoint'))
            %heading(4) = heading(2);
         end
         
-        
+        %pos_uwb(:, step)
         % Robot Commands
-        char_command
-        writedata = char(char_command);
-        fwrite(arduino,writedata,'char');
+        %char_command
+        if (is_xbee_on)
+            writedata = char(char_command);
+            fwrite(arduino,writedata,'char');
+        end
         %readData = fscanf(arduino, '%c', 1)
         
         
