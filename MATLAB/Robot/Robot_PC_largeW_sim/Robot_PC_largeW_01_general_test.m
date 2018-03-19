@@ -87,10 +87,10 @@ grid_dhw = sqrt(2) / 2 * grid_w;
 
     for idx = 1: 10
         if (mod(idx, 4) == 1)
-            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 2];
+            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 5];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 1];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 4];
         end
         if (mod(idx, 4) == 2)
             Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 2];
