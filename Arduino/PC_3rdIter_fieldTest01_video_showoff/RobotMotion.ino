@@ -155,6 +155,14 @@ void CharInputMotion(){
           break;
       }
     }
+    if (secureShapeLinearActive){
+      if (counterSecureShape < counterSecureShapeMaxLinearount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
+      }
+    }
   }
   if (charInput == 'B')
   {  
@@ -178,6 +186,14 @@ void CharInputMotion(){
           break;
         case '0':
           break;
+      }
+    }
+    if (secureShapeLinearActive){
+      if (counterSecureShape < counterSecureShapeMaxLinearount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
       }
     }
   }
@@ -205,6 +221,14 @@ void CharInputMotion(){
           break;
       }
     }
+    if (secureShapeLinearActive){
+      if (counterSecureShape < counterSecureShapeMaxLinearount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
+      }
+    }
   }
   if (charInput == 'L')
   {  
@@ -228,6 +252,14 @@ void CharInputMotion(){
           break;
         case '0':
           break;
+      }
+    }
+    if (secureShapeLinearActive){
+      if (counterSecureShape < counterSecureShapeMaxLinearount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
       }
     }
   }
@@ -276,7 +308,14 @@ void CharInputMotion(){
               break;
           }
         }
-        secureShape(RobotForm);
+        if (secureShapeActive){
+          if (counterSecureShape < counterSecureShapeMaxCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
       }
       else if (reachTargetHeading( heading_filtered) == -1){
         for (char j = 0; j < 4; j ++){
@@ -297,7 +336,14 @@ void CharInputMotion(){
               break;
           }
         }
-        secureShape(RobotForm);
+        if (secureShapeActive){
+          if (counterSecureShape < counterSecureShapeMaxCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
       }
       else if (reachTargetHeading(heading_filtered) == 0){
          isRobotRotation = false;
@@ -309,7 +355,14 @@ void CharInputMotion(){
   }
   if (charInput == 'k')
   {
-    secureShape(RobotForm);
+    if (secureShapeActive){
+      if (counterSecureShape < counterSecureShapeMaxCount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
+      }
+    }
   }
   if (prevCharInput != charInput){
     isFinishRotation = false;

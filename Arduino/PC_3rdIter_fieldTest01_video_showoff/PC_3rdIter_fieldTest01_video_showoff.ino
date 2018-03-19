@@ -45,7 +45,18 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 //****************************************
 #define debugPrintActive true                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
-#define debugMotorActive true
+
+
+#define debugHerkulexSetupActive false
+#define debugHerkulexMotorActive false
+
+#define debugRoboclawSetupActive true
+#define debugRoboclawMotorActive true
+
+
+#define secureShapeActive true
+#define secureShapeLinearActive true
+
 #define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
 #define imuActive true
 
@@ -68,7 +79,9 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 
 #define timerSerialThreadPeriod 990  // The time interval between two input readings from serial port (ms)
 #define timerDebugThreadPeriod 1000  // The time interval for printing debug information to the serial port (ms)
-#define imuCalibrationTime 10000
+#define counterSecureShapeMaxCount 10  // The time interval for the Herkulex motor to switch on to secure robot shapes (ms)
+#define counterSecureShapeMaxLinearCount 20 
+#define imuCalibrationTime 10000     // Time for the IMU to calibrate in the beginning (ms)
 //****************************************
 ///////// Variables Declaration //////////
 //****************************************
@@ -77,6 +90,7 @@ int RobotForm;
 char charInput;
 char prevCharInput;
 
+int counterSecureShape;
 
 // timers
 unsigned long timerSerialThread;
@@ -109,6 +123,8 @@ void setup()
 { 
   Serial.begin(9600);
   RobotForm = 2;   // Default shape: square
+
+  counterSecureShape = 0;
   
   // IMU Setup
   if(imuActive){
@@ -128,13 +144,17 @@ void setup()
     imu.setSensors(INV_XYZ_COMPASS);
     imu.setCompassSampleRate(10); // Set mag rate to 10Hz
   }
-   roboclaw.begin(38400);
-   
-  // Robot Motors Setup
-  if (debugMotorSetupActive){
-   
-    
-    if (debugPrintActive) Serial.println("Setup Begin.");
+
+
+  // Roboclaw Setup
+  if (debugRoboclawSetupActive){
+    if (debugPrintActive) Serial.println("Roboclaw Setup Begin.");
+    roboclaw.begin(38400);
+  }
+  
+  // Herkulex Setup
+  if (debugHerkulexSetupActive){
+    if (debugPrintActive) Serial.println("Herkulex Setup Begin.");
     delay(2000);  //a delay to have time for serial monitor opening
     Herkulex.beginSerial1(115200); //open serial port 1
     Herkulex.reboot(p); //reboot first motor

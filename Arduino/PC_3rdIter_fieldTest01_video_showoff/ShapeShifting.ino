@@ -29,7 +29,7 @@ void secureShape(int form){
 
 void straight()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, -100, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, 98, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, 95, 1000, LED_BLUE); //move motor with 300 speed 
@@ -37,7 +37,7 @@ void straight()
 }
 void square()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, -101, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, -104, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, 93, 1000, LED_BLUE); //move motor with 300 speed 
@@ -45,7 +45,7 @@ void square()
 }
 void L_4th()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, -101, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, 98, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, -99, 1000, LED_BLUE); //move motor with 300 speed 
@@ -53,7 +53,7 @@ void L_4th()
 }
 void L_1st()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, 93, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, 98, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, 93, 1000, LED_BLUE); //move motor with 300 speed 
@@ -61,7 +61,7 @@ void L_1st()
 }
 void Z_1_4()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, 92, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, 98, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, -98, 1000, LED_BLUE); //move motor with 300 speed 
@@ -69,7 +69,7 @@ void Z_1_4()
 }
 void plus()
 {
-  if (debugMotorActive){
+  if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, 3, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, -105, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, -98, 1000, LED_BLUE); //move motor with 300 speed 
@@ -77,7 +77,7 @@ void plus()
 }
 void S_1_3()
 {
-   if (debugMotorActive){
+   if (debugHerkulexMotorActive){
     Herkulex.moveOneAngle(p, 92, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(q, -10, 1000, LED_BLUE); //move motor with 300 speed 
     Herkulex.moveOneAngle(r, 96, 1000, LED_BLUE); //move motor with 300 speed   
