@@ -15,8 +15,8 @@ int rp1 = 25;
 int rp2 = 24;
 int rp3 = 26;
 int rp4 = 27;
-int p = 1;
-int q = 2;
+int p = 2;
+int q = 1;
 int r = 219;//motor ID - verify your ID !!!!
 
 /*
@@ -47,8 +47,8 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define debugMotorSetupActive true           
 
 
-#define debugHerkulexSetupActive false
-#define debugHerkulexMotorActive false
+#define debugHerkulexSetupActive true
+#define debugHerkulexMotorActive true
 
 #define debugRoboclawSetupActive true
 #define debugRoboclawMotorActive true

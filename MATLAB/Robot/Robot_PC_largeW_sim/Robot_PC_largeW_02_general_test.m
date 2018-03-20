@@ -4,7 +4,7 @@ grid_w = 25;
 max_step = 20000;
 tol_wp = 10;
 tol_transform = pi/50;
-Dy_angv_transform = pi/4;
+Dy_angv_transform = pi/8;
 tol_heading = pi/7;
 
 cvg_sample_side = [20 20];
@@ -15,7 +15,7 @@ baudrate = 9600;
 
 is_heading_correction = false;
 is_coverage_map = false;
-is_calculate_coverage = false;
+is_calculate_coverage = true;
 is_wp_disappear_upon_reach = false;
 is_grid_on = true;
 is_xbee_on = false;
@@ -72,7 +72,7 @@ RobotShapes = [0 0 0 0 ;
                         -pi 0 0 0;
                         -pi 0 0 -pi;
                         -pi/2 0 pi 0;
-                        pi 0 pi pi*3/4];
+                        -pi/2 0 pi pi/2];
                     
 char_command = '';
 Cvg = [];
@@ -99,7 +99,7 @@ end
     for idx = 1: 10
         if (mod(idx, 4) == 1)
             Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 6];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 7];
             Wp = [Wp; (0.5+(grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 5];
             Wp = [Wp; (0.5+(grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 5];
         end
@@ -391,39 +391,41 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
         if(is_calculate_coverage)
             for cvg_idx = 1: numel(Cvg(:, 1))
-                for robidx = 1:4
-                    if (Cvg(cvg_idx, 3) == 0)
-                        tri1_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
-                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx)) ...
-                                      Cvg(cvg_idx, 1)];
-                        tri1_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
-                                      pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 2)];
-                        area1 = polyarea(tri1_x,tri1_y);
-                        tri2_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 1)];
-                        tri2_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
-                                      pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 2)];
-                        area2 = polyarea(tri1_x,tri1_y);
-                        tri3_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 - heading(robidx)) ...
-                                      Cvg(cvg_idx, 1)];
-                        tri3_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))  ...
-                                      pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 2)];
-                        area3 = polyarea(tri3_x,tri3_y);
-                        tri4_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 1)];
-                        tri4_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                      pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                      Cvg(cvg_idx, 2)];
-                        area4 =  polyarea(tri4_x,tri4_y);
-                        if area1 + area2 + area3 + area4 <= grid_w* grid_w + 0.1
-                            Cvg(cvg_idx,3) = 1;
-                            count_cvg_point = count_cvg_point+1;
+                if (abs(pos_center(2, :, step)-Cvg(cvg_idx, 1:2)) < 2.5*sqrt(2)*grid_w)
+                    for robidx = 1:4
+                        if (Cvg(cvg_idx, 3) == 0)
+                            tri1_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
+                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx)) ...
+                                          Cvg(cvg_idx, 1)];
+                            tri1_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
+                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 2)];
+                            area1 = polyarea(tri1_x,tri1_y);
+                            tri2_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
+                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 1)];
+                            tri2_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
+                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 2)];
+                            area2 = polyarea(tri1_x,tri1_y);
+                            tri3_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 - heading(robidx)) ...
+                                          Cvg(cvg_idx, 1)];
+                            tri3_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))  ...
+                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 2)];
+                            area3 = polyarea(tri3_x,tri3_y);
+                            tri4_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 1)];
+                            tri4_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
+                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+                                          Cvg(cvg_idx, 2)];
+                            area4 =  polyarea(tri4_x,tri4_y);
+                            if area1 + area2 + area3 + area4 <= grid_w* grid_w + 0.1
+                                Cvg(cvg_idx,3) = 1;
+                                count_cvg_point = count_cvg_point+1;
+                            end
                         end
                     end
                 end

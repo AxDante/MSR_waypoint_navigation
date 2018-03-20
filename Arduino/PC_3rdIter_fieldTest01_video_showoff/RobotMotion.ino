@@ -156,7 +156,7 @@ void CharInputMotion(){
       }
     }
     if (secureShapeLinearActive){
-      if (counterSecureShape < counterSecureShapeMaxLinearount){
+      if (counterSecureShape < counterSecureShapeMaxLinearCount){
         counterSecureShape += 1;
       }else{
         counterSecureShape = 0;
@@ -189,7 +189,7 @@ void CharInputMotion(){
       }
     }
     if (secureShapeLinearActive){
-      if (counterSecureShape < counterSecureShapeMaxLinearount){
+      if (counterSecureShape < counterSecureShapeMaxLinearCount){
         counterSecureShape += 1;
       }else{
         counterSecureShape = 0;
@@ -222,7 +222,7 @@ void CharInputMotion(){
       }
     }
     if (secureShapeLinearActive){
-      if (counterSecureShape < counterSecureShapeMaxLinearount){
+      if (counterSecureShape < counterSecureShapeMaxLinearCount){
         counterSecureShape += 1;
       }else{
         counterSecureShape = 0;
@@ -255,7 +255,7 @@ void CharInputMotion(){
       }
     }
     if (secureShapeLinearActive){
-      if (counterSecureShape < counterSecureShapeMaxLinearount){
+      if (counterSecureShape < counterSecureShapeMaxLinearCount){
         counterSecureShape += 1;
       }else{
         counterSecureShape = 0;
