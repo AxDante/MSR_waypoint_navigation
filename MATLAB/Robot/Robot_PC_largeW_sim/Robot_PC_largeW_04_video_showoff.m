@@ -2,7 +2,7 @@
 grid_size = [10 10];
 grid_w = 25;
 max_step = 20000;
-tol_wp = 10;
+tol_wp = 20;
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
 tol_heading = pi/7;
@@ -16,36 +16,42 @@ baudrate = 9600;
 is_heading_correction = false;
 is_coverage_map = false;
 is_calculate_coverage = true;
-is_wp_disappear_upon_reach = false;
+is_wp_disappear_upon_reach = true;
 is_grid_on = true;
-is_xbee_on = false;
+is_xbee_on = true;
 is_fixed_offset = true;
-is_streaming_on = false;
+is_streaming_on = true;
 
 
-fixed_offset = [96.5 -54.5];
+fixed_offset = [37.5-17.7 37.5-12.9];
 starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 1;
 
-time_interval = 5;
+time_interval = 50;
 
 max_pos_initialize = 5;
 
 %% Variable initialization
 
 
-heading = [0 0 pi pi];
+heading = zeros(4, max_step);
+heading(:, 1) = [0 0 pi pi];
 
 time_pause = time_interval/100;
 
-pos_uwb_offset = [0 -3];
+pos_uwb_offset = [0 0];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
 
 pos_center = zeros(4, 2, max_step);
 
-heading = zeros(4, max_step);
+if (is_streaming_on)
+    pos_uwb_offset = fixed_offset;
+end
+
+
+prev_char_command = 'S';
 
 Grid_setup = zeros(grid_size(1),  grid_size(2));
 Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
@@ -97,23 +103,44 @@ for idxx = 1:(cvg_sample_side(2)+1)
 end
 
     for idx = 1: 10
-        if (mod(idx, 4) == 1)
-            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 7];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 5];
-            Wp = [Wp; (0.5+(grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 5];
+        if (idx == 1)
+                Wp = [Wp; 1.5*grid_w  (idx+0.5)*grid_w 2];
+                Wp = [Wp; (1.5+(grid_size(2)-4)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
+                Wp = [Wp; (1.5+(grid_size(2)-4)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
         end
-        if (mod(idx, 4) == 2)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 2];
+        if (idx == 2)
+            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  1.5*grid_w 2];
         end
-        if (mod(idx, 4) == 3)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 2];
+        
+        if (idx == 3)
+            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  3.5*grid_w 2];
         end
-        if (mod(idx, 4) == 0)
-            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
+        
+        if (idx == 4 || idx == 6)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+        end
+        
+        if (idx == 5)
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
+        end
+        
+        if (idx == 6)
+            Wp = [Wp; 1.5*grid_w 7.5*grid_w 2];
+        end
+        
+        if (idx == 7)
+            Wp = [Wp; 1.5*grid_w 9.5*grid_w 2];
+            Wp = [Wp; 3.5*grid_w 9.5*grid_w 2];
+            Wp = [Wp; 5.5*grid_w 9.5*grid_w 2];
+            Wp = [Wp; 7.5*grid_w 9.5*grid_w 2];
         end
     end
 
@@ -176,9 +203,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             txt_endLine = txt_Streaming(end, 5:6);
             %txt_endLine = [txt_endLine(1)*100  txt_endLine(2)*100] - pos_uwb_offset;
             if (is_fixed_offset) 
-                txt_endLine = txt_endLine*100 + fixed_offset
+                txt_endLine;
+                txt_endLine = txt_endLine*100 + fixed_offset;
             end
-
             if (~is_pos_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
                 if (txt_endLine(1) < 1000 && txt_endLine(2) < 1000)
                     count_pos_initialize = count_pos_initialize+1;
@@ -196,7 +223,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
                     %txt_endLine_last
                     %txt_endLine
-                    if norm(txt_endLine_last - txt_endLine) < 30
+                    if norm(txt_endLine_last - txt_endLine) < 50
                         line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
                         txt_endLine_last = txt_endLine;
                         pos_uwb(:, step+1) = txt_endLine_last.'*0.8 + 0.2*pos_uwb(:, step);
@@ -244,8 +271,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
+            %TODO: U
              if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                if Wp(wp_current, 1) - pos_uwb(1, step) > 0
                     char_command = 'R';
                 else
                     char_command = 'L';
@@ -280,9 +308,16 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         %pos_uwb(:, step)
         % Robot Commands
         %char_command
+        
+        char_command
+        
         if (is_xbee_on)
-            writedata = char(char_command);
-            fwrite(arduino,writedata,'char');
+            if (char_command~= char(prev_char_command))
+                writedata = char(char_command);
+                fwrite(arduino,writedata,'char');
+                disp('sending:' + char_command);
+                prev_char_command = char_command;
+            end
         end
         %readData = fscanf(arduino, '%c', 1)
         
@@ -430,7 +465,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                 end
             end
-            count_cvg_point/ numel(Cvg(:, 1))
+            count_cvg_point/ numel(Cvg(:, 1));
         end
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])

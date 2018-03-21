@@ -15,8 +15,8 @@ int rp1 = 25;
 int rp2 = 24;
 int rp3 = 26;
 int rp4 = 27;
-int p = 2;
-int q = 1;
+int p = 5;
+int q = 3;
 int r = 219;//motor ID - verify your ID !!!!
 
 /*
@@ -54,6 +54,7 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define debugRoboclawMotorActive true
 
 
+
 #define secureShapeActive true
 #define secureShapeLinearActive true
 
@@ -76,6 +77,8 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define rotateAdjustPower 35 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
 #define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+
+#define transformSpeed 1500
 
 #define timerSerialThreadPeriod 990  // The time interval between two input readings from serial port (ms)
 #define timerDebugThreadPeriod 1000  // The time interval for printing debug information to the serial port (ms)

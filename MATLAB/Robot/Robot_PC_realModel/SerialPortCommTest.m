@@ -11,7 +11,7 @@ fclose(arduino)
 delete(arduino)
 clear arduino
 %}
-writeDataSeries = ['2' 'F' 'R' 'F' 'L' 'B' 'L' 'R'];
+writeDataSeries = ['2' '2' '2' 'F' 'R' 'F' 'L' 'B' 'L' 'R'];
 
 
 delete(instrfindall);
@@ -29,7 +29,6 @@ fopen(arduino);
     writedata= char(writeDataSeries(i));
     fwrite(arduino,writedata,'char')
     pause(2);
-    readData = fscanf(arduino, '%c', 1)
  end
 
  fclose(arduino);
