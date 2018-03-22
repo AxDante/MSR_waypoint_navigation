@@ -83,3 +83,4 @@ void S_1_3()
     Herkulex.moveOneAngle(r, 96, transformSpeed, LED_BLUE); //move motor with 300 speed   
   }
 }
+

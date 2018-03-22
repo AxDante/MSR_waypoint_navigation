@@ -47,11 +47,11 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define debugMotorSetupActive true           
 
 
-#define debugHerkulexSetupActive true
-#define debugHerkulexMotorActive true
+#define debugHerkulexSetupActive false
+#define debugHerkulexMotorActive false
 
-#define debugRoboclawSetupActive true
-#define debugRoboclawMotorActive true
+#define debugRoboclawSetupActive false
+#define debugRoboclawMotorActive false
 
 
 
@@ -145,6 +145,7 @@ void setup()
     }
     // Only enabling magnetometer readings from the IMU sensors
     imu.setSensors(INV_XYZ_COMPASS);
+    imu.setLPF(5); // Set LPF corner frequency to 5Hz
     imu.setCompassSampleRate(10); // Set mag rate to 10Hz
   }
 
@@ -218,4 +219,5 @@ void loop() {
     }
   }
 }
+
 

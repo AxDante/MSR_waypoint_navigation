@@ -35,7 +35,7 @@ void debugPrint(){
   Serial.println("Time: " + String(millis()/1000) + "s");
   Serial.println("Char Input: " + String(charInput));
   Serial.println("Current Shape: " + String(S_Shape[RobotForm-1]));
-  //Serial.println(" (Debug) mx:" + String(magX) + "my:" + String(magY);
+  Serial.println(" (Debug) mx:" + String(magX) + "my:" + String(magY));
   Serial.println("Heading_raw: " + String(heading_raw) +  "deg,  Heading_cal: " + String(heading_filtered)+ " deg");
   if (isRobotRotation || isRobotRotationAdjust){
     Serial.println("degToTurn:" + String(degreeToPos));
@@ -67,3 +67,4 @@ void threadSerial()
 
   }
 }
+

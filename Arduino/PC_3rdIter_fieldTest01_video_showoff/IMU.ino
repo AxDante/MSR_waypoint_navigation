@@ -1,8 +1,8 @@
 // IMU Data collected here (only magnetometer values).
 void imuRead()
 {  
-   magX = imu.calcMag(imu.mx);
-   magY = imu.calcMag(imu.my);
+   magX = imu.calcMag(imu.mx) ;
+   magY = imu.calcMag(imu.my) ;
 
   // Converting the compass readings to degrees.
   heading_raw = atan2(magY,magX)*rad_to_deg*2;
