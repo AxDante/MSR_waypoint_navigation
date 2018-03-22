@@ -31,14 +31,14 @@ char* M_Backward[] = {"bbbb", "bbff", "bbbf", "fbbb", "fbbf", "lbfb", "lbfr"};
 char* M_Right[] = {"rrrr", "rrll", "rrrl", "lrrr", "lrrl", "brlr", "brlf"};
 char* M_Left[] = {"llll", "llrr", "lllr", "rlll", "rllr", "flrl", "flrb"};
 
-char* R_RightTurn[] = {"rrll", "rbrb", "rflf", "brbl", "brlf", "bbrf", "bbrl"};
-char* R_LeftTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "fflr"};
+char* R_LeftTurn[] = {"rrll", "rbrb", "rflf", "brbl", "brlf", "bbrf", "bbrl"};
+char* R_RightTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "fflr"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 
 String stringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
-float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize its initial position)
+float worldRobotTargetHeading = 30.0; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
@@ -47,11 +47,11 @@ float worldRobotTargetHeading = 180.0; //(for robotMode 3 or 4, which recognize 
 #define debugMotorSetupActive true           
 
 
-#define debugHerkulexSetupActive false
-#define debugHerkulexMotorActive false
+#define debugHerkulexSetupActive true
+#define debugHerkulexMotorActive true
 
-#define debugRoboclawSetupActive false
-#define debugRoboclawMotorActive false
+#define debugRoboclawSetupActive true
+#define debugRoboclawMotorActive true
 
 
 

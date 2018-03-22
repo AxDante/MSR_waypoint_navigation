@@ -1,5 +1,5 @@
 %% Variable Setup
-grid_size = [10 10];
+grid_size = [15 15];
 grid_w = 25;
 max_step = 20000;
 tol_wp = 10;
