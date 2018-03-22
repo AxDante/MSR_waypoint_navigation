@@ -30,57 +30,57 @@ void secureShape(int form){
 void straight()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, -100, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, 98, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, 95, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, -98, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, 95, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, 110, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void square()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, -101, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, -104, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, 93, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, -97, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, -107, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, 110, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void L_4th()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, -101, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, 98, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, -99, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, -98, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, 97, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, -80, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void L_1st()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, 93, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, 98, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, 93, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, 95, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, 97, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, 110, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void Z_1_4()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, 92, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, 98, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, -98, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, 95, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, 97, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, -80, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void plus()
 {
   if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, 3, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, -105, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, -98, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(p, 6, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, -107, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, -80, transformSpeed, LED_BLUE); //move motor with 300 speed 
   }
 }
 void S_1_3()
 {
    if (debugHerkulexMotorActive){
-    Herkulex.moveOneAngle(p, 92, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(q, -10, transformSpeed, LED_BLUE); //move motor with 300 speed 
-    Herkulex.moveOneAngle(r, 96, transformSpeed, LED_BLUE); //move motor with 300 speed   
+    Herkulex.moveOneAngle(p, 95, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(q, -8, transformSpeed, LED_BLUE); //move motor with 300 speed 
+    Herkulex.moveOneAngle(r, 110, transformSpeed, LED_BLUE); //move motor with 300 speed   
   }
 }
 

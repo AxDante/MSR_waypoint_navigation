@@ -15,8 +15,8 @@ int rp1 = 25;
 int rp2 = 24;
 int rp3 = 26;
 int rp4 = 27;
-int p = 5;
-int q = 3;
+int p = 2;
+int q = 1;
 int r = 219;//motor ID - verify your ID !!!!
 
 /*
