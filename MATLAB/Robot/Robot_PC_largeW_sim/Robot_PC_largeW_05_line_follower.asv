@@ -1,8 +1,12 @@
 %% Variable Setup
+
 grid_size = [15 15];
 grid_w = 25;
 max_step = 20000;
-tol_wp = 10;
+
+tol_wp = 15;                    
+tol_line_width = 6;
+
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
 tol_heading = pi/7;
@@ -14,7 +18,7 @@ Serial_port = 'COM12';
 baudrate = 9600;
 
 is_heading_correction = false;
-is_coverage_map = false;
+is_coverage_map = true;
 is_calculate_coverage = true;
 is_display_coverage = true;
 is_wp_disappear_upon_reach = false;
@@ -24,6 +28,7 @@ is_fixed_offset = true;
 is_streaming_on = false;
 is_streaming_collect_single_values = true;
 
+navigation_mode = 'Line';
 
 streaming_max_single_val = 1000;                % unit: cm
 streaming_max_shift_dis = 25;                      % unit: cm 
@@ -86,21 +91,23 @@ RobotShapes = [0 0 0 0 ;
                         -pi 0 0 -pi;
                         -pi/2 0 pi 0;
                         -pi/2 0 pi pi/2];
-                    
+       
 for idx = 1:3
     RobotShapes = [RobotShapes; RobotShapes + pi/2*idx];
 end
                     
+%                                    Robot Shapes
+%   =====================================
 %         s01     s02      s03     s04      s05        s06       s07
-%   ----------------------------------------------------------------------
+%   -----------------------------------------------------------------
 %
 %          4                  4 3       4
 %          3       2 3       2         3       4 3        2 3 4     2 3
 %          2       1 4       1       1 2         2 1        1           1 4
 %          1                      
-
-%         s08           s010          s11         s12       s13      s14
-%   ----------------------------------------------------------------------
+%
+%         s08           s010         s11        s12       s13      s14
+%   -----------------------------------------------------------------
 %
 %                        1 2 4        1              4         2            2
 %       1 2 3 4            3         2 3 4      2 3      1 3         1 3
@@ -109,7 +116,6 @@ end
 
 Char_command_array = ['R', 'F', 'L', 'B'];
 heading_command_compensate = 0;
-
 
 char_command = '';
 Cvg = [];
@@ -133,7 +139,27 @@ for idxx = 1:(cvg_sample_side(2)+1)
     end
 end
 
-    for idx = 1: 10
+%% Waypoint Generation
+
+if (strcmp(navigation_mode,'Line'))
+    disp('Generating robot routes...')
+    for idx = 1: grid_size(1)
+        if (mod(idx, 4) == 1)
+            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
+        end
+        if (mod(idx, 4) == 2)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 1];
+        end
+        if (mod(idx, 4) == 3)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2];
+        end
+        if (mod(idx, 4) == 0)
+            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
+        end
+    end
+elseif (strcmp(navigation_mode,'Point'))
+    disp('Generating waypoints...')
+    for idx = 1: grid_size(1)
         if (mod(idx, 4) == 1)
             Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
             Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 25];
@@ -153,6 +179,11 @@ end
             Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
         end
     end
+else
+    disp('Navigation method is invalid.')
+    disp('Terminating Matlab script...')
+    return
+end
 
 %% DRAW MAP
 figure(1)
@@ -167,7 +198,7 @@ txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
-
+tic
 if ( strcmp( Algorithm, 'square_waypoint'))
     
     % Algorithm Setup
@@ -271,12 +302,11 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 delete(Circle_Wp(wp_current));
             end
             wp_current = wp_current + 1;
-            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
             % Break condition
             if wp_current > size(Wp,1)
                 break;
             end
-            
+            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
         end
         
         % Transformation
@@ -307,19 +337,42 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
-             if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                    char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+            if (strcmp(navigation_mode,'Point'))
+                if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                    end
                 else
-                    char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                    end
                 end
-            else
-                if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                    char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+            elseif (strcmp(navigation_mode,'Line'))
+                if Dis_point_line([pos_uwb(: , step) 0], [Wp(wp_current, 1:2) 0], [Wp(wp_current-1, 1:2) 0]) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                
+                if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                    end
                 else
-                    char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                    end
                 end
-             end
+                
+                
+                
+                
+                
+            end
             
             %[Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
             
@@ -501,13 +554,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
     end
 end
 
-disp('===================');
-disp('Route Completed!');
 
-if (is_calculate_coverage)
-    disp(['Final Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
-end
 if (is_xbee_on)
      writedata = char('S');
      fwrite(arduino,writedata,'char');
+end
+
+disp('===================');
+disp('Robot Navigation Completed!');
+toc
+if (is_calculate_coverage)
+    disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
 end

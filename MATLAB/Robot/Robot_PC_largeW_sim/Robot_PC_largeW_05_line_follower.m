@@ -1,8 +1,12 @@
 %% Variable Setup
-grid_size = [10 10];
+
+grid_size = [15 15];
 grid_w = 25;
 max_step = 20000;
-tol_wp = 15;
+
+tol_wp = 15;                    
+tol_line_width = 6;
+
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
 tol_heading = pi/7;
@@ -14,44 +18,52 @@ Serial_port = 'COM12';
 baudrate = 9600;
 
 is_heading_correction = false;
-is_coverage_map = false;
+is_coverage_map = true;
 is_calculate_coverage = true;
-is_wp_disappear_upon_reach = true;
+is_display_coverage = true;
+is_wp_disappear_upon_reach = false;
 is_grid_on = true;
-is_xbee_on = true;
+is_xbee_on = false;
 is_fixed_offset = true;
-is_streaming_on = true;
+is_streaming_on = false;
+is_streaming_collect_single_values = true;
+
+navigation_mode = 'Line';
+
+streaming_max_single_val = 1000;                % unit: cm
+streaming_max_shift_dis = 25;                      % unit: cm 
+streaming_max_shift_dis_single_value = 20;   % unit: cm
 
 
-fixed_offset = [37.5-17.7 37.5-12.9];
+update_rate_streaming = 0.4;                      
+update_rate_streaming_single_value = 0.4; 
+update_rate_simulation = 0.2;
+
+noise_simulation_linear = 20;                        %unit: cm
+
+fixed_offset = [96.5 -54.5];
 starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 1;
 
-time_interval = 50;
+time_interval = 5;
 
 max_pos_initialize = 5;
 
 %% Variable initialization
 
 
-heading = zeros(4, max_step);
-heading(:, 1) = [0 0 pi pi];
+heading = [0 0 pi pi];
 
 time_pause = time_interval/100;
 
-pos_uwb_offset = [0 0];
+pos_uwb_offset = [0 -3];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
 
 pos_center = zeros(4, 2, max_step);
 
-if (is_streaming_on)
-    pos_uwb_offset = fixed_offset;
-end
-
-
-prev_char_command = 'S';
+heading = zeros(4, max_step);
 
 Grid_setup = zeros(grid_size(1),  grid_size(2));
 Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
@@ -72,14 +84,39 @@ Line_Robot_area = [];
 Line_Border = [];
 loc_center = [0 0];
 
-RobotShapes = [0 0 0 0 ;
+RobotShapes = [0 0 0 0 ;              
                         0 0 pi pi;
                         0 0 0 -pi;
                         -pi 0 0 0;
                         -pi 0 0 -pi;
                         -pi/2 0 pi 0;
                         -pi/2 0 pi pi/2];
+       
+for idx = 1:3
+    RobotShapes = [RobotShapes; RobotShapes + pi/2*idx];
+end
                     
+%                                    Robot Shapes
+%   =====================================
+%         s01     s02      s03     s04      s05        s06       s07
+%   -----------------------------------------------------------------
+%
+%          4                  4 3       4
+%          3       2 3       2         3       4 3        2 3 4     2 3
+%          2       1 4       1       1 2         2 1        1           1 4
+%          1                      
+%
+%         s08           s010         s11        s12       s13      s14
+%   -----------------------------------------------------------------
+%
+%                        1 2 4        1              4         2            2
+%       1 2 3 4            3         2 3 4      2 3      1 3         1 3
+%                                                     1           4         4
+%  
+
+Char_command_array = ['R', 'F', 'L', 'B'];
+heading_command_compensate = 0;
+
 char_command = '';
 Cvg = [];
 count_cvg_point = 0;
@@ -102,47 +139,51 @@ for idxx = 1:(cvg_sample_side(2)+1)
     end
 end
 
-    for idx = 1: 10
-        if (idx == 1)
-                Wp = [Wp; 1.5*grid_w  (idx+0.5)*grid_w 2];
-                Wp = [Wp; (1.5+(grid_size(2)-4)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
-                Wp = [Wp; (1.5+(grid_size(2)-4)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
+%% Waypoint Generation
+
+if (strcmp(navigation_mode,'Line'))
+    disp('Generating robot routes...')
+    for idx = 1: grid_size(1)
+        if (mod(idx, 4) == 1)
+            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
         end
-        if (idx == 2)
-            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  1.5*grid_w 2];
+        if (mod(idx, 4) == 2)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 1];
         end
-        
-        if (idx == 3)
-            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  3.5*grid_w 2];
+        if (mod(idx, 4) == 3)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2];
         end
-        
-        if (idx == 4 || idx == 6)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-        end
-        
-        if (idx == 5)
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
-        end
-        
-        if (idx == 6)
-            Wp = [Wp; 1.5*grid_w 7.5*grid_w 2];
-        end
-        
-        if (idx == 7)
-            Wp = [Wp; 1.5*grid_w 9.5*grid_w 2];
-            Wp = [Wp; 3.5*grid_w 9.5*grid_w 2];
-            Wp = [Wp; 5.5*grid_w 9.5*grid_w 2];
-            Wp = [Wp; 7.5*grid_w 9.5*grid_w 2];
+        if (mod(idx, 4) == 0)
+            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
         end
     end
+elseif (strcmp(navigation_mode,'Point'))
+    disp('Generating waypoints...')
+    for idx = 1: grid_size(1)
+        if (mod(idx, 4) == 1)
+            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 25];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 8];
+            Wp = [Wp; (0.5+(grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 9];
+        end
+        if (mod(idx, 4) == 2)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 21];
+        end
+        if (mod(idx, 4) == 3)
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx+0.5)*grid_w 11];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx+0.5)*grid_w 13];
+            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx+0.5)*grid_w 5];
+        end
+        if (mod(idx, 4) == 0)
+            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
+        end
+    end
+else
+    disp('Navigation method is invalid.')
+    disp('Terminating Matlab script...')
+    return
+end
 
 %% DRAW MAP
 figure(1)
@@ -157,7 +198,7 @@ txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
-
+tic
 if ( strcmp( Algorithm, 'square_waypoint'))
     
     % Algorithm Setup
@@ -172,6 +213,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
 
     % Algorithm Main Loop
     for step = 1:max_step
+        
         
         % Pause function
         pause(time_pause);
@@ -201,14 +243,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             fclose(fid);
             txt_rows=size(txt_Streaming,1);
             txt_endLine = txt_Streaming(end, 5:6);
-            %txt_endLine = [txt_endLine(1)*100  txt_endLine(2)*100] - pos_uwb_offset;
+            
             if (is_fixed_offset) 
-                txt_endLine;
-                txt_endLine = txt_endLine*100 + fixed_offset;
+                txt_endLine = txt_endLine*100 + fixed_offset
             end
+            
+            % Initialize starting position
             if (~is_pos_initialized && (txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2))))
-                if (txt_endLine(1) < 1000 && txt_endLine(2) < 1000)
-                    count_pos_initialize = count_pos_initialize+1;
+                if (txt_endLine(1) < streaming_max_single_val && txt_endLine(2) < streaming_max_single_val)
+                    count_pos_initialize = count_pos_initialize + 1;
                     pos_initial = [pos_initial; txt_endLine];
                     if count_pos_initialize >= max_pos_initialize
                         txt_endLine_last = mean(pos_initial);
@@ -219,14 +262,29 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                     pos_uwb(:, step+1) = pos_uwb(:, step);
                 end
-            elseif  (is_pos_initialized && txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
-                if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
-                    %txt_endLine_last
-                    %txt_endLine
-                    if norm(txt_endLine_last - txt_endLine) < 150
-                        line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
-                        txt_endLine_last = txt_endLine;
-                        pos_uwb(:, step+1) = txt_endLine_last.'*0.8 + 0.2*pos_uwb(:, step);
+            elseif  (is_pos_initialized)
+                % Streaming with Dashboard data
+                if (~is_streaming_collect_single_values && txt_endLine(1) ~= 0 &&  ~isnan(txt_endLine(1))  &&  txt_endLine(2) ~= 0 &&  ~isnan(txt_endLine(2)) )
+                    if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
+                        if norm(txt_endLine_last - txt_endLine) < streaming_max_shift_dis
+                            line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
+                            txt_endLine_last = txt_endLine;
+                            pos_uwb(:, step+1) = (1 - update_rate_streaming) * txt_endLine_last.' + update_rate_streaming * pos_uwb(:, step);
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
+                        end
+                    else
+                        pos_uwb(:, step+1) = pos_uwb(:, step);
+                    end
+                elseif (is_streaming_collect_single_values && txt_endLine(1) ~= 0  && txt_endLine(2) ~= 0 && (~isnan(txt_endLine(1)) || ~isnan(txt_endLine(2))))
+                    if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
+                            if norm(txt_endLine_last - txt_endLine) < streaming_max_shift_dis_single_value
+                            line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
+                            txt_endLine_last = txt_endLine;
+                            pos_uwb(:, step+1) = (1 - update_rate_streaming_single_value) * txt_endLine_last.' + update_rate_streaming_single_value * pos_uwb(:, step);
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
+                        end
                     else
                         pos_uwb(:, step+1) = pos_uwb(:, step);
                     end
@@ -234,17 +292,24 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     pos_uwb(:, step+1) = pos_uwb(:, step);
                 end
             else
-                 pos_uwb(:, step+1) = pos_uwb(:, step);
+                pos_uwb(:, step+1) = pos_uwb(:, step);
             end
         end
         
+        % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_wp_disappear_upon_reach)
                 delete(Circle_Wp(wp_current));
             end
             wp_current = wp_current + 1;
+            % Break condition
+            if wp_current > size(Wp,1)
+                break;
+            end
+            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
         end
         
+        % Transformation
         is_require_transform = false;
         for rbtidx = 1:4
             if abs(heading(rbtidx) - RobotShapes(Wp(wp_current, 3),rbtidx)) > tol_transform
@@ -259,6 +324,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             is_transforming = false;
         end
         
+        % Robot Motion
         if (~is_pos_initialized && is_streaming_on)
             pos_uwb(:, step+1) = pos_uwb(:, step);
         elseif (is_transforming)
@@ -271,27 +337,50 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
-            %TODO: Improve algorothm
-             if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                if Wp(wp_current, 1) - pos_uwb(1, step) > 0
-                    char_command = 'R';
+            if (strcmp(navigation_mode,'Point'))
+                if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                    end
                 else
-                    char_command = 'L';
+                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                    end
                 end
-            else
-                if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                    char_command = 'F';
+            elseif (strcmp(navigation_mode,'Line'))
+                if Dis_point_line([pos_uwb(: , step) 0], [Wp(wp_current, 1:2) 0], [Wp(wp_current-1, 1:2) 0]) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                
+                if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                    end
                 else
-                    char_command = 'B';
+                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                        char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                    else
+                        char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                    end
                 end
-             end
+                
+                
+                
+                
+                
+            end
             
             %[Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
             
             if (~is_streaming_on)
                 [Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
-                pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+...
-                                            0.2* (pos_uwb(:, step) + rand * 10 - 5) + 0.8* pos_uwb(:, step);
+                pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+ ...
+                                                update_rate_simulation* (pos_uwb(:, step) + rand(2,1) * noise_simulation_linear - noise_simulation_linear/2.0)...
+                                               + (1-update_rate_simulation)* pos_uwb(:, step);
             end
             
             %pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+...
@@ -305,26 +394,19 @@ if ( strcmp( Algorithm, 'square_waypoint'))
            %heading(4) = heading(2);
         end
         
-        %pos_uwb(:, step)
+        
+        % Xbee Communication
+        
+        % pos_uwb(:, step)
         % Robot Commands
-        %char_command
-        
-        char_command
-        
+        % char_command
         if (is_xbee_on)
-            if (char_command~= char(prev_char_command))
-                writedata = char(char_command);
-                fwrite(arduino,writedata,'char');
-                disp('sending:' + char_command);
-                prev_char_command = char_command;
-            end
+            writedata = char(char_command);
+            fwrite(arduino,writedata,'char');
         end
         %readData = fscanf(arduino, '%c', 1)
         
         
-        % update uwb here
-        %pos_uwb(1, step+1) = pos_uwb(1, step) + (1+ 0.1* step)* sin(step / 5);
-        %pos_uwb(2, step+1) = pos_uwb(2, step) + (1+ 0.08* step)* cos(step / 5);
         
         % calibrate pos here
         pos_x = pos_uwb(1,step);
@@ -341,7 +423,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border = [];
         
         % Draw Robot
-        
         pos_center(2,:, step) = [pos_x pos_y];
         pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
                                    [sin(pi/4 - heading(2))-cos(pi/4 - heading(1)) ...
@@ -365,7 +446,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                                     cos(-pi/4 + heading(3))+cos(pi/4 + heading(4))]; 
         
 
-        
         % plot robot BG
         if (is_coverage_map == 1)
             for robidx = 1:4
@@ -465,10 +545,24 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                 end
             end
-            count_cvg_point/ numel(Cvg(:, 1));
+            if (is_display_coverage)
+                disp(['Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
+            end
         end
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])
-        
     end
+end
+
+
+if (is_xbee_on)
+     writedata = char('S');
+     fwrite(arduino,writedata,'char');
+end
+
+disp('===================');
+disp('Robot Navigation Completed!');
+toc
+if (is_calculate_coverage)
+    disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
 end
