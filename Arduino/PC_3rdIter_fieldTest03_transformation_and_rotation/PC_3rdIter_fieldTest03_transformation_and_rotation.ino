@@ -31,19 +31,19 @@ char* M_Backward[] = {"bbbb", "bbff", "bbbf", "fbbb", "fbbf", "lbfb", "lbfr"};
 char* M_Right[] = {"rrrr", "rrll", "rrrl", "lrrr", "lrrl", "brlr", "brlf"};
 char* M_Left[] = {"llll", "llrr", "lllr", "rlll", "rllr", "flrl", "flrb"};
 
-char* R_LeftTurn[] = {"rrll", "rbrb", "rflf", "brbl", "brlf", "bbrf", "bbrl"};
-char* R_RightTurn[] = {"llrr", "lflf", "lbrb", "flfr", "flrb", "fflb", "fflr"};
+char* R_LeftTurn[] = {"rrll", "rbrb", "rrll", "lrll", "brlf", "bbrf", "bbrl"};
+char* R_RightTurn[] = {"llrr", "lflf", "llrl", "rlrr", "flrb", "fflb", "fflr"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 
 String stringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
-float worldRobotTargetHeading = -56.0; //(for robotMode 3 or 4, which recognize its initial position)
+float worldRobotTargetHeading = -55.0; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive true                 // Printing Debug information on Serial Port
+#define debugPrintActive false                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 
@@ -72,11 +72,11 @@ float worldRobotTargetHeading = -56.0; //(for robotMode 3 or 4, which recognize 
                                               // and perform rotations based on it; while set false, the initial heading can be either given
                                               // in advance or be set through serial ports.
 
-#define linearPower 45  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
+#define linearPower 43  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
 #define rotatePower 58  // Power provided to DC motors during robot rotation (r, l) (max: 128)
-#define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
+#define rotateAdjustPower 50 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
-#define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+#define angleTolerance 8  // Angle tolerance for robot rotation (+- degree away from targeted heading)
 
 #define transformSpeed 1500
 

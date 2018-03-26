@@ -6,8 +6,8 @@ grid_size = [10 10];
 grid_w = 25;
 max_step = 20000;
 
-tol_wp = 12;                    
-tol_line_width = 8;
+tol_wp = 15;                    
+tol_line_width = 10;
 
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
@@ -28,7 +28,7 @@ is_display_route_clearing = true;
 is_display_grid_on = true;
 is_print_coverage = false;
 is_print_route_deviation = true;
-is_xbee_on = false;
+is_xbee_on = true;
 is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
@@ -49,7 +49,7 @@ update_rate_sim = 0.2;
 
 sim_noise_normal = 20;                        %unit: cm
 sim_noise_large_y_frequency = 0.05;
-sim_noise_large_y = 500;
+sim_noise_large_y = 50;
 
 fixed_offset = [96.5 -54.5];
 starting_grid = [1 2];
@@ -81,6 +81,8 @@ Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
 Grid_visited =  zeros(grid_size(1),  grid_size(2), max_step);
 robot_Grid = [];
 
+prev_char_command = 'S';
+command_count = 1;
 
 Dy_force = zeros(4, 2, max_step);
 Dy_a = zeros(4, 2, max_step);
@@ -168,17 +170,17 @@ if (strcmp(navigation_mode,'Line'))
             if (idx == 1)
                 Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1 1];
             else
-                Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1 0];
+                Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)+0.5)*grid_w 1 0];
             end
         end
         if (mod(idx, 4) == 2)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 1 0];
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx+floor(idx/2)-1.5)*grid_w 2 0];
         end
         if (mod(idx, 4) == 3)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2 0];
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+floor(idx/2)-0.5)*grid_w 2 0];
         end
         if (mod(idx, 4) == 0)
-            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2 0];
+            Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)-2.5)*grid_w 1 0];
         end
     end
 elseif (strcmp(navigation_mode,'Point'))
@@ -325,6 +327,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                             else
                                 pos_uwb(:, step+1) = pos_uwb(:, step);
                             end
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
                         end
                     else
                         pos_uwb(:, step+1) = pos_uwb(:, step);
@@ -479,8 +483,19 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         % Xbee Communication
         char_command
         if (is_xbee_on)
-            writedata = char(char_command);
-            fwrite(arduino,writedata,'char');
+            if (char_command~= char(prev_char_command))
+                writedata = char(char_command);
+                fwrite(arduino,writedata,'char');
+                prev_char_command = char_command;
+                command_count = 0;
+            elseif (command_count >= 15)
+                writedata = char(char_command);
+                fwrite(arduino,writedata,'char');
+                prev_char_command = char_command;
+                command_count = 0;
+            else
+                command_count = command_count + 1;
+            end
         end
         %readData = fscanf(arduino, '%c', 1)
         

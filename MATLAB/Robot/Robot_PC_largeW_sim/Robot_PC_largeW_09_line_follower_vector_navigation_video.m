@@ -6,8 +6,8 @@ grid_size = [10 10];
 grid_w = 25;
 max_step = 20000;
 
-tol_wp = 12;                    
-tol_line_width = 8;
+tol_wp = 18;                    
+tol_line_width = 12;
 
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
@@ -27,8 +27,8 @@ is_display_route = true;
 is_display_route_clearing = true;
 is_display_grid_on = true;
 is_print_coverage = false;
-is_print_route_deviation = true;
-is_xbee_on = false;
+is_print_route_deviation = false;
+is_xbee_on = true;
 is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
@@ -49,7 +49,7 @@ update_rate_sim = 0.2;
 
 sim_noise_normal = 20;                        %unit: cm
 sim_noise_large_y_frequency = 0.05;
-sim_noise_large_y = 500;
+sim_noise_large_y = 50;
 
 fixed_offset = [96.5 -54.5];
 starting_grid = [1 2];
@@ -58,7 +58,7 @@ robot_Form = 1;
 
 time_interval = 2;
 
-max_pos_initialize = 15;
+max_pos_initialize = 10;
 
 %% Variable initialization
 
@@ -81,6 +81,8 @@ Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
 Grid_visited =  zeros(grid_size(1),  grid_size(2), max_step);
 robot_Grid = [];
 
+prev_char_command = 'S';
+command_count = 1;
 
 Dy_force = zeros(4, 2, max_step);
 Dy_a = zeros(4, 2, max_step);
@@ -166,19 +168,19 @@ if (strcmp(navigation_mode,'Line'))
     for idx = 1: grid_size(1)
         if (mod(idx, 4) == 1)
             if (idx == 1)
-                Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1 1];
+                Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 1];
             else
-                Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 1 0];
+                Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)+0.5)*grid_w 2 0];
             end
         end
         if (mod(idx, 4) == 2)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 1 0];
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx+floor(idx/2)-1.5)*grid_w 2 0];
         end
         if (mod(idx, 4) == 3)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2 0];
+            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+floor(idx/2)-0.5)*grid_w 1 0];
         end
         if (mod(idx, 4) == 0)
-            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2 0];
+            Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)-2.5)*grid_w 1 0];
         end
     end
 elseif (strcmp(navigation_mode,'Point'))
@@ -314,6 +316,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                             else
                                 pos_uwb(:, step+1) = pos_uwb(:, step);
                             end
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
                         end
                     elseif(~isnan(txt_endLine(2)))
                         if (txt_endLine_last(2) ~= txt_endLine(2))
@@ -325,6 +329,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                             else
                                 pos_uwb(:, step+1) = pos_uwb(:, step);
                             end
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
                         end
                     else
                         pos_uwb(:, step+1) = pos_uwb(:, step);
@@ -358,11 +364,22 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         for rbtidx = 1:4
             if abs(heading(rbtidx) - RobotShapes(Wp(wp_current, 3),rbtidx)) > tol_transform
                 is_require_transform = true;
+
             end
         end
+       
         
         if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
             is_transforming = true;
+                if (is_xbee_on)
+                     if (char_command~= char(prev_char_command))
+                        writedata = char(num2str(Wp(wp_current, 3)));
+                        fwrite(arduino,writedata,'char');
+                        prev_char_command = char(num2str(Wp(wp_current, 3)));
+                        disp(['sending: ' , num2str(Wp(wp_current, 3))])
+                        command_count = 0;
+                    end
+                end
         else 
             robot_Form = Wp(wp_current, 3);
             is_transforming = false;
@@ -477,10 +494,23 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
         
         % Xbee Communication
-        char_command
+        
         if (is_xbee_on)
-            writedata = char(char_command);
-            fwrite(arduino,writedata,'char');
+            if (char_command~= char(prev_char_command))
+                writedata = char(char_command);
+                fwrite(arduino,writedata,'char');
+                prev_char_command = char_command;
+                disp(['sending: ' , char_command])
+                command_count = 0;
+            elseif (command_count >= 15)
+                writedata = char(char_command);
+                fwrite(arduino,writedata,'char');
+                prev_char_command = char_command;
+                disp(['sending: ' , char_command])
+                command_count = 0;
+            else
+                command_count = command_count + 1;
+            end
         end
         %readData = fscanf(arduino, '%c', 1)
         
