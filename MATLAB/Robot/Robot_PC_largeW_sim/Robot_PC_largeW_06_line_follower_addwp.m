@@ -2,7 +2,7 @@
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')
 
-grid_size = [15 15];
+grid_size = [8 8];
 grid_w = 25;
 max_step = 20000;
 
@@ -31,7 +31,7 @@ is_print_coverage = false;
 is_print_route_deviation = true;
 is_xbee_on = false;
 is_fixed_offset = true;
-is_sim_noise_on= true;
+is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = true;
 is_streaming_on = false;
 is_streaming_collect_single_values = true;
@@ -45,16 +45,19 @@ streaming_max_shift_dis_single_value = 20;   % unit: cm
 
 update_rate_streaming = 0.4;                      
 update_rate_streaming_single_value = 0.4; 
-update_rate_simulation = 0.2;
+update_rate_sim = 0.2;
 
-noise_simulation_linear = 20;                        %unit: cm
+sim_noise_normal = 20;                        %unit: cm
+sim_noise_large_y_frequency = 0.05;
+sim_noise_large_y = 500;
+
 
 fixed_offset = [96.5 -54.5];
 starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 1;
 
-time_interval = 3;
+time_interval = 2;
 
 max_pos_initialize = 5;
 
@@ -76,6 +79,8 @@ pos_center = zeros(4, 2, max_step);
 Grid_setup = zeros(grid_size(1),  grid_size(2));
 Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
 Grid_visited =  zeros(grid_size(1),  grid_size(2), max_step);
+robot_Grid = [];
+
 
 Dy_force = zeros(4, 2, max_step);
 Dy_a = zeros(4, 2, max_step);
@@ -313,6 +318,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
         end
         
+        % Grid Location
+        robot_Grid = [floor(pos_uwb(1, step)/grid_w) floor(pos_uwb(2, step)/grid_w)];
         
         % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
@@ -404,7 +411,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         end
                     else
                         if (is_print_route_deviation)
-                            disp(['Time:', num2str(toc), 's;  Track deviation: ', num2str(route_deviation), 'cm.' ]);
+                            disp(['Time:', num2str(round(toc,2)), 's; Grid: (', num2str(robot_Grid(1)), ',' num2str(robot_Grid(2)), ...
+                                    '); Track deviation: ', num2str(round(route_deviation,2)), 'cm.' ]);
                         end
 
                         wp_route_added = closestPoint(pos_uwb(:,step).', Wp(wp_current-1, 1:2), Wp(wp_current, 1:2));
@@ -432,15 +440,17 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             % Movement for simulations
             if (~is_streaming_on)
                 [Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
-                if (is_sim_noise_on)
-                    pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+ ...
-                                                    update_rate_simulation* (pos_uwb(:, step) + rand(2,1) * noise_simulation_linear - noise_simulation_linear/2.0)...
-                                                   + (1 - update_rate_simulation)* pos_uwb(:, step);
+                sim_noise = 0;
+                if (is_sim_normal_noise_on)
+                    sim_noise = sim_noise + rand(2,1) * sim_noise_normal - sim_noise_normal/2.0;
+                elseif (is_sim_large_noise_y_on && rand < sim_noise_large_y_frequency) 
+                    sim_noise = sim_noise + [0.5; rand] * sim_noise_large_y - sim_noise_large_y/2.0;
                 else
-                    pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+ ...
-                                                    update_rate_simulation* (pos_uwb(:, step) + rand(2,1) * noise_simulation_linear - noise_simulation_linear/2.0)...
-                                                   + (1 - update_rate_simulation)* pos_uwb(:, step);
+                    sim_noise = 0;
                 end
+                pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+ ...
+                                                    update_rate_sim* (pos_uwb(:, step) + sim_noise)...
+                                                   + (1 - update_rate_sim)* pos_uwb(:, step);
             end
         end
         
