@@ -2,7 +2,7 @@
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')
 
-grid_size = [8 8];
+grid_size = [10 10];
 grid_w = 25;
 max_step = 20000;
 
@@ -19,7 +19,6 @@ Algorithm = 'square_waypoint';
 Serial_port = 'COM12';
 baudrate = 9600;
 
-is_heading_correction = false;
 is_calculate_coverage = false;
 is_display_coverage_map = false;
 is_display_wp = true;
@@ -33,7 +32,8 @@ is_xbee_on = false;
 is_fixed_offset = true;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = true;
-is_streaming_on = false;
+is_sim_heading_correction = false;
+is_streaming_on = true;
 is_streaming_collect_single_values = true;
 
 navigation_mode = 'Line';
@@ -53,6 +53,8 @@ sim_noise_large_y = 500;
 
 
 fixed_offset = [96.5 -54.5];
+
+fixed_offset = [123.5-25/2 -37.5-25/2*3]
 starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 1;
@@ -263,7 +265,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     if count_pos_initialize >= max_pos_initialize
                         txt_endLine_last = mean(pos_initial);
                         is_pos_initialized = true;
-                        disp('Position initialized!');
+                        disp(['Position initialized at x:',  num2str(txt_endLine_last(1)), '; y:', num2str(txt_endLine_last(2))]);
                         pos_uwb_offset = txt_endLine_last - starting_grid * grid_w;
                         txt_endLine_last = starting_grid * grid_w;
                     end
@@ -355,10 +357,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         elseif (is_transforming)
             heading = robotTransformation(Wp(wp_current, 3), heading, RobotShapes, tol_transform, Dy_angv_transform);
             pos_uwb(:, step+1) = pos_uwb(:, step);
-        elseif (heading(2) > tol_heading && is_heading_correction ) 
+        elseif (heading(2) > tol_heading && is_sim_heading_correction ) 
             [Dy_v(:, :, step), heading] = robotMovement('l', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
-        elseif (heading(2) < - tol_heading && is_heading_correction) 
+        elseif (heading(2) < - tol_heading && is_sim_heading_correction) 
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else

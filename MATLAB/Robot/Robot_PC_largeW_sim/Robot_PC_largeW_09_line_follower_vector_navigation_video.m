@@ -2,12 +2,12 @@
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')
 
-grid_size = [8 8];
+grid_size = [10 10];
 grid_w = 25;
 max_step = 20000;
 
-tol_wp = 10;                    
-tol_line_width = 6;
+tol_wp = 12;                    
+tol_line_width = 8;
 
 tol_transform = pi/50;
 Dy_angv_transform = pi/8;
@@ -19,7 +19,6 @@ Algorithm = 'square_waypoint';
 Serial_port = 'COM12';
 baudrate = 9600;
 
-is_heading_correction = false;
 is_calculate_coverage = false;
 is_display_coverage_map = false;
 is_display_wp = true;
@@ -30,27 +29,27 @@ is_display_grid_on = true;
 is_print_coverage = false;
 is_print_route_deviation = true;
 is_xbee_on = false;
-is_fixed_offset = true;
-is_sim_normal_noise_on= false;
+is_fixed_offset = false;
+is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
-is_streaming_on = false;
+is_sim_heading_correction = false;
+is_streaming_on = true;
 is_streaming_collect_single_values = true;
 
 navigation_mode = 'Line';
 
 streaming_max_single_val = 1000;                % unit: cm
-streaming_max_shift_dis = 25;                      % unit: cm 
+streaming_max_shift_dis = 35;                      % unit: cm 
 streaming_max_shift_dis_single_value = 20;   % unit: cm
 
 
-update_rate_streaming = 0.4;                      
-update_rate_streaming_single_value = 0.4; 
+update_rate_streaming = 1;                      
+update_rate_streaming_single_value = 1; 
 update_rate_sim = 0.2;
 
 sim_noise_normal = 20;                        %unit: cm
 sim_noise_large_y_frequency = 0.05;
 sim_noise_large_y = 500;
-
 
 fixed_offset = [96.5 -54.5];
 starting_grid = [1 2];
@@ -59,7 +58,7 @@ robot_Form = 1;
 
 time_interval = 2;
 
-max_pos_initialize = 5;
+max_pos_initialize = 15;
 
 %% Variable initialization
 
@@ -69,6 +68,7 @@ heading = [0 0 pi pi];
 time_pause = time_interval/100;
 
 pos_uwb_offset = [0 -3];
+flex_offset = [0 0];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
 
@@ -146,6 +146,10 @@ if (is_xbee_on)
     delete(instrfindall);
     arduino = serial(Serial_port,'BaudRate',baudrate);
     fopen(arduino);
+    
+    % TO CHANGE!
+    writedata = char('2');
+    fwrite(arduino,writedata,'char');
 end
 
 for idxx = 1:(cvg_sample_side(2)+1)
@@ -253,6 +257,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             
             if (is_fixed_offset) 
                 txt_endLine = txt_endLine*100 + fixed_offset;
+            else
+                txt_endLine = txt_endLine*100 + flex_offset;
             end
             
             % Initialize starting position
@@ -263,8 +269,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     if count_pos_initialize >= max_pos_initialize
                         txt_endLine_last = mean(pos_initial);
                         is_pos_initialized = true;
-                        disp('Position initialized!');
-                        pos_uwb_offset = txt_endLine_last - starting_grid * grid_w;
+                        disp(['Position initialized at x:',  num2str(txt_endLine_last(1)), '; y:', num2str(txt_endLine_last(2))]);
+                        flex_offset = (starting_grid - [0.5 0.5])* grid_w - txt_endLine_last;
+                        %pos_uwb_offset = txt_endLine_last - starting_grid * grid_w;
                         txt_endLine_last = starting_grid * grid_w;
                     end
                     pos_uwb(:, step+1) = pos_uwb(:, step);
@@ -276,7 +283,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         if norm(txt_endLine_last - txt_endLine) < streaming_max_shift_dis
                             line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
                             txt_endLine_last = txt_endLine;
-                            pos_uwb(:, step+1) = (1 - update_rate_streaming_single_value) * pos_uwb(:, step) + update_rate_streaming_single_value * txt_endLine_last.' ;
+                            pos_uwb(:, step+1) = (1 - update_rate_streaming) * pos_uwb(:, step) + update_rate_streaming * txt_endLine_last.' ;
                         else
                             pos_uwb(:, step+1) = pos_uwb(:, step);
                         end
@@ -285,7 +292,19 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                 % Single value allowed for data streaming at higher frequency
                 elseif (is_streaming_collect_single_values && txt_endLine(1) ~= 0  && txt_endLine(2) ~= 0 )
-                    if(~isnan(txt_endLine(1)))
+                     if(~isnan(txt_endLine(1)) && ~isnan(txt_endLine(2)))
+                        if (txt_endLine_last(1) ~= txt_endLine(1) || txt_endLine_last(2) ~= txt_endLine(2)) 
+                            if norm(txt_endLine_last - txt_endLine) < streaming_max_shift_dis
+                                line([txt_endLine_last(1) txt_endLine(1)], [txt_endLine_last(2) txt_endLine(2)]);
+                                txt_endLine_last = txt_endLine;
+                                pos_uwb(:, step+1) = (1 - update_rate_streaming) * pos_uwb(:, step) + update_rate_streaming * txt_endLine_last.' ;
+                            else
+                                pos_uwb(:, step+1) = pos_uwb(:, step);
+                            end
+                        else
+                            pos_uwb(:, step+1) = pos_uwb(:, step);
+                        end
+                     elseif(~isnan(txt_endLine(1)))
                         if (txt_endLine_last(1) ~= txt_endLine(1))
                             txt_endLine = [txt_endLine(1) txt_endLine_last(2)];
                             if norm(txt_endLine_last - txt_endLine) < streaming_max_shift_dis_single_value
@@ -355,10 +374,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         elseif (is_transforming)
             heading = robotTransformation(Wp(wp_current, 3), heading, RobotShapes, tol_transform, Dy_angv_transform);
             pos_uwb(:, step+1) = pos_uwb(:, step);
-        elseif (heading(2) > tol_heading && is_heading_correction ) 
+        elseif (heading(2) > tol_heading && is_sim_heading_correction ) 
             [Dy_v(:, :, step), heading] = robotMovement('l', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
-        elseif (heading(2) < - tol_heading && is_heading_correction) 
+        elseif (heading(2) < - tol_heading && is_sim_heading_correction) 
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
@@ -414,20 +433,23 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                             disp(['Time:', num2str(round(toc,2)), 's; Grid: (', num2str(robot_Grid(1)), ',' num2str(robot_Grid(2)), ...
                                     '); Track deviation: ', num2str(round(route_deviation,2)), 'cm.' ]);
                         end
-
+                        
+                        closest_point_to_track = closestPoint(pos_uwb(:,step).', Wp(wp_current-1, 1:2), Wp(wp_current, 1:2));
+                        %{
                         wp_route_added = closestPoint(pos_uwb(:,step).', Wp(wp_current-1, 1:2), Wp(wp_current, 1:2));
                         %wp_route_added = Wp(wp_current, 1:2) + route_projection;
                         Wp = [Wp(1:wp_current-1, :); 
                                   wp_route_added Wp(wp_current, 3) 1; 
                                   Wp(wp_current:end, :)];
-                        if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                            if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                        %}
+                        if abs(closest_point_to_track(1) - pos_uwb(1,step)) > abs(closest_point_to_track(2) - pos_uwb(2,step)) 
+                            if closest_point_to_track(1) - pos_uwb(1,step) > 0
                                 char_command = Char_command_array(1+mod(heading_command_compensate,4));  
                             else
                                 char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
                             end
                         else
-                            if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                            if closest_point_to_track(2) - pos_uwb(2,step) > 0
                                 char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
                             else
                                 char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
@@ -443,10 +465,9 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 sim_noise = 0;
                 if (is_sim_normal_noise_on)
                     sim_noise = sim_noise + rand(2,1) * sim_noise_normal - sim_noise_normal/2.0;
-                elseif (is_sim_large_noise_y_on && rand < sim_noise_large_y_frequency) 
+                end
+                if (is_sim_large_noise_y_on && rand < sim_noise_large_y_frequency) 
                     sim_noise = sim_noise + [0.5; rand] * sim_noise_large_y - sim_noise_large_y/2.0;
-                else
-                    sim_noise = 0;
                 end
                 pos_uwb(:, step+1) = Dy_v(2, :, step).' * time_interval+ ...
                                                     update_rate_sim* (pos_uwb(:, step) + sim_noise)...
@@ -456,7 +477,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
         
         % Xbee Communication
-        
+        char_command
         if (is_xbee_on)
             writedata = char(char_command);
             fwrite(arduino,writedata,'char');
