@@ -18,9 +18,9 @@ is_coverage_map = false;
 is_calculate_coverage = true;
 is_wp_disappear_upon_reach = true;
 is_grid_on = true;
-is_xbee_on = true;
+is_xbee_on = false;
 is_fixed_offset = true;
-is_streaming_on = true;
+is_streaming_on = false;
 
 
 fixed_offset = [37.5-17.7 37.5-12.9];
