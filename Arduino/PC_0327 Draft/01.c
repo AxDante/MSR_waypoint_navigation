@@ -1,0 +1,614 @@
+void threadMotion(){
+  // List of input characters:
+
+  // Transformation: '1': straight, '2': square, '3': L-shape (4th), '4': L-shape (1st)
+  //                 '5': Z-shape; '6': T-shape, '7': S-shape
+  // Liner Motion: 'R': right, 'L': left, 'B': backward, 'F': forward
+  // Rotation: 'r': right turn(clockwise), 'l': left turn(counterclockwise)
+  // 'S': stop all DC motors
+  // '-': previous motion completed, awaiting next char input
+  // 'k': secure shape (activate servo motors)
+  
+  // Always stop first while receiving stop command
+
+  /*
+  Robot State:  0: Stop all motions(Auto adjust will not trigger); 
+                1: Idle;
+                2: Idle, angle adjusting;
+                3: Linear Motion;
+                4: Linear Motion, angle adjusting;
+                5: Rotation
+                6: Transformation;
+                7: Transformation, angle adjusting;
+                8: Linear Motion (Slight Adjust);
+  */
+
+  checkRobotState();
+
+  updateState()
+
+}
+
+void checkRobotState(){
+  
+  if (charInput == 'S'){
+    robotState = 0;
+  }
+
+  if (charInput == 's'){
+    robotState = 1;
+  }
+
+  if (charInput == 'F' ||charInput == 'R' ||charInput == 'B' ||charInput == 'L'){
+    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8)
+      robotState = 3;
+    }
+  }
+
+  if (charInput == 'O' ||charInput == 'P'){
+    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8){
+      robotState = 5;
+      rotateStartHeading = heading_filtered;
+
+      if (charInput == 'P') robotDir = 1;
+      if (charInput == 'O') robotDir = -1;
+      
+      if (initialPositionAsWorldFrame){
+        rotateTargetHeading = rotateStartHeading + robotDir * 90;
+      } else {
+        worldRobotTargetHeading +=  robotDir * 90;
+        rotateTargetHeading = worldRobotTargetHeading;
+      }
+
+      if (rotateTargetHeading > 180) rotateTargetHeading -= 360;
+      if (rotateTargetHeading < -180) rotateTargetHeading += 360;
+
+      rotateTargetLower = rotateTargetHeading - angleTolerance;
+      rotateTargetUpper = rotateTargetHeading + angleTolerance;
+
+      if (rotateTargetLower > 180) rotateTargetLower -= 360;
+      if (rotateTargetLower < -180) rotateTargetLower += 360;
+
+      if (rotateTargetUpper > 180) rotateTargetUpper -= 360;
+      if (rotateTargetUpper < -180) rotateTargetUpper += 360;
+
+    }
+  }
+
+  if (charInput == '1' || charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7'){
+    robotState = 6;
+  }    
+
+  if (charInput == 'f' || charInput == 'r' ||charInput == 'b' ||charInput == 'l'){
+    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8){
+      robotState = 8;
+    }
+  }
+}
+
+void updateState(){
+  switch(robotState){
+    case 1:
+
+      
+
+  }
+}
+void CharInputMotion(){
+  
+  if (robotState == 0){
+    stopMotorDC();
+  }
+  else if (robotState == 1){
+    stopMotorDC();
+    if (reachTargetHeading(heading_filtered) == 1){
+      robotState = 2;
+    }
+    else if (reachTargetHeading(heading_filtered) == -1){
+      robotState = 2;
+    }
+  }
+  else if (robotState == 2){
+    if (reachTargetHeading(heading_filtered) == 1){
+      for (char j = 0; j < 4; j ++){
+        switch(R_LeftTurn[RobotForm-1][j]){
+          case 'F':
+            Forward(j);
+            break;
+          case 'B':
+            Backward(j);
+            break;
+           case 'R':
+            Right(j);
+            break;
+          case 'L':
+            Left(j);
+            break;
+          case '0':
+            break;
+        }
+      }
+      if (secureShapeActive){
+        if (counterSecureShape < counterSecureShapeMaxCount){
+          counterSecureShape += 1;
+        }else{
+          counterSecureShape = 0;
+          secureShape(RobotForm);
+        }
+      }
+    }
+    else if (reachTargetHeading(heading_filtered) == -1){
+      for (char j = 0; j < 4; j ++){
+        switch(R_RightTurn[RobotForm-1][j]){
+          case 'F':
+            Forward(j);
+            break;
+          case 'B':
+            Backward(j);
+            break;
+          case 'R':
+            Right(j);
+            break;
+          case 'L':
+            Left(j);
+            break;
+          case '0':
+            break;
+        }
+      }
+      if (secureShapeActive){
+        if (counterSecureShape < counterSecureShapeMaxCount){
+          counterSecureShape += 1;
+        }else{
+          counterSecureShape = 0;
+          secureShape(RobotForm);
+        }
+      }
+    }
+    else{
+      robotState = 1;
+      stopMotorDC();
+    }
+  }
+  else if (robotState == 3){
+    if (reachTargetHeading(heading_filtered) == 1){
+      robotState = 4;
+    }
+    else if (reachTargetHeading(heading_filtered) == -1){
+      robotState = 4;
+    }
+    else{
+      if (charInput == 'F'){  
+        for (char j = 0; j < 4; j ++){
+          switch(M_Forward[RobotForm-1][j]){
+            case 'F':
+              Forward(j);
+              break;
+            case 'B': 
+              Backward(j);
+              break;
+            case 'R':
+              Right(j);
+              break;
+            case 'L':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        if (secureShapeLinearActive){
+          if (counterSecureShape < counterSecureShapeMaxLinearCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
+      }
+      if (charInput == 'B')
+      {  
+        if (!isRobotLinearMotion){
+          isRobotLinearMotion = true;
+          timerLinearMotion = millis();
+        }
+        for (char j = 0; j < 4; j ++){
+          switch(M_Backward[RobotForm-1][j]){
+            case 'F':
+              Forward(j);
+              break;
+            case 'B':
+              Backward(j);
+              break;
+            case 'R':
+              Right(j);
+              break;
+            case 'L':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        if (secureShapeLinearActive){
+          if (counterSecureShape < counterSecureShapeMaxLinearCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
+      }
+      if (charInput == 'R')
+      {  
+        for (char j = 0; j < 4; j ++){
+          switch(M_Right[RobotForm-1][j]){
+            case 'F':
+              Forward(j);
+              break;
+            case 'B':
+              Backward(j);
+              break;
+            case 'R':
+              Right(j);
+              break;
+            case 'L':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        if (secureShapeLinearActive){
+          if (counterSecureShape < counterSecureShapeMaxLinearCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
+      }
+      if (charInput == 'L')
+      {  
+        for (char j = 0; j < 4; j ++){
+          switch(M_Left[RobotForm-1][j]){
+            case 'F':
+              Forward(j);
+              break;
+            case 'B':
+              Backward(j);
+              break;
+            case 'R':
+              Right(j);
+              break;
+            case 'L':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+      }
+    }
+  }
+  else if (robotState == 4){
+    if (reachTargetHeading(heading_filtered) == 1){
+      for (char j = 0; j < 4; j ++){
+        switch(R_LeftTurn[RobotForm-1][j]){
+          case 'F':
+            Forward(j);
+            break;
+          case 'B':
+            Backward(j);
+            break;
+           case 'R':
+            Right(j);
+            break;
+          case 'L':
+            Left(j);
+            break;
+          case '0':
+            break;
+        }
+      }
+      if (secureShapeActive){
+        if (counterSecureShape < counterSecureShapeMaxCount){
+          counterSecureShape += 1;
+        }else{
+          counterSecureShape = 0;
+          secureShape(RobotForm);
+        }
+      }
+    }
+    else if (reachTargetHeading(heading_filtered) == -1){
+      for (char j = 0; j < 4; j ++){
+        switch(R_RightTurn[RobotForm-1][j]){
+          case 'F':
+            Forward(j);
+            break;
+          case 'B':
+            Backward(j);
+            break;
+          case 'R':
+            Right(j);
+            break;
+          case 'L':
+            Left(j);
+            break;
+          case '0':
+            break;
+        }
+      }
+      if (secureShapeActive){
+        if (counterSecureShape < counterSecureShapeMaxCount){
+          counterSecureShape += 1;
+        }else{
+          counterSecureShape = 0;
+          secureShape(RobotForm);
+        }
+      }
+    }
+    else{
+      robotState = 3;
+      stopMotorDC();
+    }
+  }
+  else if (robotState == 5){
+    
+  }
+
+
+
+
+
+
+  switch(charInput)
+  {
+    case '1':
+    {
+      straight();
+      RobotForm = 1;
+      break;
+    }
+    case '2':
+    {
+      square();
+      RobotForm = 2;
+      break;
+    }
+    case '3':
+    {
+      L_4th();
+      RobotForm = 3;
+      break;
+    }
+    case '4':
+    {
+      L_1st();
+      RobotForm = 4;
+      break;
+    }
+    case '5':
+    {
+      Z_1_4();
+      RobotForm = 5;
+      break;
+    }
+    case '6':
+    {
+      plus();
+      RobotForm = 6;
+      break;
+    }
+    case '7':
+    {
+      S_1_3();
+      RobotForm = 7;
+      break;
+    }
+  }
+  
+    if (secureShapeLinearActive){
+      if (counterSecureShape < counterSecureShapeMaxLinearCount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
+      }
+    }
+  }
+  if (charInput == 'r' || charInput == 'l'){
+    if (!isRobotRotation && !isFinishRotation){
+      isRobotRotation = true;
+      rotateStartHeading = heading_filtered+0.01;
+
+      if (charInput == 'r') robotDir = 1;
+      if (charInput == 'l') robotDir = -1;
+      
+      if (initialPositionAsWorldFrame){
+        rotateTargetHeading = rotateStartHeading + robotDir * 90;
+      }else{
+        worldRobotTargetHeading +=  robotDir * 90;
+        rotateTargetHeading = worldRobotTargetHeading;
+      }
+      rotateTargetLower = rotateTargetHeading - angleTolerance;
+      rotateTargetUpper = rotateTargetHeading + angleTolerance;
+
+      if (rotateTargetHeading > 180) rotateTargetHeading -= 360;
+      if (rotateTargetHeading < -180) rotateTargetHeading += 360;
+      if (debugPrintActive){
+        Serial.println("=====Start Rotation=====");
+        Serial.println("Start Heading : " + String(rotateStartHeading));
+        Serial.println("Target Heading : " + String(rotateTargetHeading));
+      }
+    }
+    else{
+      if (reachTargetHeading(heading_filtered) == 1){
+        for (char j = 0; j < 4; j ++){
+          switch(R_LeftTurn[RobotForm-1][j]){
+            case 'f':
+              Forward(j);
+              break;
+            case 'b':
+              Backward(j);
+              break;
+            case 'r':
+              Right(j);
+              break;
+            case 'l':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        if (secureShapeActive){
+          if (counterSecureShape < counterSecureShapeMaxCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
+      }
+      else if (reachTargetHeading( heading_filtered) == -1){
+        for (char j = 0; j < 4; j ++){
+          switch(R_RightTurn[RobotForm-1][j]){
+            case 'f':
+              Forward(j);
+              break;
+            case 'b':
+              Backward(j);
+              break;
+            case 'r':
+              Right(j);
+              break;
+            case 'l':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        if (secureShapeActive){
+          if (counterSecureShape < counterSecureShapeMaxCount){
+            counterSecureShape += 1;
+          }else{
+            counterSecureShape = 0;
+            secureShape(RobotForm);
+          }
+        }
+      }
+      else if (reachTargetHeading(heading_filtered) == 0){
+         isRobotRotation = false;
+         isFinishRotation = true;
+         stopMotorDC();
+         //if (debugPrintActive) Serial.println("=====End Rotation=====");
+      }
+    }
+  }
+  if (charInput == 'k')
+  {
+    if (secureShapeActive){
+      if (counterSecureShape < counterSecureShapeMaxCount){
+        counterSecureShape += 1;
+      }else{
+        counterSecureShape = 0;
+        secureShape(RobotForm);
+      }
+    }
+  }
+  if (prevCharInput != charInput){
+    isFinishRotation = false;
+    prevCharInput = charInput;
+  }
+  //Serial.print("k");
+  if (robotMode == 3 || robotMode == 4){
+    if (isRobotLinearMotion &&  millis() - timerLinearMotion > linerMotionStopTime){
+      isRobotLinearMotion = false;
+      stopMotorDC();
+    }
+    //Serial.print("s");
+    if (robotMode >= 4){
+      if (!isRobotLinearMotion && !isRobotRotation && !isRobotRotationAdjust){
+        //Serial.print("t");
+        charInput = stringStream[0];
+        stringStream.remove(0, 1);
+      }
+    }
+  }
+}
+
+
+  if (charInput == 'S' || charInput == '1' ||charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7' )
+  {
+      isRobotRotation = false;
+      isFinishRotation = true;
+      isStopped = true;
+      stopMotorDC();
+  }
+ 
+  // Priortise heading correction before performing any motion when headingCorrection is ON.
+  if (headingCorrectionDuringMotion && !isRobotRotation && !isStopped){
+    if (reachTargetHeading(heading_filtered) == 1){
+        isRobotRotationAdjust = true;
+        //if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning right)");
+        
+        for (char j = 0; j < 4; j ++){
+          switch(R_LeftTurn[RobotForm-1][j]){
+            case 'f':
+              Forward(j);
+              break;
+            case 'b':
+              Backward(j);
+              break;
+            case 'r':
+              Right(j);
+              break;
+            case 'l':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        secureShape(RobotForm);
+      }
+      else if (reachTargetHeading(heading_filtered) == -1){
+        isRobotRotationAdjust = true;
+        //if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning left)");
+        
+        for (char j = 0; j < 4; j ++){
+          switch(R_RightTurn[RobotForm-1][j]){
+            case 'f':
+              Forward(j);
+              break;
+            case 'b':
+              Backward(j);
+              break;
+            case 'r':
+              Right(j);
+              break;
+            case 'l':
+              Left(j);
+              break;
+            case '0':
+              break;
+          }
+        }
+        secureShape(RobotForm);
+      }
+      else{
+        if (isRobotRotationAdjust){
+          isRobotRotationAdjust = false;
+          stopMotorDC();
+        } else{
+           CharInputMotion();
+        }
+      }
+  }
+
+  // Normal input-based motion when headingCorrection is OFF.
+  else{
+    CharInputMotion();
+  }
