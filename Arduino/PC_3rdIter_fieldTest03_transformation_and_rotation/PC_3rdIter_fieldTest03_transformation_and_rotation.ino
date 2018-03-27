@@ -38,12 +38,12 @@ char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-sh
 
 String stringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
-float worldRobotTargetHeading = -55.0; //(for robotMode 3 or 4, which recognize its initial position)
+float worldRobotTargetHeading = -42.0; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive false                 // Printing Debug information on Serial Port
+#define debugPrintActive true                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 
@@ -61,7 +61,7 @@ float worldRobotTargetHeading = -55.0; //(for robotMode 3 or 4, which recognize 
 #define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
 #define imuActive true
 
-#define robotMode 3
+#define robotMode 1
 // ( 1: Read one input char from serial port every time, motion not stopping unless receieves next input)
 // ( 2: Read one input char from serial port every time, motion automatically stops after meeting certain conditions) 
 // ( 3: Read and move following string input (static, for debug use), motion automatically stops after meeting certain conditions)
@@ -74,9 +74,9 @@ float worldRobotTargetHeading = -55.0; //(for robotMode 3 or 4, which recognize 
 
 #define linearPower 43  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
 #define rotatePower 58  // Power provided to DC motors during robot rotation (r, l) (max: 128)
-#define rotateAdjustPower 50 // Power provided to DC motors during robot heading self adjustment (max: 128)
+#define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
-#define angleTolerance 8  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+#define angleTolerance 6.5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
 
 #define transformSpeed 1500
 
@@ -110,6 +110,7 @@ bool isRobotRotation;
 bool isFinishRotation;
 bool isRobotLinearMotion;
 bool isRobotRotationAdjust;
+bool isStopped;
 
 // Robot rotation related
 float rad_to_deg = 180/3.141592654;

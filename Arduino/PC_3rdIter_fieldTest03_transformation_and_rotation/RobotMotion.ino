@@ -14,16 +14,17 @@ void threadMotion(){
   {
       isRobotRotation = false;
       isFinishRotation = true;
+      isStopped = true;
       stopMotorDC();
   }
 
 
  
   // Priotorise heading correction before performing any motion when headingCorrection is ON.
-  if (headingCorrectionDuringMotion && !isRobotRotation){
+  if (headingCorrectionDuringMotion && !isRobotRotation && !isStopped){
     if (reachTargetHeading(heading_filtered) == 1){
         isRobotRotationAdjust = true;
-        if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning right)");
+        //if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning right)");
         
         for (char j = 0; j < 4; j ++){
           switch(R_LeftTurn[RobotForm-1][j]){
@@ -47,7 +48,7 @@ void threadMotion(){
       }
       else if (reachTargetHeading(heading_filtered) == -1){
         isRobotRotationAdjust = true;
-        if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning left)");
+        //if (debugPrintActive) Serial.println("   --> Robot heading deviated, auto correcting now.(turning left)");
         
         for (char j = 0; j < 4; j ++){
           switch(R_RightTurn[RobotForm-1][j]){
@@ -280,8 +281,8 @@ void CharInputMotion(){
       rotateTargetLower = rotateTargetHeading - angleTolerance;
       rotateTargetUpper = rotateTargetHeading + angleTolerance;
 
-      if (rotateTargetHeading > 360) rotateTargetHeading -= 360;
-      if (rotateTargetHeading < 360) rotateTargetHeading += 360;
+      if (rotateTargetHeading > 180) rotateTargetHeading -= 360;
+      if (rotateTargetHeading < -180) rotateTargetHeading += 360;
       if (debugPrintActive){
         Serial.println("=====Start Rotation=====");
         Serial.println("Start Heading : " + String(rotateStartHeading));
@@ -376,7 +377,6 @@ void CharInputMotion(){
     }
     //Serial.print("s");
     if (robotMode >= 4){
-      //Serial.print("i");
       if (!isRobotLinearMotion && !isRobotRotation && !isRobotRotationAdjust){
         //Serial.print("t");
         charInput = stringStream[0];

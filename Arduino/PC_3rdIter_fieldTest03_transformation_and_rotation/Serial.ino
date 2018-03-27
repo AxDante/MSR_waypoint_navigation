@@ -52,8 +52,8 @@ void debugPrint(){
     Serial.println();
   }
 
-  Serial.println("(Debug) millis: " + String(millis())+ " , timerLinearMotion: " + String(timerLinearMotion));
-  Serial.println("(Debug) Current DC Motor Power :" + String(DCMotorPower()));
+  //Serial.println("(Debug) millis: " + String(millis())+ " , timerLinearMotion: " + String(timerLinearMotion));
+  //Serial.println("(Debug) Current DC Motor Power :" + String(DCMotorPower()));
 }
 
 void threadSerial()
