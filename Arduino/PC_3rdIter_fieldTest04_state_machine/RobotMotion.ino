@@ -38,7 +38,7 @@ void checkRobotState(){
   }
 
   if (charInput == 'F' ||charInput == 'R' ||charInput == 'B' ||charInput == 'L'){
-    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8)
+    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8){
       robotState = 3;
     }
   }
@@ -85,8 +85,8 @@ void checkRobotState(){
 }
 
 
-void stateMotion(){
-  
+void stateMotion()
+{
   if (robotState == 0){
     stopMotorDC();
   }
@@ -199,10 +199,6 @@ void stateMotion(){
       }
       if (charInput == 'B')
       {  
-        if (!isRobotLinearMotion){
-          isRobotLinearMotion = true;
-          timerLinearMotion = millis();
-        }
         for (char j = 0; j < 4; j ++){
           switch(M_Backward[RobotForm-1][j]){
             case 'F':
@@ -547,10 +543,6 @@ void stateMotion(){
     }
     if (charInput == 'B')
     {  
-      if (!isRobotLinearMotion){
-        isRobotLinearMotion = true;
-        timerLinearMotion = millis();
-      }
       for (char j = 0; j < 4; j ++){
         switch(M_Backward[RobotForm-1][j]){
           case 'F':
@@ -630,3 +622,4 @@ void stateMotion(){
     }
   }
 }
+
