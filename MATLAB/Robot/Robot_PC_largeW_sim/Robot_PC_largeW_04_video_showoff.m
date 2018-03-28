@@ -53,9 +53,9 @@ end
 
 prev_char_command = 'S';
 
-Grid_setup = zeros(grid_size(1),  grid_size(2));
-Grid_current =  zeros(grid_size(1),  grid_size(2), max_step);
-Grid_visited =  zeros(grid_size(1),  grid_size(2), max_step);
+Grid_setup = zeros(grid_size(2),  grid_size(1));
+Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
+Grid_visited =  zeros(grid_size(2),  grid_size(1), max_step);
 
 Dy_force = zeros(4, 2, max_step);
 Dy_a = zeros(4, 2, max_step);
@@ -83,7 +83,7 @@ RobotShapes = [0 0 0 0 ;
 char_command = '';
 Cvg = [];
 count_cvg_point = 0;
-cvg_sample_w = grid_w*[grid_size(1)/cvg_sample_side(1) grid_size(2)/cvg_sample_side(2)];
+cvg_sample_w = grid_w*[grid_size(2)/cvg_sample_side(1) grid_size(1)/cvg_sample_side(2)];
 grid_dhw = sqrt(2) / 2 * grid_w;
 
 count_pos_initialize = 0;
@@ -105,31 +105,31 @@ end
     for idx = 1: 10
         if (idx == 1)
                 Wp = [Wp; 1.5*grid_w  (idx+0.5)*grid_w 2];
-                Wp = [Wp; (1.5+(grid_size(2)-4)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
-                Wp = [Wp; (1.5+(grid_size(2)-4)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
+                Wp = [Wp; (1.5+(grid_size(1)-4)*1/4.0)*grid_w  (idx+0.5)*grid_w 2];
+                Wp = [Wp; (1.5+(grid_size(1)-4)*2/4.0)*grid_w  (idx+0.5)*grid_w 2];
         end
         if (idx == 2)
-            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  1.5*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 4.5)*grid_w  1.5*grid_w 2];
         end
         
         if (idx == 3)
-            Wp = [Wp; (grid_size(2) - 4.5)*grid_w  3.5*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 4.5)*grid_w  3.5*grid_w 2];
         end
         
         if (idx == 4 || idx == 6)
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
         end
         
         if (idx == 5)
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5 - (grid_size(2)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
-            Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*4/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*3/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*2/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5 - (grid_size(1)-2)*1/4.0)*grid_w  (idx*2-4.5)*grid_w 2];
+            Wp = [Wp; (grid_size(1) - 1.5)*grid_w (idx*2-4.5)*grid_w 2];
         end
         
         if (idx == 6)
@@ -146,7 +146,7 @@ end
 
 %% DRAW MAP
 figure(1)
-axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+axis([-grid_w grid_w*(grid_size(2)+1) -grid_w grid_w*(grid_size(1)+1)])
 hold on
 
  % Draw Waypoints
@@ -390,16 +390,16 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
             
         % Draw Outer Border
-        Line_Border(1) = line([0 0], [0 grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
-        Line_Border(2) =line([0 grid_w*grid_size(2)], [0 0], 'Color', 'black', 'LineWidth', 2);
-        Line_Border(3) =line([grid_w*grid_size(2) grid_w*grid_size(1)], [0 grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
-        Line_Border(4) =line([grid_w*grid_size(2) 0], [grid_w*grid_size(2) grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(3) =line([grid_w*grid_size(1) grid_w*grid_size(2)], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(4) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(1) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
         if (is_grid_on)
-            for idxx = 1:(grid_size(1) + 1)
-                line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
+            for idxx = 1:(grid_size(2) + 1)
+                line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(1)], 'Color', 'black', 'LineWidth', 0.5);
             end
-            for idxy = 1:(grid_size(2) + 1)
-                line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
+            for idxy = 1:(grid_size(1) + 1)
+                line(grid_w*[0 grid_size(2)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
             end
         end
         

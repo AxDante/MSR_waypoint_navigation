@@ -67,7 +67,9 @@ void threadSerial()
     };
   }
   else if (robotMode == 4){
-
+    if(Serial.available() > 0){
+      charInput = Serial.read();  
+    };
   }
 }
 

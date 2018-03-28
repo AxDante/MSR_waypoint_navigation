@@ -1,9 +1,12 @@
 %% Variable Setup
 
-addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')
+addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
+addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
+
 
 % Map Setup
-grid_size = [10 10];
+Map = '10_10_obs';              % Set Map as 'Empty' for empty map
+grid_size = [10 10];             % Assign values for grid size if an empty map is chosen
 grid_w = 25;
 
 tol_wp = 18;                    
@@ -74,7 +77,10 @@ robot_Form = 2;
 
 %% Variable initialization
 
+if exist([Map, '.txt'], )
 
+
+M = csvread('10_10_obs.txt');
 heading = [0 0 pi pi];
 
 time_pause = interval_system_time/100;

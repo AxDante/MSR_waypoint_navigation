@@ -3,13 +3,15 @@
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')
 
 % Map Setup
-grid_size = [10 10];
+grid_size = [15 12];
 grid_w = 25;
 
 tol_wp = 18;                    
 tol_line_width = 12;
 
 cvg_sample_side = [20 20];
+fixed_offset = [96.5 -54.5];
+starting_grid = [1 2];
 
 % Algorithms
 Algorithm = 'square_waypoint';
@@ -60,18 +62,16 @@ streaming_max_single_val = 1000;                 % unit: cm
 streaming_max_shift_dis = 35;                       % unit: cm 
 streaming_max_shift_dis_single_value = 20;    % unit: cm
 
+max_pos_initialize = 10;
+
 % Simulation Setup
 sim_noise_normal = 20;                        %unit: cm
 sim_noise_large_y_frequency = 0.05;
 sim_noise_large_y = 50;
 
-fixed_offset = [96.5 -54.5];
-starting_grid = [1 2];
 robot_weight = [1.5 1.5 1.5 1.5];
 robot_Form = 2;
 
-max_pos_initialize = 10;
-max_command_count_sim = 235;
 %% Variable initialization
 
 
@@ -146,7 +146,8 @@ end
 %                                                     1           4         4
 %  
 
-Char_command_array = ['R', 'F', 'L', 'B'];
+Char_command_array_linear = ['R', 'F', 'L', 'B'];
+Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
 heading_command_compensate = 0;
 
 char_command = '';
@@ -180,7 +181,7 @@ end
 if (strcmp(navigation_mode,'Line'))
     wp_current = 1;
     disp('Generating robot routes...')
-    for idx = 1: grid_size(1)-1
+    for idx = 1: grid_size(1)-2
         if (mod(idx, 4) == 1)
             if (idx == 1)
                 Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 1];
@@ -229,7 +230,7 @@ end
 
 %% DRAW MAP
 figure(1)
-axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+axis([-grid_w grid_w*(grid_size(2)+1) -grid_w grid_w*(grid_size(1)+1)])
 hold on
 
  % Draw Waypoints
@@ -381,29 +382,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 is_require_transform = true;
             end
         end
-       
-        %{
-        if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
-            is_transforming = true;
-            if (~strcmp(char_command,char(prev_char_command))||command_count >= interval_command_send )
-                if (is_xbee_on)
-                    writedata = char(num2str(Wp(wp_current, 3)));
-                    fwrite(arduino,writedata,'char');
-                end
-                prev_char_command = char(num2str(Wp(wp_current, 3)));
-                if (is_print_sent_commands) 
-                    disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , num2str(Wp(wp_current, 3)), ''''])
-                end
-                command_count = 0;
-            else
-                command_count = command_count + 1;
-            end
-        else
-            robot_Form = Wp(wp_current, 3);
-            is_transforming = false;
-        end
-        %}
-        
         
         if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
             if (command_count_rotation >= interval_rotation_command_send)
@@ -442,15 +420,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             if (strcmp(navigation_mode,'Point'))
                 if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                     if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                        char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                        char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
                     else
-                        char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
                     end
                 else
                     if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                        char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
                     else
-                        char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                     end
                 end
             % Line navigation
@@ -458,15 +436,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 if (Wp(wp_current, 4) == 1)
                     if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                         if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                            char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
                         else
-                            char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
                         end
                     else
                         if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                            char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
                         else
-                            char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                         end
                     end
                 else
@@ -474,15 +452,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     if  (route_deviation < 0)
                         if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                             if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                                char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                                char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
                             else
-                                char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                                char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
                             end
                         else
                             if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                                char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                                char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
                             else
-                                char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                                char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                             end
                         end
                     else
@@ -495,15 +473,15 @@ if ( strcmp( Algorithm, 'square_waypoint'))
 
                         if abs(closest_point_to_track(1) - pos_uwb(1,step)) > abs(closest_point_to_track(2) - pos_uwb(2,step)) 
                             if closest_point_to_track(1) - pos_uwb(1,step) > 0
-                                char_command = Char_command_array(1+mod(heading_command_compensate,4));  
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
                             else
-                                char_command = Char_command_array(1+mod(heading_command_compensate+2,4));
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
                             end
                         else
                             if closest_point_to_track(2) - pos_uwb(2,step) > 0
-                                char_command = Char_command_array(1+mod(heading_command_compensate+1,4));
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
                             else
-                                char_command = Char_command_array(1+mod(heading_command_compensate+3,4));
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
                             end
                         end
                     end
@@ -606,8 +584,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
         
         % Draw Outer Border
-        Line_Border(1) = line([0 0], [0 grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
-        Line_Border(2) =line([0 grid_w*grid_size(2)], [0 0], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
         Line_Border(3) =line([grid_w*grid_size(2) grid_w*grid_size(1)], [0 grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
         Line_Border(4) =line([grid_w*grid_size(2) 0], [grid_w*grid_size(2) grid_w*grid_size(1)], 'Color', 'black', 'LineWidth', 2);
         if (is_display_grid_on)
