@@ -107,6 +107,7 @@ pos_center = zeros(4, 2, max_step);
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
 Grid_visited =  zeros(grid_size(2),  grid_size(1), max_step);
+robot_center_Grid = [];
 robot_Grid = [];
 
 prev_char_command = 'S';
@@ -121,17 +122,14 @@ is_rotating = false;
 
 Wp = [];
 
-Circle_Wp_Fig_1 = [];
-Circle_Wp_Fig_2 = [];
+Circle_Wp = [];
 Obstacles = [];
 
 Line_Linear_Route = [];
 
-Line_Robot_Fig_1 = [];
-Line_Robot_Fig_2 = [];
+Line_Robot = [];
 Line_Robot_area = [];
-Line_Border_Fig_1 = [];
-Line_Border_Fig_2 = [];
+Line_Border = [];
 loc_center = [0 0];
 
 is_transforming = false;
@@ -143,7 +141,7 @@ RobotShapes = [0 0 0 0 ;
                         -pi 0 0 -pi;
                         -pi/2 0 pi 0;
                         -pi/2 0 pi pi/2];
-       
+                    
 for idx = 1:3
     RobotShapes = [RobotShapes; RobotShapes + pi/2*idx];
 end
@@ -153,7 +151,7 @@ end
 %         s01     s02      s03     s04      s05        s06       s07
 %   -----------------------------------------------------------------
 %
-%          4                  4 3       4
+%          4                  3 4       4
 %          3       2 3       2         3       4 3        2 3 4     2 3
 %          2       1 4       1       1 2         2 1        1           1 4
 %          1                      
@@ -165,6 +163,16 @@ end
 %       1 2 3 4            3         2 3 4      2 3      1 3         1 3
 %                                                     1           4         4
 %  
+
+Robot_Relative_Pos = [0 -1; 0 1; 0 2;
+                                 0 -1; 1 0; 1 -1;
+                                 -1 0; 0 1; 1 1;
+                                 -1 0; 0 1; 0 2;
+                                 1 0; 0 1; -1 1;
+                                 1 -1; 1 0; 2 0;
+                                 1 -1; 1 0; 2 -1];
+                             
+
 
 Char_command_array_linear = ['R', 'F', 'L', 'B'];
 Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
@@ -194,11 +202,6 @@ for idxx = 1:(cvg_sample_side(2)+1)
     for idxy = 1:(cvg_sample_side(1)+1)
         Cvg = [Cvg; cvg_sample_w(1)*(idxy-1) cvg_sample_w(2)*(idxx-1) 0];
     end
-end
-
-max_display_count = 1;
-if (is_display_robot_grid_coverage_map)
-    max_display_count = 2;
 end
 
 %% Waypoint Generation
@@ -277,11 +280,10 @@ end
 %% DRAW MAP
 clf
 
-for idxfig = 1:max_display_count
-    figure(idxfig)
-    axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
-    hold on
-end
+figure(1)
+axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+hold on
+
 
  % Draw Waypoints
 if (is_display_wp)
@@ -292,12 +294,10 @@ end
 
 if (is_using_obs_map)
     if (is_display_obstacle)
-        for idxfig = 1:max_display_count
-            figure(idxfig)
-            for idxobs = 2:size(Map_obs,1)
-                    Obstacles = rectangle('Position', [grid_w*(Map_obs(idxobs, :) - [1 1]), grid_w grid_w], ...
-                                                    'FaceColor', [0 0 0]);
-            end
+        figure(1)
+        for idxobs = 2:size(Map_obs,1)
+                Obstacles = rectangle('Position', [grid_w*(Map_obs(idxobs, :) - [1 1]), grid_w grid_w], ...
+                                                'FaceColor', [0 0 0]);
         end
     end
 end
@@ -422,8 +422,14 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
         end
         
-        % Grid Location
-        robot_Grid = [floor(pos_uwb(1, step)/grid_w) floor(pos_uwb(2, step)/grid_w)];
+        % Grid Info
+        robot_center_Grid = [1+floor(pos_uwb(1, step)/grid_w) 1+floor(pos_uwb(2, step)/grid_w)];
+        rotated_relative_grid_pos = rotationMatrix(Robot_Relative_Pos, Wp(wp_current, 3));
+        robot_Grid = [ rotated_relative_grid_pos(1,:);
+                             0 0;
+                            rotated_relative_grid_pos(2,:);
+                            rotated_relative_grid_pos(3,:)] + robot_center_Grid;
+
         
         % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
@@ -528,7 +534,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         end
                     else
                         if (is_print_route_deviation)
-                            disp(['Time:', num2str(round(toc,2)), 's; Grid: (', num2str(robot_Grid(1)), ',' num2str(robot_Grid(2)), ...
+                            disp(['Time:', num2str(round(toc,2)), 's; Grid: (', num2str(robot_center_Grid(1)), ',' num2str(robot_center_Grid(2)), ...
                                     '); Track deviation: ', num2str(round(route_deviation,2)), 'cm.' ]);
                         end
                         
@@ -591,12 +597,12 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
         
         % remove previous robot line plot
-        if (~isempty(Line_Robot_Fig_1))
-            delete(Line_Robot_Fig_1)
+        if (~isempty(Line_Robot))
+            delete(Line_Robot)
             delete(Line_Linear_Route)
         end
-        Line_Robot_Fig_1 = [];
-        Line_Border_Fig_1 = [];
+        Line_Robot = [];
+        Line_Border = [];
         Line_Linear_Route = [];
         
         % Draw Robot
@@ -624,23 +630,21 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         
 
         % plot robot BG
-        %for idxfig = 1:max_display_count
-         %   figure(idxfig)
         if (is_display_coverage_map == true)
             for robidx = 1:4
-            Line_Robot_Fig_1(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
+            Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                     [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
-            Line_Robot_Fig_1(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
+            Line_Robot(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
                                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
                                                       pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
-            Line_Robot_Fig_1(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+            Line_Robot(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
                                                       pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
-            Line_Robot_Fig_1(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+            Line_Robot(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
                                                       pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
@@ -648,10 +652,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         % Draw Outer Border
-        Line_Border_Fig_1(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
-        Line_Border_Fig_1(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
-        Line_Border_Fig_1(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
-        Line_Border_Fig_1(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+        Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
         
         if (is_display_grid_on)
             for idxx = 1:(grid_size(1) + 1)
@@ -684,50 +688,25 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         % Draw Robot Outline
-        
-        figure(1)
         for robidx = 1:4
             %line([pos_center(robidx,1,step) pos_center(robidx,1,step+1)], [pos_center(robidx,2,step) pos_center(robidx,2,step+1)])  
-            Line_Robot_Fig_1(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
+            Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                     [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-            Line_Robot_Fig_1(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
+            Line_Robot(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
                                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
                                                       pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-            Line_Robot_Fig_1(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+            Line_Robot(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
                                                       pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-            Line_Robot_Fig_1(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
+            Line_Robot(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                      pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
                                                     [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
                                                       pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);   
         end
-        if (is_display_robot_grid_coverage_map)
-            figure(2)
-            for robidx = 1:4
-                %line([pos_center(robidx,1,step) pos_center(robidx,1,step+1)], [pos_center(robidx,2,step) pos_center(robidx,2,step+1)])  
-                Line_Robot_Fig_2(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
-                                                         pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
-                                                        [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 2, step)+grid_dhw*-c os(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-                Line_Robot_Fig_2(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
-                                                         pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
-                                                        [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-                Line_Robot_Fig_2(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
-                                                        [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);
-                Line_Robot_Fig_2(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
-                                                        [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);   
-            end
-        end
-        
         
         if(is_calculate_coverage)
             for cvg_idx = 1: numel(Cvg(:, 1))

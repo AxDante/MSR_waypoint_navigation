@@ -5,7 +5,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 
 % Map Setup
-file_map = '10_10_obs';              % Set Map as 'Empty' for empty map
+file_map = '10_10_simple01';              % Set Map as 'Empty' for empty map
 grid_size = [10 10];             % Assign values for grid size if an empty map is chosen
 grid_w = 25;
 
@@ -19,6 +19,7 @@ starting_grid = [1 2];
 % Algorithms
 Algorithm = 'square_waypoint';
 navigation_mode = 'Line';
+zigzag_mode = 'simple';
 
 % Time Frame Setup
 max_step = 20000;
@@ -51,6 +52,8 @@ is_display_wp_clearing = false;
 is_display_route = true;
 is_display_route_clearing = true;
 is_display_grid_on = true;
+is_display_obstacle = true;
+is_display_robot_grid_coverage_map = true;
 is_print_coverage = false;
 is_print_sent_commands = true;
 is_print_route_deviation = true;
@@ -77,11 +80,14 @@ robot_Form = 2;
 
 %% Variable initialization
 
-Map = [];
+is_using_obs_map = false;
+
+Map_obs = [];
 if exist([file_map, '.txt'], 'file') == 2
-    Map = csvread([file_map, '.txt']);
+    Map_obs = csvread([file_map, '.txt']);
     disp(['Map: ', file_map, '.txt loaded successfully!']);
-    grid_size = Map(1,:);
+    grid_size = Map_obs(1,:);
+    is_using_obs_map = true;
 else
     disp(['Default map loaded successfully!']);
 end
@@ -116,6 +122,7 @@ is_rotating = false;
 Wp = [];
 
 Circle_Wp = [];
+Obstacles = [];
 
 Line_Linear_Route = [];
 
@@ -191,22 +198,43 @@ end
 if (strcmp(navigation_mode,'Line'))
     wp_current = 1;
     disp('Generating robot routes...')
-    for idx = 1: grid_size(2)-2
-        if (mod(idx, 4) == 1)
-            if (idx == 1)
-                Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 1];
-            else
-                Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)+0.5)*grid_w 2 0];
+    if (strcmp(zigzag_mode, 'shape_O_I'))
+        for idx = 1: grid_size(2)-2
+            if (mod(idx, 4) == 1)
+                if (idx == 1)
+                    Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 1];
+                else
+                    Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)+0.5)*grid_w 2 0];
+                end
+            end
+            if (mod(idx, 4) == 2)
+                Wp = [Wp; (grid_size(1) - 1.5)*grid_w  (idx+floor(idx/2)-1.5)*grid_w 2 0];
+            end
+            if (mod(idx, 4) == 3)
+                Wp = [Wp; (grid_size(1) - 1.5)*grid_w (idx+floor(idx/2)-0.5)*grid_w 2 0];
+            end
+            if (mod(idx, 4) == 0)
+                Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)-2.5)*grid_w 2 0];
             end
         end
-        if (mod(idx, 4) == 2)
-            Wp = [Wp; (grid_size(1) - 1.5)*grid_w  (idx+floor(idx/2)-1.5)*grid_w 2 0];
-        end
-        if (mod(idx, 4) == 3)
-            Wp = [Wp; (grid_size(1) - 1.5)*grid_w (idx+floor(idx/2)-0.5)*grid_w 1 0];
-        end
-        if (mod(idx, 4) == 0)
-            Wp = [Wp; 0.5*grid_w  (idx+floor(idx/2)-2.5)*grid_w 1 0];
+    elseif(strcmp(zigzag_mode, 'simple'))
+        for idx = 1: grid_size(2)
+            if (mod(idx, 4) == 1)
+                if (idx == 1)
+                    Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 1];
+                else
+                    Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2 0];
+                end
+            end
+            if (mod(idx, 4) == 2)
+                Wp = [Wp; (grid_size(2) - 1.5)*grid_w  (idx-0.5)*grid_w 2 0];
+            end
+            if (mod(idx, 4) == 3)
+                Wp = [Wp; (grid_size(2) - 1.5)*grid_w (idx+0.5)*grid_w 2 0];
+            end
+            if (mod(idx, 4) == 0)
+                Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2 0];
+            end
         end
     end
 elseif (strcmp(navigation_mode,'Point'))
@@ -239,9 +267,12 @@ else
 end
 
 %% DRAW MAP
+clf
+
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
 hold on
+
 
  % Draw Waypoints
 if (is_display_wp)
@@ -249,6 +280,17 @@ if (is_display_wp)
         Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
     end
 end
+
+if (is_using_obs_map)
+    if (is_display_obstacle)
+        figure(1)
+        for idxobs = 2:size(Map_obs,1)
+                Obstacles = rectangle('Position', [grid_w*(Map_obs(idxobs, :) - [1 1]), grid_w grid_w], ...
+                                                'FaceColor', [0 0 0]);
+        end
+    end
+end
+
 txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
@@ -592,7 +634,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
              end
         end
         
-        
         % Draw Outer Border
         Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
         Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
@@ -607,7 +648,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
             end
         end
-        
         
         % Draw Robot Tracks
         % TODO: track rotation!
@@ -709,6 +749,7 @@ end
 disp('===================');
 disp('Robot Navigation Completed!');
 toc
+hold off
 if (is_calculate_coverage)
     disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
 end
