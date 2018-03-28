@@ -19,6 +19,10 @@ Algorithm = 'square_waypoint';
 Serial_port = 'COM12';
 baudrate = 9600;
 
+
+is_xbee_on = false;
+is_streaming_on = false;
+
 is_calculate_coverage = false;
 is_display_coverage_map = false;
 is_display_wp = true;
@@ -27,13 +31,12 @@ is_display_route = true;
 is_display_route_clearing = true;
 is_display_grid_on = true;
 is_print_coverage = false;
+is_print_sent_commands = true;
 is_print_route_deviation = false;
-is_xbee_on = true;
 is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
 is_sim_heading_correction = false;
-is_streaming_on = true;
 is_streaming_collect_single_values = true;
 
 navigation_mode = 'Line';
@@ -59,7 +62,7 @@ robot_Form = 1;
 time_interval = 2;
 
 max_pos_initialize = 10;
-
+max_command_count_sim = 235;
 %% Variable initialization
 
 
@@ -100,6 +103,8 @@ Line_Robot = [];
 Line_Robot_area = [];
 Line_Border = [];
 loc_center = [0 0];
+
+is_transforming = false;
 
 RobotShapes = [0 0 0 0 ;              
                         0 0 pi pi;
@@ -364,27 +369,31 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         for rbtidx = 1:4
             if abs(heading(rbtidx) - RobotShapes(Wp(wp_current, 3),rbtidx)) > tol_transform
                 is_require_transform = true;
-
             end
         end
        
         
         if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
             is_transforming = true;
+            if (~strcmp(char_command,char(prev_char_command))||command_count >= 15 )
                 if (is_xbee_on)
-                     if (char_command~= char(prev_char_command))
-                        writedata = char(num2str(Wp(wp_current, 3)));
-                        fwrite(arduino,writedata,'char');
-                        prev_char_command = char(num2str(Wp(wp_current, 3)));
-                        disp(['sending: ' , num2str(Wp(wp_current, 3))])
-                        command_count = 0;
-                    end
+                    writedata = char(num2str(Wp(wp_current, 3)));
+                    fwrite(arduino,writedata,'char');
                 end
-        else 
+                prev_char_command = char(num2str(Wp(wp_current, 3)));
+                if (is_print_sent_commands) 
+                    disp(['sending: ' , num2str(Wp(wp_current, 3))])
+                end
+                command_count = 0;
+            else
+                command_count = command_count + 1;
+            end
+        else
             robot_Form = Wp(wp_current, 3);
             is_transforming = false;
         end
-        
+            
+            
         % Robot Motion
         if (~is_pos_initialized && is_streaming_on)
             pos_uwb(:, step+1) = pos_uwb(:, step);
@@ -477,7 +486,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
             
             % Movement for simulations
-            if (~is_streaming_on)
+            if (~is_streaming_on && ~is_transforming)
                 [Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
                 sim_noise = 0;
                 if (is_sim_normal_noise_on)
@@ -493,26 +502,39 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         
-        % Xbee Communication
         
-        if (is_xbee_on)
-            if (char_command~= char(prev_char_command))
+                
+         if (~is_xbee_on)
+             if (char_command~= char(prev_char_command))
+                if (is_print_sent_commands) 
+                    disp(['sending: ' , char_command])
+                end
+                 command_count = 0;
+             elseif (command_count >= 15)
+                 prev_char_command = char(num2str(Wp(wp_current, 3)));
+                if (is_print_sent_commands) 
+                    disp(['sending: ' , char_command])
+                end
+                 command_count = 0;
+             else
+                 command_count = command_count + 1;
+             end
+         end
+        
+        % Xbee Communication
+        if (~strcmp(char_command,char(prev_char_command)) || (command_count >= 15))
+            if (is_xbee_on)
                 writedata = char(char_command);
                 fwrite(arduino,writedata,'char');
-                prev_char_command = char_command;
-                disp(['sending: ' , char_command])
-                command_count = 0;
-            elseif (command_count >= 15)
-                writedata = char(char_command);
-                fwrite(arduino,writedata,'char');
-                prev_char_command = char_command;
-                disp(['sending: ' , char_command])
-                command_count = 0;
-            else
-                command_count = command_count + 1;
             end
+            prev_char_command = char_command;
+            if (is_print_sent_commands) 
+                disp(['sending: ' , char_command])
+            end
+            command_count = 0;
+        else
+            command_count = command_count + 1;
         end
-        %readData = fscanf(arduino, '%c', 1)
         
         
         % calibrate pos here
@@ -684,7 +706,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         line([pos_x pos_nx], [pos_y pos_ny])
     end
 end
-
 
 if (is_xbee_on)
      writedata = char('S');
