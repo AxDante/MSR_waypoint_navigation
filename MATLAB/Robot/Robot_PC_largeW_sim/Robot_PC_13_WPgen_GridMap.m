@@ -3,18 +3,17 @@
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
-
 % Map Setup
-file_map = '10_10_simple01';              % Set Map as 'Empty' for empty map
-grid_size = [10 10];             % Assign values for grid size if an empty map is chosen
-grid_w = 25;
+file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
+grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
+grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 18;                    
-tol_line_width = 12;
+tol_wp = 18;    % Waypoint tolerance (unit:cm)               
+tol_line_width = 12;    % Route deviation tolerance (unit:cm)
 
-cvg_sample_side = [20 20];
-fixed_offset = [96.5 -54.5];
-starting_grid = [1 2];
+cvg_sample_side = [20 20];  % Robot map coverage samples size 
+fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
+starting_grid = [1 2];  % Robot starting grid
 
 % Algorithms
 Algorithm = 'square_waypoint';
@@ -22,41 +21,43 @@ navigation_mode = 'Line';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 20000;
-interval_system_time = 2;
-interval_normal_linear_command_send = 15;
-interval_rotation_command_send = 10;
+max_step = 20000;   % Maximum system steps
+interval_system_time = 2;   % Robot dynamics update intervals
+interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
+interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
-tol_transform = pi/50;
-Dy_angv_transform = pi/24;
-tol_heading = pi/7;
+robot_Form = 2; % Robot starting shape
+tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
+Dy_angv_transform = pi/24;  % Robot transformation angular velocity (unit:rad)
+tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
 
-update_rate_streaming = 1;                      
-update_rate_streaming_single_value = 1; 
-update_rate_sim = 0.2;
+update_rate_streaming = 1;  % Robot position update rate during data streaming
+update_rate_streaming_single_value = 1; % Robot position update rate during data streaming with single values
+update_rate_sim = 0.2; % Robot position update rate during simulation
 
 % Serial Communication Setup
-Serial_port = 'COM12';
-baudrate = 9600;
+Serial_port = 'COM12';  % Communication port to XBee module
+baudrate = 9600;    % default:9600
 
 
 % Toggle 
-is_xbee_on = false;
+is_xbee_on = false; 
 is_streaming_on = false;
 
 is_calculate_coverage = false;
 is_display_coverage_map = false;
-is_display_wp = true;
+is_display_wp = true;   
 is_display_wp_clearing = false;
 is_display_route = true;
 is_display_route_clearing = true;
 is_display_grid_on = true;
 is_display_obstacle = true;
 is_display_robot_grid_coverage_map = true;
+is_display_ignite_swept_grid = true;
 is_print_coverage = false;
 is_print_sent_commands = true;
-is_print_route_deviation = true;
+is_print_route_deviation = false;
 is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
@@ -64,19 +65,19 @@ is_sim_heading_correction = false;
 is_streaming_collect_single_values = true;
 
 % Data streaming setup
-streaming_max_single_val = 1000;                 % unit: cm
-streaming_max_shift_dis = 35;                       % unit: cm 
-streaming_max_shift_dis_single_value = 20;    % unit: cm
+streaming_max_single_val = 1000;                 % Accepted maximum streaming value from data log. (unit: cm)
+streaming_max_shift_dis = 35;                       % Accepted maximum shifting distance between two positions. (unit: cm)
+streaming_max_shift_dis_single_value = 30;    % Accepted maximum shifting distance between two positions during single value streaming (unit: cm)
 
-max_pos_initialize = 10;
+max_pos_initialize = 10;    % Number of valid position values required to finish robot initialization
 
 % Simulation Setup
-sim_noise_normal = 20;                        %unit: cm
-sim_noise_large_y_frequency = 0.05;
-sim_noise_large_y = 50;
+sim_noise_normal = 20;  % Noise value during simulation (unit: cm)
+sim_noise_large_y_frequency = 0.05; % Frequency of large Y axis noise during simulation 
+sim_noise_large_y = 50; % large Y axis noise value during simulation (unit: cm)
 
-robot_weight = [1.5 1.5 1.5 1.5];
-robot_Form = 2;
+robot_weight = [1.5 1.5 1.5 1.5]; % Robot weights (unit: kg)
+
 
 %% Variable initialization
 
@@ -595,6 +596,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         pos_y = pos_uwb(2,step);
         pos_ny = pos_uwb(2, step+1);
         
+        %% Figure!!
         
         % remove previous robot line plot
         if (~isempty(Line_Robot))
@@ -755,6 +757,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])
+        
     end
 end
 

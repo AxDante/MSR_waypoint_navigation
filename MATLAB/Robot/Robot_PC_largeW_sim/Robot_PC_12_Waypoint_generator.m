@@ -6,7 +6,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % Map Setup
 file_map = '10_10_simple01';              % Set Map as 'Empty' for empty map
-grid_size = [10 10];             % Assign values for grid size if an empty map is chosen
+grid_size = [10 10];                            % Assign values for grid size if an empty map is chosen
 grid_w = 25;
 
 tol_wp = 18;                    
@@ -295,7 +295,9 @@ txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
+
 tic
+
 if ( strcmp( Algorithm, 'square_waypoint'))
     
     % Algorithm Setup
@@ -325,6 +327,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             txt_rows=size(txt_Streaming,1);
             txt_endLine = txt_Streaming(end, 5:6);
             
+            % Calculate position based on offset values
             if (is_fixed_offset) 
                 txt_endLine = txt_endLine*100 + fixed_offset;
             else
@@ -434,7 +437,6 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 is_require_transform = true;
             end
         end
-        
         if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
             if (command_count_rotation >= interval_rotation_command_send)
                 is_transforming = true;
@@ -468,7 +470,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             [Dy_v(:, :, step), heading]  = robotMovement('r', heading, 0);
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
-            % Waypoint navigation
+            % Waypoint navigation Mode
             if (strcmp(navigation_mode,'Point'))
                 if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                     if Wp(wp_current, 1) - pos_uwb(1,step) > 0
@@ -483,7 +485,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                     end
                 end
-            % Line navigation
+            % Line navigation Mode
             elseif (strcmp(navigation_mode,'Line'))
                 if (Wp(wp_current, 4) == 1)
                     if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
@@ -578,6 +580,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         pos_y = pos_uwb(2,step);
         pos_ny = pos_uwb(2, step+1);
         
+        %% Figure Plotting
         
         % remove previous robot line plot
         if (~isempty(Line_Robot))
@@ -640,6 +643,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
         Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
         
+        % Draw Grid
         if (is_display_grid_on)
             for idxx = 1:(grid_size(1) + 1)
                 line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
@@ -691,6 +695,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                                                       pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 1);   
         end
         
+        % Robot Coverage Problem
         if(is_calculate_coverage)
             for cvg_idx = 1: numel(Cvg(:, 1))
                 if (abs(pos_center(2, :, step)-Cvg(cvg_idx, 1:2)) < 2.5*sqrt(2)*grid_w)
@@ -736,8 +741,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 disp(['Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
             end
         end
+      
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])
+        
     end
 end
 
