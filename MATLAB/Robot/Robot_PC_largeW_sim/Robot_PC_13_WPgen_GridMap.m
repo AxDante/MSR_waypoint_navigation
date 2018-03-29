@@ -116,8 +116,10 @@ pos_center = zeros(4, 2, max_step);
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
 Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* grid_coverage_grid_default_value;
+Grid_obstacle = zeros(grid_size(2),  grid_size(1), max_step);
 for idxobs = 2:size(Map_obs,1)
     Grid_visited(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = clims(1);
+    Grid_obstacle(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = 1;
 end
 
 robot_center_Grid = [];
@@ -323,7 +325,6 @@ txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
-
 tic
 if ( strcmp( Algorithm, 'square_waypoint'))
     
