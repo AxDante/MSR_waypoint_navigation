@@ -8,17 +8,19 @@ file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 18;    % Waypoint tolerance (unit:cm)               
-tol_line_width = 12;    % Route deviation tolerance (unit:cm)
+tol_wp = 15; %18    % Waypoint tolerance (unit:cm)               
+tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
-clims = [-100, 50];
 starting_grid = [1 2];  % Robot starting grid
-
-
+clims = [-1000, 200];  % Grid color map limits
+grid_coverage_grid_default_value = -980;
+grid_coverage_colormap = 'parula'; % Colormap format
+grid_coverage_sim_increase = 4; % Grid color map value increased for each step during simulation;
+grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Algorithms
 Algorithm = 'square_waypoint';
@@ -51,6 +53,7 @@ is_xbee_on = false;
 is_streaming_on = false;
 
 is_calculate_coverage = false;
+is_calculate_grid_coverage_duration = true;
 is_display_coverage_map = false;
 is_display_wp = true;   
 is_display_wp_clearing = false;
@@ -58,14 +61,14 @@ is_display_route = true;
 is_display_route_clearing = true;
 is_display_grid_on = true;
 is_display_obstacle = true;
-is_display_robot_grid_coverage_map = true;
+is_display_grid_coverage_map = true;
 is_display_ignite_swept_grid = true;
 is_print_coverage = false;
 is_print_sent_commands = true;
 is_print_route_deviation = false;
 is_fixed_offset = false;
-is_sim_normal_noise_on= true;
-is_sim_large_noise_y_on = true;
+is_sim_normal_noise_on= false;
+is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
 is_streaming_collect_single_values = true;
 
@@ -112,7 +115,11 @@ pos_center = zeros(4, 2, max_step);
 
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
-Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* clims(1);
+Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* grid_coverage_grid_default_value;
+for idxobs = 2:size(Map_obs,1)
+    Grid_visited(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = clims(1);
+end
+
 robot_center_Grid = [];
 robot_Grid = [];
 
@@ -445,16 +452,28 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         for idxbox = 1:4
             if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
                     robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))
-                if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == clims(1))
+                if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == grid_coverage_grid_default_value)
                     Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = 0;
                 else
-                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + 1;
+                    if(~is_streaming_on)
+                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
+                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_sim_increase;
+                    else
+                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
+                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_increase;
+                    end
                 end
             end
         end
-        figure(2)
-        imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
-        figure(1)
+        if (is_display_grid_coverage_map)
+            figure(2)
+            imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
+            cmap = colormap(grid_coverage_colormap);
+            cmap(1,:) = zeros(1,3);
+            colormap(cmap);
+            colorbar
+            figure(1)
+        end
         
         % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
