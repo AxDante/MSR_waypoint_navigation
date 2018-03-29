@@ -3,7 +3,7 @@
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
-% Map Setup
+% General Map Setup
 file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
@@ -13,7 +13,12 @@ tol_line_width = 12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
+
+% Grid Map Setup
+clims = [-100, 50];
 starting_grid = [1 2];  % Robot starting grid
+
+
 
 % Algorithms
 Algorithm = 'square_waypoint';
@@ -96,7 +101,7 @@ heading = [0 0 pi pi];
 
 time_pause = interval_system_time/100;
 
-pos_uwb_offset = [0 -3];
+pos_uwb_offset = [12.5 37.5];
 flex_offset = [0 0];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
@@ -107,7 +112,7 @@ pos_center = zeros(4, 2, max_step);
 
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
-Grid_visited =  zeros(grid_size(2),  grid_size(1), max_step);
+Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* clims(1);
 robot_center_Grid = [];
 robot_Grid = [];
 
@@ -208,6 +213,7 @@ end
 %% Waypoint Generation
 
 if (strcmp(navigation_mode,'Line'))
+
     wp_current = 1;
     disp('Generating robot routes...')
     if (strcmp(zigzag_mode, 'shape_O_I'))
@@ -280,6 +286,9 @@ end
 
 %% DRAW MAP
 clf
+cla
+close all;
+clc;
 
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
@@ -307,6 +316,7 @@ txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Square Waypoint  (SW)
+
 tic
 if ( strcmp( Algorithm, 'square_waypoint'))
     
@@ -430,7 +440,21 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                              0 0;
                             rotated_relative_grid_pos(2,:);
                             rotated_relative_grid_pos(3,:)] + robot_center_Grid;
-
+                        
+        Grid_visited(:,:,step+1) = Grid_visited(:,:,step);
+        for idxbox = 1:4
+            if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
+                    robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))
+                if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == clims(1))
+                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = 0;
+                else
+                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + 1;
+                end
+            end
+        end
+        figure(2)
+        imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
+        figure(1)
         
         % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
@@ -607,7 +631,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border = [];
         Line_Linear_Route = [];
         
-        % Draw Robot
+        % Determine Robot center
         pos_center(2,:, step) = [pos_x pos_y];
         pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
                                    [sin(pi/4 - heading(2))-cos(pi/4 - heading(1)) ...
@@ -658,6 +682,11 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
         Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
         Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
+        
+        if(is_display_ignite_swept_grid)
+            
+        end
+        
         
         if (is_display_grid_on)
             for idxx = 1:(grid_size(1) + 1)

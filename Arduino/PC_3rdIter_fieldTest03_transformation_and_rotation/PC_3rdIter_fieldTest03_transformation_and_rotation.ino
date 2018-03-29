@@ -58,7 +58,7 @@ float worldRobotTargetHeading = -42.0; //(for robotMode 3 or 4, which recognize 
 #define secureShapeActive true
 #define secureShapeLinearActive true
 
-#define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
+#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
 #define imuActive true
 
 #define robotMode 1

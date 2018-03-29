@@ -3,8 +3,7 @@
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
-
-% Map Setup
+% General Map Setup
 file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
@@ -14,7 +13,12 @@ tol_line_width = 12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
+
+% Grid Map Setup
+clims = [-100, 50];
 starting_grid = [1 2];  % Robot starting grid
+
+
 
 % Algorithms
 Algorithm = 'square_waypoint';
@@ -28,6 +32,7 @@ interval_normal_linear_command_send = 15; % Robot normal linear commands sending
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
+robot_Form = 2; % Robot starting shape
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
 Dy_angv_transform = pi/24;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
@@ -54,9 +59,10 @@ is_display_route_clearing = true;
 is_display_grid_on = true;
 is_display_obstacle = true;
 is_display_robot_grid_coverage_map = true;
+is_display_ignite_swept_grid = true;
 is_print_coverage = false;
 is_print_sent_commands = true;
-is_print_route_deviation = true;
+is_print_route_deviation = false;
 is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
@@ -64,19 +70,19 @@ is_sim_heading_correction = false;
 is_streaming_collect_single_values = true;
 
 % Data streaming setup
-streaming_max_single_val = 1000;                 % Accepted streaming value from unit: cm
-streaming_max_shift_dis = 35;                       % unit: cm 
-streaming_max_shift_dis_single_value = 20;    % unit: cm
+streaming_max_single_val = 1000;                 % Accepted maximum streaming value from data log. (unit: cm)
+streaming_max_shift_dis = 35;                       % Accepted maximum shifting distance between two positions. (unit: cm)
+streaming_max_shift_dis_single_value = 30;    % Accepted maximum shifting distance between two positions during single value streaming (unit: cm)
 
-max_pos_initialize = 10;
+max_pos_initialize = 10;    % Number of valid position values required to finish robot initialization
 
 % Simulation Setup
-sim_noise_normal = 20;                        %unit: cm
-sim_noise_large_y_frequency = 0.05;
-sim_noise_large_y = 50;
+sim_noise_normal = 20;  % Noise value during simulation (unit: cm)
+sim_noise_large_y_frequency = 0.05; % Frequency of large Y axis noise during simulation 
+sim_noise_large_y = 50; % large Y axis noise value during simulation (unit: cm)
 
-robot_weight = [1.5 1.5 1.5 1.5];
-robot_Form = 2;
+robot_weight = [1.5 1.5 1.5 1.5]; % Robot weights (unit: kg)
+
 
 %% Variable initialization
 
@@ -95,7 +101,7 @@ heading = [0 0 pi pi];
 
 time_pause = interval_system_time/100;
 
-pos_uwb_offset = [0 -3];
+pos_uwb_offset = [12.5 37.5];
 flex_offset = [0 0];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
@@ -207,6 +213,7 @@ end
 %% Waypoint Generation
 
 if (strcmp(navigation_mode,'Line'))
+
     wp_current = 1;
     disp('Generating robot routes...')
     if (strcmp(zigzag_mode, 'shape_O_I'))
@@ -429,7 +436,21 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                              0 0;
                             rotated_relative_grid_pos(2,:);
                             rotated_relative_grid_pos(3,:)] + robot_center_Grid;
-
+                        
+        Grid_visited(:,:,step+1) = Grid_visited(:,:,step);
+        for idxbox = 1:4
+            if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
+                    robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))
+                if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == clims(1))
+                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = 0;
+                else
+                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + 1;
+                end
+            end
+        end
+        figure(2)
+        imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
+        figure(1)
         
         % Waypoint clearing
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
@@ -606,7 +627,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border = [];
         Line_Linear_Route = [];
         
-        % Draw Robot
+        % Determine Robot center
         pos_center(2,:, step) = [pos_x pos_y];
         pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
                                    [sin(pi/4 - heading(2))-cos(pi/4 - heading(1)) ...
@@ -657,6 +678,11 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
         Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
         Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
+        
+        if(is_display_ignite_swept_grid)
+            
+        end
+        
         
         if (is_display_grid_on)
             for idxx = 1:(grid_size(1) + 1)
