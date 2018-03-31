@@ -1,10 +1,15 @@
+clf
+cla
+close all;
+clc;
+
 %% Variable Setup
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
-file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
+file_map = '10_10_simple02';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
@@ -23,8 +28,8 @@ grid_coverage_sim_increase = 4; % Grid color map value increased for each step d
 grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Algorithms
-Algorithm = 'square_waypoint';
-navigation_mode = 'Line';
+Algorithm = 'square_waypointas';
+navigation_mode = 'Shape_O_I_gen';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
@@ -287,6 +292,8 @@ elseif (strcmp(navigation_mode,'Point'))
             Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
         end
     end
+elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
+    Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, 2, true)
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -294,10 +301,7 @@ else
 end
 
 %% DRAW MAP
-clf
-cla
-close all;
-clc;
+
 
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
