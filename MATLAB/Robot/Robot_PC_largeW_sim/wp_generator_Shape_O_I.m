@@ -127,4 +127,6 @@ function Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, robot_sta
         end
     end
     %}
+    Wp
+    Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*grid_w;
 end

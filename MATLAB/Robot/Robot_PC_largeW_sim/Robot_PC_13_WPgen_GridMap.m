@@ -13,7 +13,7 @@ file_map = '10_10_simple02';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 15; %18    % Waypoint tolerance (unit:cm)               
+tol_wp = 5; %18    % Waypoint tolerance (unit:cm)               
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
@@ -28,13 +28,13 @@ grid_coverage_sim_increase = 4; % Grid color map value increased for each step d
 grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Algorithms
-Algorithm = 'square_waypointas';
-navigation_mode = 'Shape_O_I_gen';
+Algorithm = 'square_waypoint';
+navigation_mode = 'Line';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
 max_step = 20000;   % Maximum system steps
-interval_system_time = 2;   % Robot dynamics update intervals
+interval_system_time = 1;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
@@ -107,7 +107,7 @@ else
 end
 heading = [0 0 pi pi];
 
-time_pause = interval_system_time/100;
+time_pause = interval_system_time/300;
 
 pos_uwb_offset = [12.5 37.5];
 flex_offset = [0 0];
@@ -198,7 +198,7 @@ Char_command_array_linear = ['R', 'F', 'L', 'B'];
 Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
 heading_command_compensate = 0;
 
-char_command = '';
+char_command = 'S';
 Cvg = [];
 count_cvg_point = 0;
 cvg_sample_w = grid_w*[grid_size(2)/cvg_sample_side(1) grid_size(1)/cvg_sample_side(2)];
@@ -293,7 +293,9 @@ elseif (strcmp(navigation_mode,'Point'))
         end
     end
 elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
-    Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, 2, true)
+    disp('Generating waypoints...')
+    wp_current = 1;
+    Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, 2, true);
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -481,6 +483,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         % Waypoint clearing
+        %{
         if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_display_wp && is_display_wp_clearing)
                 delete(Circle_Wp(wp_current));
@@ -492,6 +495,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
             heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
         end
+        %}
         
         % Transformation
         is_require_transform = false;
@@ -604,6 +608,22 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         end
                     end
                 end
+            elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
+                if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) > tol_wp )
+                    if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
+                        end
+                    else
+                        if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
+                        end
+                    end
+                end
             end
             
             % Movement for simulations
@@ -619,7 +639,22 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 pos_uwb(:, step+1) = Dy_v(2, :, step).' * interval_system_time+ ...
                                                     update_rate_sim* (pos_uwb(:, step) + sim_noise)...
                                                    + (1 - update_rate_sim)* pos_uwb(:, step);
+                                               
+                               
             end
+        end
+        
+        if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp )
+            if (is_display_wp && is_display_wp_clearing)
+                delete(Circle_Wp(wp_current));
+            end
+            wp_current = wp_current + 1;
+            char_command = 'S';
+            % Break condition
+            if wp_current > size(Wp,1)
+                break;
+            end
+            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
         end
         
         % Xbee Communication
@@ -631,6 +666,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             prev_char_command = char_command;
             if (is_print_sent_commands) 
                 disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , char_command, ''''])
+                disp([pos_uwb(:, step+1).', Wp(wp_current, 1:2)])
             end
             command_count_normal_linear = 0;
         else
