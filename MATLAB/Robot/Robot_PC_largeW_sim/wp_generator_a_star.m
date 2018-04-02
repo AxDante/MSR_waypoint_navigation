@@ -4,6 +4,10 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
     robot_shape = robot_starting_shape;
     dir = 1;
     forward = 0;
+    
+    wall_as_obs = true;
+    
+    
     if(is_print_wp_gen_info)
         disp([' - Begin generating waypoints for shape O I robot navigation']);
     end
@@ -43,7 +47,6 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 wall = 1;
             end
             
-            
             if (robot_shape == 2)
 
                 %          o o |
@@ -57,13 +60,13 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                         if (Go(rcg(1)+0.5+1.5*dir, rcg(2)) == 0 &&...
                             Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
                             Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                            forward = true;
                             if(Go(rcg(1)+0.5+0.5*dir,    rcg(2)+1) == 0 && ...
                                Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
                                 Wp = [Wp; rcg(1)+1*dir rcg(2)+1 2];
                                 if(Go(rcg(1)+0.5+0.5*dir, rcg(2)+3) == 0 && ...
                                    Go(rcg(1)+0.5+1.5*dir, rcg(2)+3) == 0)
                                    Wp = [Wp; rcg(1)+1*dir rcg(2)+2 2];
-                                   forward 
                                    dir = -1*dir;
                                 end
                             end
@@ -91,6 +94,7 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 %   1 4 o x
                 
                 if (checkNextCase && rcg(1)+0.5+2.5*dir > 0 &&  rcg(1)+0.5+2.5*dir <= gs(1) ...
+                                        && rcg(1)+0.5-1.5*dir > 0 &&  rcg(1)+0.5-1.5*dir <= gs(1) ...
                                           && rcg(2)-1 > 0 && rcg(2)-1 < gs(2))
                     if (Go(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 1 &&...
                         Go(rcg(1)+0.5+2.5*dir, rcg(2)) == 0 && ...
@@ -102,105 +106,15 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                         checkNextCase = false;
                     end
                 end
-                
-                                
+                                        
                 if (checkNextCase)
                     Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
-                end
-                
-            elseif (robot_shape == 8)
-                if (rcg(2) == idxrow*2) % Upper I Shape
-                    if (Go(rcg(1)+0.5-2.5*dir, rcg(2)-1) == 1 &&...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0 )
-                        Wp = [Wp; rcg(1) rcg(2) 2];
-                        Wp = [Wp; rcg(1)-1*dir  rcg(2) 2];
-                        Wp = [Wp; rcg(1) rcg(2) 2];
-                    else
-                        Wp = [Wp; rcg(1)+1*dir rcg(2) 8];
-                    end
-                elseif (rcg(2) == idxrow*2 - 1) % Lower I Shape
-                    %  == X 
-                    %  == 1 2 3 4
-                    %        o o o o
-                     if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
-                                                    rcg(2) +0.5-1.5*dir> 0 && rcg(2) +0.5-1.5*dir <= gs(2))
-                         if (Go(rcg(1)+0.5-1.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2) 2];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            %Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
-                            checkNextCase = false;
-                         end
-                     end
-                    
-                    %  ==    x      |  
-                    %  == 1 2 3 4 |
-                    %        o o o o |
-                     if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
-                                                    rcg(2) +0.5-1.5*dir> 0 && rcg(2) +0.5-1.5*dir <= gs(2))
-                         if (Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 1 && ...
-                             Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2) 2];
-                            Wp = [Wp; rcg(1)+1 rcg(2) 2];
-                            forward = 1;
-                            checkNextCase = false;
-                         end
-                     end                    
-                     
-                    
-                     %  == X o o o o
-                     %  ==    1 2 3 4
-                     if (checkNextCase && rcg(1)+0.5-2.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
-                                                    rcg(2)+1 < gs(2))
-                         if(Go(rcg(1)+0.5-2.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2)+1 8];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            Wp = [Wp; rcg(1)-1*dir rcg(2)+1 2];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            checkNextCase = false;
-                         end
-                     end
-                     
-                     % ==  o o o o |
-                     % ==  1 2 3 4 |
-                     
-                     if (checkNextCase && rcg(2)+1 <= gs(2) && rcg(1)+3 == gs(1))
-                         if(Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2)+1*dir 8];
-                            Wp = [Wp; rcg(1) rcg(2)+1*dir 2];
-
-                            checkNextCase = false;
-                         end
-                     end
-                     
-                     if (checkNextCase)
-                         Wp = [Wp; rcg(1)+0.5+0.5*dir rcg(2) 8];
-                     end
                 end
             else
                 end_of_row = true;
             end
         end
+        
         % checking first row
         
         % checking second row
