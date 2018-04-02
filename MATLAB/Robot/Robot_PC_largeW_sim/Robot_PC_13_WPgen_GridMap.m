@@ -9,7 +9,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
-file_map = '10_10_simple02';   % Set Map as 'Empty' for empty map
+file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
@@ -29,12 +29,12 @@ grid_coverage_increase = 1; % Grid color map value increased for each step durin
 
 % Algorithms
 Algorithm = 'square_waypoint';
-navigation_mode = 'Line';
+navigation_mode = 'Shape_O_I_gen';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
 max_step = 20000;   % Maximum system steps
-interval_system_time = 1;   % Robot dynamics update intervals
+interval_system_time = 4;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
@@ -107,7 +107,7 @@ else
 end
 heading = [0 0 pi pi];
 
-time_pause = interval_system_time/300;
+time_pause = interval_system_time/700;
 
 pos_uwb_offset = [12.5 37.5];
 flex_offset = [0 0];
@@ -522,6 +522,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
         else
             robot_Form = Wp(wp_current, 3);
+            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
             is_transforming = false;
         end
             
@@ -609,7 +610,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                 end
             elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
-                if(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) > tol_wp )
+                if(~is_require_transform && norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) > tol_wp )
                     if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                         if Wp(wp_current, 1) - pos_uwb(1,step) > 0
                             char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
@@ -623,9 +624,12 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                             char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                         end
                     end
+                else
+                    char_command = 'S';
                 end
             end
-            
+            %disp([pos_uwb(:, step).', Wp(wp_current, 1:2)])
+            %disp(norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)))
             % Movement for simulations
             if (~is_streaming_on && ~is_transforming)
                 [Dy_v(:, :, step), heading]  = robotMovement(char_command, heading, 2);
@@ -654,7 +658,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             if wp_current > size(Wp,1)
                 break;
             end
-            heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
+            
         end
         
         % Xbee Communication
@@ -665,8 +669,8 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             end
             prev_char_command = char_command;
             if (is_print_sent_commands) 
-                disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , char_command, ''''])
-                disp([pos_uwb(:, step+1).', Wp(wp_current, 1:2)])
+                %disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , char_command, ''''])
+                %disp([pos_uwb(:, step+1).', Wp(wp_current, 1:2)])
             end
             command_count_normal_linear = 0;
         else

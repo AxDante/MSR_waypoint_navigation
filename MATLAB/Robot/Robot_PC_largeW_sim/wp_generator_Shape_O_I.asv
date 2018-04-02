@@ -31,7 +31,7 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
         
         while_exit_counter = 0;
         end_of_row = false;
-        while (~end_of_row && while_exit_counter < 100)
+        while (~end_of_row && while_exit_counter < 25)
             rcg = Wp(end,1:2);
             robot_shape = Wp(end,3);
             while_exit_counter = while_exit_counter + 1;
@@ -51,35 +51,51 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 % ==  2 3 o |
                 % ==  1 4 o |
                 
-                if (checkNextCase && rcg(1)+0.5+1.5*dir == wall ...
+                if (checkNextCase && rcg(1)+2*dir == wall ...
                                           && rcg(2)-1 > 0       && rcg(2)-1 < gs(2))
-  
-                        if (Go(rcg(1)+0.5+1.5*dir, rcg(2)) == 0 &&...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
+                    if (dir == 1)
+                        if (Go(rcg(1)+2*dir, rcg(2)) == 0 &&...
+                            Go(rcg(1)+2*dir, rcg(2)-1) == 0)
                             Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
-                            if(Go(rcg(1)+0.5+0.5*dir,    rcg(2)+1) == 0 && ...
-                               Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                            if(Go(rcg(1)+1*dir,    rcg(2)+1) == 0 && ...
+                               Go(rcg(1)+2*dir, rcg(2)+1) == 0)
                                 Wp = [Wp; rcg(1)+1*dir rcg(2)+1 2];
-                                if(Go(rcg(1)+0.5+0.5*dir, rcg(2)+3) == 0 && ...
-                                   Go(rcg(1)+0.5+1.5*dir, rcg(2)+3) == 0)
+                                if(Go(rcg(1)+1*dir, rcg(2)+3) == 0 && ...
+                                   Go(rcg(1)+2*dir, rcg(2)+3) == 0)
                                    Wp = [Wp; rcg(1)+1*dir rcg(2)+2 2];
-                                    dir = -1*dir;
+                                   dir = -1*dir;
                                 end
                             end
                             checkNextCase = false;
                         end
+                    elseif (dir == -1)
+                        if (Go(rcg(1)+2*dir, rcg(2)) == 0 &&...
+                            Go(rcg(1)+2*dir, rcg(2)-1) == 0)
+                            Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                            Wp = [Wp; rcg(1)+2*dir rcg(2) 2];
+                            if(Go(rcg(1)+1*dir,    rcg(2)+1) == 0 && ...
+                               Go(rcg(1)+2*dir, rcg(2)+1) == 0)
+                                Wp = [Wp; rcg(1)+2*dir rcg(2)+1 2];
+                                if(Go(rcg(1)+1*dir, rcg(2)+3) == 0 && ...
+                                   Go(rcg(1)+2*dir, rcg(2)+3) == 0)
+                                   Wp = [Wp; rcg(1)+2*dir rcg(2)+2 2];
+                                   dir = -1*dir;
+                                end
+                            end
+                            checkNextCase = false;
+                        end
+                    end
                 end
-                
                 
                 %   2 3 o x
                 %   1 4 o o
                 
-                if (checkNextCase && rcg(1)+0.5+2.5*dir > 0 &&  rcg(1)+0.5+2.5*dir <= gs(1) ...
+                if (checkNextCase && rcg(1)+3*dir > 0 &&  rcg(1)+3*dir <= gs(1) ...
                                           && rcg(2)-1 > 0 && rcg(2)-1 < gs(2))
-                    if (Go(rcg(1)+0.5+2.5*dir, rcg(2)) == 1 &&...
-                        Go(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
+                    if (Go(rcg(1)+3*dir, rcg(2)) == 1 &&...
+                        Go(rcg(1)+3*dir, rcg(2)-1) == 0 && ...
+                        Go(rcg(1)-1*dir, rcg(2)) == 0 && ...
+                        Go(rcg(1)-1*dir, rcg(2)-1) == 0)
                         Wp = [Wp; rcg(1) rcg(2) 8];
                         Wp = [Wp; rcg(1) rcg(2)-1 8];
                         checkNextCase = false;
@@ -89,13 +105,13 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 %   2 3 o o
                 %   1 4 o x
                 
-                if (checkNextCase && rcg(1)+0.5+2.5*dir > 0 &&  rcg(1)+0.5+2.5*dir <= gs(1) ...
+                if (checkNextCase && rcg(1)+3*dir > 0 &&  rcg(1)+3*dir <= gs(1) ...
                                           && rcg(2)-1 > 0 && rcg(2)-1 < gs(2))
-                    if (Go(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 1 &&...
-                        Go(rcg(1)+0.5+2.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
-                        Wp = [Wp; rcg(1)+1*dir  rcg(2) 2];
+                    if (Go(rcg(1)+3*dir, rcg(2)-1) == 1 &&...
+                        Go(rcg(1)+3*dir, rcg(2)) == 0 && ...
+                        Go(rcg(1)-1*dir, rcg(2)) == 0 && ...
+                        Go(rcg(1)-1*dir, rcg(2)-1) == 0)
+                        Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
                         Wp = [Wp; rcg(1) rcg(2) 2];
                         Wp = [Wp; rcg(1) rcg(2) 8];
                         checkNextCase = false;
@@ -109,13 +125,13 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 
             elseif (robot_shape == 8)
                 if (rcg(2) == idxrow*2) % Upper I Shape
-                    if (Go(rcg(1)+0.5-2.5*dir, rcg(2)-1) == 1 &&...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0 )
+                    if (Go(rcg(1)-2*dir, rcg(2)-1) == 1 &&...
+                        Go(rcg(1)-1*dir, rcg(2)-1) == 0 && ...
+                        Go(rcg(1), rcg(2)-1) == 0 && ...
+                        Go(rcg(1)+1*dir, rcg(2)-1) == 0 && ...
+                        Go(rcg(1)+2*dir, rcg(2)-1) == 0 )
                         Wp = [Wp; rcg(1) rcg(2) 2];
-                        Wp = [Wp; rcg(1)-1*dir  rcg(2) 2];
+                        Wp = [Wp; rcg(1)-1*dir rcg(2) 2];
                         Wp = [Wp; rcg(1) rcg(2) 2];
                     else
                         Wp = [Wp; rcg(1)+1*dir rcg(2) 8];
@@ -124,30 +140,29 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                     %  == X 
                     %  == 1 2 3 4
                     %        o o o o
-                     if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
-                                                    rcg(2) +0.5-1.5*dir> 0 && rcg(2) +0.5-1.5*dir <= gs(2))
-                         if (Go(rcg(1)+0.5-1.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
+                     if (checkNextCase && rcg(1)+3*dir > 0 && rcg(1)+3*dir <= gs(1) && ...
+                                                    rcg(2) -1*dir> 0 && rcg(2) -1*dir <= gs(2))
+                         if (checkNextCase && Go(rcg(1)-1, rcg(2)+1) == 1 &&...
+                            Go(rcg(1),    rcg(2)-1) == 0 && ...
+                            Go(rcg(1)+1*dir, rcg(2)-1) == 0 && ...
+                            Go(rcg(1)+2*dir, rcg(2)-1) == 0 && ...
+                            Go(rcg(1)+3*dir, rcg(2)-1) == 0)
 
                             Wp = [Wp; rcg(1) rcg(2) 2];
                             Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            %Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                            Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
                             checkNextCase = false;
                          end
                      end
                      
                      %  == X o o o o
                      %  ==    1 2 3 4
-                     if (checkNextCase && rcg(1)+0.5-2.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
-                                                    rcg(2)+1 < gs(2))
-                         if(Go(rcg(1)+0.5-2.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                     if (checkNextCase && rcg(1)-2*dir > 0 && rcg(1)+2*dir <= gs(1))
+                         if(Go(rcg(1)-2*dir, rcg(2)+1) == 1 &&...
+                            Go(rcg(1)-1*dir,    rcg(2)+1) == 0 && ...
+                            Go(rcg(1), rcg(2)+1) == 0 && ...
+                            Go(rcg(1)+1*dir, rcg(2)+1) == 0 && ...
+                            Go(rcg(1)+2*dir, rcg(2)+1) == 0)
 
                             Wp = [Wp; rcg(1) rcg(2)+1 8];
                             Wp = [Wp; rcg(1) rcg(2)+1 2];
@@ -161,10 +176,10 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                      % ==  1 2 3 4 |
                      
                      if (checkNextCase && rcg(2)+1 <= gs(2) && rcg(1)+3 == gs(1))
-                         if(Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                         if(Go(rcg(1)-1*dir,    rcg(2)+1) == 0 && ...
+                            Go(rcg(1), rcg(2)+1) == 0 && ...
+                            Go(rcg(1)+1*dir, rcg(2)+1) == 0 && ...
+                            Go(rcg(1)+2*dir, rcg(2)+1) == 0)
 
                             Wp = [Wp; rcg(1) rcg(2)+1*dir 8];
                             Wp = [Wp; rcg(1) rcg(2)+1*dir 2];
@@ -174,7 +189,7 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                      end
                      
                      if (checkNextCase)
-                         Wp = [Wp; rcg(1)+0.5+0.5*dir rcg(2) 8];
+                         Wp = [Wp; rcg(1)+1*dir rcg(2) 8];
                      end
                 end
             else
@@ -186,6 +201,22 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
         % checking second row
         
     end
+     %{
+     for idx = 1: gs(2)
+        if (mod(idx, 4) == 1)
+            Wp = [Wp; 0.5*grid_w  (idx+0.5)*grid_w 2];
+        end
+        if (mod(idx, 4) == 2)
+            Wp = [Wp; (gs(1) - 1.5)*grid_w  (idx-0.5)*grid_w 2];
+        end
+        if (mod(idx, 4) == 3)
+            Wp = [Wp; (gs(1) - 1.5)*grid_w (idx+0.5)*grid_w 2];
+        end
+        if (mod(idx, 4) == 0)
+            Wp = [Wp; 0.5*grid_w  (idx-0.5)*grid_w 2];
+        end
+    end
+    %}
     Wp
     Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*grid_w;
 end
