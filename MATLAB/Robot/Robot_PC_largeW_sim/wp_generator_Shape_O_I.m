@@ -1,22 +1,18 @@
-function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_print_wp_gen_info)
+function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_print_wp_gen_info)
 
     max_step = 1000;
     robot_shape = robot_starting_shape;
     dir = 1;
     forward = 0;
+    Gvis = zeros(gs(1),gs(2));
+    
     if(is_print_wp_gen_info)
         disp([' - Begin generating waypoints for shape O I robot navigation']);
     end
     
     route_action_count = 0; % Calculate the actions required for the calculated route
     
-    Relative_grid_pos = [0 -1; 0 1; 0 2;
-                                  0 -1; 1 0; 1 -1;
-                                 -1 0; 0 1; 1 1;
-                                 -1 0; 0 1; 0 2;
-                                  1 0; 0 1; -1 1;
-                                  1 -1; 1 0; 2 0;
-                                  1 -1; 1 0; 2 -1];
+
     
     %rotated_relative_grid_pos = rotationMatrix(Relative_grid_pos, robot_shape);
     %robot_Grid = [ rotated_relative_grid_pos(1,:);
@@ -43,9 +39,13 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 wall = 1;
             end
             
-            
+            Gvis
             if (robot_shape == 2)
 
+                if (forward == 1)
+                    
+                end
+                
                 %          o o |
                 %          o o |
                 % ==  2 3 o |
@@ -54,16 +54,16 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 if (checkNextCase && rcg(1)+0.5+1.5*dir == wall ...
                                           && rcg(2)-1 > 0       && rcg(2)-1 < gs(2))
   
-                        if (Go(rcg(1)+0.5+1.5*dir, rcg(2)) == 0 &&...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
-                            Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                        if (Gobs(rcg(1)+0.5+1.5*dir, rcg(2)) == 0 &&...
+                            Gobs(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
+                            [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
                             forward = true;
-                            if(Go(rcg(1)+0.5+0.5*dir,    rcg(2)+1) == 0 && ...
-                               Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
-                                Wp = [Wp; rcg(1)+1*dir rcg(2)+1 2];
-                                if(Go(rcg(1)+0.5+0.5*dir, rcg(2)+3) == 0 && ...
-                                   Go(rcg(1)+0.5+1.5*dir, rcg(2)+3) == 0)
-                                   Wp = [Wp; rcg(1)+1*dir rcg(2)+2 2];
+                            if(Gobs(rcg(1)+0.5+0.5*dir,    rcg(2)+1) == 0 && ...
+                               Gobs(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                               [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2)+1,2,Gvis);
+                                if(Gobs(rcg(1)+0.5+0.5*dir, rcg(2)+3) == 0 && ...
+                                   Gobs(rcg(1)+0.5+1.5*dir, rcg(2)+3) == 0)
+                                   [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2)+2,2,Gvis);
                                    dir = -1*dir;
                                 end
                             end
@@ -77,12 +77,12 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 
                 if (checkNextCase && rcg(1)+0.5+2.5*dir > 0 &&  rcg(1)+0.5+2.5*dir <= gs(1) ...
                                           && rcg(2)-1 > 0 && rcg(2)-1 < gs(2))
-                    if (Go(rcg(1)+0.5+2.5*dir, rcg(2)) == 1 &&...
-                        Go(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
-                        Wp = [Wp; rcg(1) rcg(2) 8];
-                        Wp = [Wp; rcg(1) rcg(2)-1 8];
+                    if (Gobs(rcg(1)+0.5+2.5*dir, rcg(2)) == 1 &&...
+                        Gobs(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 0 && ...
+                        Gobs(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
+                        Gobs(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),8,Gvis);
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)-1,8,Gvis);
                         checkNextCase = false;
                     end
                 end
@@ -93,34 +93,36 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                 if (checkNextCase && rcg(1)+0.5+2.5*dir > 0 &&  rcg(1)+0.5+2.5*dir <= gs(1) ...
                                         && rcg(1)+0.5-1.5*dir > 0 &&  rcg(1)+0.5-1.5*dir <= gs(1) ...
                                           && rcg(2)-1 > 0 && rcg(2)-1 < gs(2))
-                    if (Go(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 1 &&...
-                        Go(rcg(1)+0.5+2.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
-                        Wp = [Wp; rcg(1)+1*dir  rcg(2) 2];
-                        Wp = [Wp; rcg(1) rcg(2) 2];
-                        Wp = [Wp; rcg(1) rcg(2) 8];
+                    if (Gobs(rcg(1)+0.5+2.5*dir, rcg(2)-1) == 1 &&...
+                        Gobs(rcg(1)+0.5+2.5*dir, rcg(2)) == 0 && ...
+                        Gobs(rcg(1)+0.5-1.5*dir, rcg(2)) == 0 && ...
+                        Gobs(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0)
+                        [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir ,rcg(2),2,Gvis);
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),8,Gvis);
                         checkNextCase = false;
                     end
                 end
                 
                                 
                 if (checkNextCase)
-                    Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                    if (rcg(1)+1*dir > 0 && rcg(1)+1*dir < gs(1))
+                        [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
+                    end
                 end
                 
             elseif (robot_shape == 8)
                 if (rcg(2) == idxrow*2) % Upper I Shape
-                    if (Go(rcg(1)+0.5-2.5*dir, rcg(2)-1) == 1 &&...
-                        Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                        Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0 )
-                        Wp = [Wp; rcg(1) rcg(2) 2];
-                        Wp = [Wp; rcg(1)-1*dir  rcg(2) 2];
-                        Wp = [Wp; rcg(1) rcg(2) 2];
+                    if (Gobs(rcg(1)+0.5-2.5*dir, rcg(2)-1) == 1 &&...
+                        Gobs(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
+                        Gobs(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
+                        Gobs(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
+                        Gobs(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0 )
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
+                        [Wp, Gvis] = wpMove(Wp,rcg(1)-1*dir,rcg(2),2,Gvis);
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
                     else
-                        Wp = [Wp; rcg(1)+1*dir rcg(2) 8];
+                        [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),8,Gvis);
                     end
                 elseif (rcg(2) == idxrow*2 - 1) % Lower I Shape
                     %  == X 
@@ -128,15 +130,14 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                     %        o o o o
                      if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
                                                     rcg(2) +0.5-1.5*dir> 0 && rcg(2) +0.5-1.5*dir <= gs(2))
-                         if (Go(rcg(1)+0.5-1.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2) 2];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            %Wp = [Wp; rcg(1)+1*dir rcg(2) 2];
+                         if (Gobs(rcg(1)+0.5-1.5*dir, rcg(2)+1) == 1 &&...
+                            Gobs(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
+                            
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
                             checkNextCase = false;
                          end
                      end
@@ -146,14 +147,14 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                     %        o o o o |
                      if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
                                                     rcg(2) +0.5-1.5*dir> 0 && rcg(2) +0.5-1.5*dir <= gs(2))
-                         if (Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 1 && ...
-                             Go(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2) 2];
-                            Wp = [Wp; rcg(1)+1 rcg(2) 2];
+                         if (Gobs(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 1 && ...
+                             Gobs(rcg(1)+0.5-1.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5-0.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5+0.5*dir, rcg(2)-1) == 0 && ...
+                            Gobs(rcg(1)+0.5+1.5*dir, rcg(2)-1) == 0)
+                            
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
                             forward = 1;
                             checkNextCase = false;
                          end
@@ -164,16 +165,16 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                      %  ==    1 2 3 4
                      if (checkNextCase && rcg(1)+0.5-2.5*dir > 0 && rcg(1)+0.5+1.5*dir <= gs(1) && ...
                                                     rcg(2)+1 < gs(2))
-                         if(Go(rcg(1)+0.5-2.5*dir, rcg(2)+1) == 1 &&...
-                            Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2)+1 8];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
-                            Wp = [Wp; rcg(1)-1*dir rcg(2)+1 2];
-                            Wp = [Wp; rcg(1) rcg(2)+1 2];
+                         if(Gobs(rcg(1)+0.5-2.5*dir, rcg(2)+1) == 1 &&...
+                            Gobs(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                            
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,8,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1)-1*dir,rcg(2)+1,2,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
                             checkNextCase = false;
                          end
                      end
@@ -181,21 +182,22 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_pr
                      % ==  o o o o |
                      % ==  1 2 3 4 |
                      
-                     if (checkNextCase && rcg(2)+1 <= gs(2) && rcg(1)+3 == gs(1))
-                         if(Go(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
-                            Go(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
-
-                            Wp = [Wp; rcg(1) rcg(2)+1*dir 8];
-                            Wp = [Wp; rcg(1) rcg(2)+1*dir 2];
-
+                     if (checkNextCase && rcg(2)+1 <= gs(2) && rcg(1)+3*dir == gs(1))
+                         if(Gobs(rcg(1)+0.5-1.5*dir,    rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5-0.5*dir, rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5+0.5*dir, rcg(2)+1) == 0 && ...
+                            Gobs(rcg(1)+0.5+1.5*dir, rcg(2)+1) == 0)
+                        
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,8,Gvis);
+                            [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
                             checkNextCase = false;
                          end
                      end
                      
                      if (checkNextCase)
-                         Wp = [Wp; rcg(1)+0.5+0.5*dir rcg(2) 8];
+                         if (rcg(1)+1*dir > 0 && rcg(1)+1*dir < gs(1))
+                             [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),8,Gvis);
+                         end
                      end
                 end
             else
