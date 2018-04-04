@@ -449,8 +449,6 @@ void stateMotion()
         break;
       }
     } 
-    delay(3000);
-    robotState = 7;
   }  
   else if (robotState == 7){
     if (reachTargetHeading(heading_filtered) == 1){

@@ -29,7 +29,7 @@ grid_coverage_increase = 1; % Grid color map value increased for each step durin
 
 % Algorithms
 Algorithm = 'square_waypoint';
-navigation_mode = 'Shape_O_I_gen';
+navigation_mode = 'Astar_algorithm';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
@@ -296,6 +296,10 @@ elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
     disp('Generating waypoints...')
     wp_current = 1;
     Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, 2, true);
+elseif (strcmp(navigation_mode,'Astar_algorithm'))
+    disp('Generating waypoints...')
+    wp_current = 1;
+    Wp = wp_generator_a_star(grid_size, grid_w, Grid_obstacle, 2, starting_grid, true);
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -610,6 +614,24 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                     end
                 end
             elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
+                if(~is_require_transform && norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) > tol_wp )
+                    if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
+                        end
+                    else
+                        if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
+                        end
+                    end
+                else
+                    char_command = 'S';
+                end
+            elseif (strcmp(navigation_mode,'Astar_algorithm'))
                 if(~is_require_transform && norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) > tol_wp )
                     if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
                         if Wp(wp_current, 1) - pos_uwb(1,step) > 0
