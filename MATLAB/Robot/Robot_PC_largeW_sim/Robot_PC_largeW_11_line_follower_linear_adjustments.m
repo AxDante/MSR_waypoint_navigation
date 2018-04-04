@@ -1,3 +1,8 @@
+clf
+cla
+close all;
+clc;
+
 %% Variable Setup
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB')

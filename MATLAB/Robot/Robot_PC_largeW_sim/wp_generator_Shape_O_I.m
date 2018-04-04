@@ -39,18 +39,33 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_
                 wall = 1;
             end
             
-            Gvis
             if (robot_shape == 2)
 
-                if (forward == 1)
-                    
+                if (forward == true)
+                    if (checkNextCase && rcg(1)+0.5+1.5*dir > 0 &&  rcg(1)+0.5+1.5*dir <= gs(1))
+                        if (Gvis(rcg(1)+0.5+1.5*dir,rcg(2)-1) == 0)
+                            if (Gobs(rcg(1)+0.5+1.5*dir,rcg(2)-1) == 0 && ...
+                                 Gobs(rcg(1)+0.5+1.5*dir,rcg(2)) == 0)
+                                Gvis
+                                [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
+                                forward = false;
+                                checkNextCase = false;
+                            end
+                        end
+                    end
+                    if (checkNextCase && rcg(2)+1 <= gs(2))
+                        [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
+                        checkNextCase = false;
+                    elseif (checkNextCase && rcg(2)+1 > gs(2))
+                        end_of_row = true;
+                    end
                 end
                 
                 %          o o |
                 %          o o |
                 % ==  2 3 o |
                 % ==  1 4 o |
-                
+                %{
                 if (checkNextCase && rcg(1)+0.5+1.5*dir == wall ...
                                           && rcg(2)-1 > 0       && rcg(2)-1 < gs(2))
   
@@ -70,7 +85,7 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_
                             checkNextCase = false;
                         end
                 end
-                
+                %}
                 
                 %   2 3 o x
                 %   1 4 o o
@@ -106,7 +121,11 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_
                 
                                 
                 if (checkNextCase)
-                    if (rcg(1)+1*dir > 0 && rcg(1)+1*dir < gs(1))
+                    if ((dir == 1 && rcg(1)+1*dir == wall) ||...
+                         (dir == -1 && rcg(1)+1*dir == 0))
+                         forward = true;
+                         dir = -1*dir;
+                    elseif (rcg(1)+1*dir > 0 && rcg(1)+1*dir < gs(1))
                         [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
                     end
                 end
@@ -155,7 +174,6 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_
                             
                             [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2),2,Gvis);
                             [Wp, Gvis] = wpMove(Wp,rcg(1)+1*dir,rcg(2),2,Gvis);
-                            forward = 1;
                             checkNextCase = false;
                          end
                      end                    
@@ -190,6 +208,7 @@ function Wp = wp_generator_Shape_O_I(gs, grid_w, Gobs, robot_starting_shape, is_
                         
                             [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,8,Gvis);
                             [Wp, Gvis] = wpMove(Wp,rcg(1),rcg(2)+1,2,Gvis);
+                            forward = true;
                             checkNextCase = false;
                          end
                      end

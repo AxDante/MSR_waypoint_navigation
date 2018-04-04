@@ -1,4 +1,4 @@
-function Wp = wp_generator_Shape_O_I(gs, grid_w, Go, robot_starting_shape, is_print_wp_gen_info)
+function Wp = wp_generator_a_star(gs, grid_w, Go, robot_starting_shape, is_print_wp_gen_info)
 
     max_step = 1000;
     robot_shape = robot_starting_shape;
