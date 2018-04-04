@@ -280,6 +280,7 @@ void stateMotion()
   }
   else if (robotState == 4){
     if (reachTargetHeading(heading_filtered) == 1){
+      Serial.print("ll");
       for (char j = 0; j < 4; j ++){
         switch(R_LeftTurn[RobotForm-1][j]){
           case 'F':
@@ -308,6 +309,7 @@ void stateMotion()
       }
     }
     else if (reachTargetHeading(heading_filtered) == -1){
+      Serial.print("mm");
       for (char j = 0; j < 4; j ++){
         switch(R_RightTurn[RobotForm-1][j]){
           case 'F':

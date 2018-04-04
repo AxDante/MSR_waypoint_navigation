@@ -38,7 +38,7 @@ char* S_State[] = {"STOP", "IDLE", "IDLE: angle adjusting", "LINEAR", "LINEAR: a
 
 String stringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
-float worldRobotTargetHeading = -42.0; //(for robotMode 3 or 4, which recognize its initial position)
+float worldRobotTargetHeading = -45.0; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
@@ -76,7 +76,7 @@ float worldRobotTargetHeading = -42.0; //(for robotMode 3 or 4, which recognize 
 #define rotatePower 58  // Power provided to DC motors during robot rotation (r, l) (max: 128)
 #define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
-#define angleTolerance 6.5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
+#define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)
 
 #define transformSpeed 1500
 
@@ -146,7 +146,8 @@ void setup()
       }
     }
     imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-  
+   imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+    imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
     // Use setGyroFSR() and setAccelFSR() to configure the
     // gyroscope and accelerometer full scale ranges.
     // Gyro options are +/- 250, 500, 1000, or 2000 dps
@@ -171,7 +172,6 @@ void setup()
     // This value can range between: 1-100Hz
     imu.setCompassSampleRate(10); // Set mag rate to 10Hz
   }
-
 
   // Roboclaw Setup
   if (debugRoboclawSetupActive){
@@ -222,11 +222,11 @@ void loop() {
   }
 
   if(imuActive){
-    if ( imu.dataReady() )
-    {
+    //if ( imu.dataReady() )
+    //{
       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
       imuRead();
-    }
+    //}
   }
   
   if ( millis() > imuCalibrationTime){ 

@@ -38,13 +38,13 @@ update_rate_streaming_single_value = 1;
 update_rate_sim = 0.2;
 
 % Serial Communication Setup
-Serial_port = 'COM12';
+Serial_port = 'COM8';
 baudrate = 9600;
 
 
 % Toggle 
-is_xbee_on = false;
-is_streaming_on = false;
+is_xbee_on = true;
+is_streaming_on = true;
 
 is_calculate_coverage = false;
 is_display_coverage_map = false;

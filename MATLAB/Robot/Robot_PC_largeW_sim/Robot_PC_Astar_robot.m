@@ -4,18 +4,21 @@
 % 04-26-2005
 %   Copyright 2009-2010 The MathWorks, Inc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
+addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 %function Wp = Robot_PC_Astar_robot(gs, Gobs, )
 
 gs = [10 10];
 Gobs = zeros(gs(1),gs(2));
 MAX_VAL=10;
-shape = 2;
+shape = 8;
 
 Gobs(3,5) = 1;
 Gobs(4,5) = 1;
 Gobs(5,5) = 1;
-Gobs(3,6) = 1;
+Gobs(6,5) = 1;
+Gobs(8,3) = 1;
+Gobs(3,7) = 1;
 
 scg = [1 2]; % start center grid
 gcg = [7 7]; % goal center grid

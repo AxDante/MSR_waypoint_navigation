@@ -43,7 +43,7 @@ float worldRobotTargetHeading = -56.0; //(for robotMode 3 or 4, which recognize 
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive false                 // Printing Debug information on Serial Port
+#define debugPrintActive true                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 

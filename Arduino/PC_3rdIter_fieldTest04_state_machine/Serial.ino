@@ -34,7 +34,7 @@ void debugPrint(){
   Serial.println("===========================================");
   Serial.println("Time: " + String(millis()/1000) + "s");
   Serial.println("Char Input: " + String(charInput));
-  Serial.println("Current Shape: " + String(S_Shape[RobotForm-1]));
+  Serial.println("Current Shape: " + String(S_Shape[RobotForm-1]) + " Current State: " + String(robotState));
   Serial.println(" (Debug) mx:" + String(magX) + "my:" + String(magY));
   Serial.println("Heading_raw: " + String(heading_raw) +  "deg,  Heading_cal: " + String(heading_filtered)+ " deg"+ "degToTurn:" + String(degreeToPos));
   /*
