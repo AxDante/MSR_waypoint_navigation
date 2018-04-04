@@ -7,8 +7,9 @@
 
 
 %DEFINE THE 2-D MAP ARRAY
-gs = [13 13];
-MAX_VAL=13;
+gs = [10 10];
+Gobs = zeros(gs(1),gs(2));
+MAX_VAL=10;
 
 
 %This array stores the coordinates of the map and the 
@@ -29,7 +30,7 @@ n=0;%Number of Obstacles
 % BEGIN Interactive Obstacle, Target, Start Location selection
 pause(1);
 h=msgbox('Please Select the Target using the Left Mouse button');
-uiwait(h,5);
+uiwait(h,2);
 if ishandle(h) == 1
     delete(h);
 end
@@ -40,8 +41,8 @@ while (but ~= 1) %Repeat until the Left button is not clicked
 end
 rcg(1)=floor(rcg(1));
 rcg(2)=floor(rcg(2));
-xTarget=rcg(1);%X Coordinate of the Target
-yTarget=rcg(2);%Y Coordinate of the Target
+gcg(1)=rcg(1);%X Coordinate of the Target
+gcg(2)=rcg(2);%Y Coordinate of the Target
 
 MAP(rcg(1),rcg(2))=0;%Initialize MAP with location of the target
 plot(rcg(1)+.5,rcg(2)+.5,'gd');
@@ -50,7 +51,7 @@ text(rcg(1)+1,rcg(2)+.5,'Target')
 pause(2);
 h=msgbox('Select Obstacles using the Left Mouse button,to select the last obstacle use the Right button');
   xlabel('Select Obstacles using the Left Mouse button,to select the last obstacle use the Right button','Color','blue');
-uiwait(h,10);
+uiwait(h,4);
 if ishandle(h) == 1
     delete(h);
 end
@@ -65,7 +66,7 @@ while but == 1
 pause(1);
 
 h=msgbox('Please Select the Vehicle initial position using the Left Mouse button');
-uiwait(h,5);
+uiwait(h,2);
 if ishandle(h) == 1
     delete(h);
 end
@@ -110,23 +111,29 @@ for i=1:gs(1)
 end
 CLOSED_COUNT=size(CLOSED,1);
 %set the starting node as the first node
-xNode=rcg(1);
-yNode=rcg(2);
+rcg(1)=rcg(1);
+rcg(2)=rcg(2);
 OPEN_COUNT=1;
 path_cost=0;
-goal_distance=distance(xNode,yNode,xTarget,yTarget);
-OPEN(OPEN_COUNT,:)=insert_open(xNode,yNode,xNode,yNode,path_cost,goal_distance,goal_distance);
+goal_distance=distance(rcg(1),rcg(2),gcg(1),gcg(2));
+OPEN(OPEN_COUNT,:)=insert_open(rcg(1),rcg(2),rcg(1),rcg(2),path_cost,goal_distance,goal_distance);
 OPEN(OPEN_COUNT,1)=0;
 CLOSED_COUNT=CLOSED_COUNT+1;
-CLOSED(CLOSED_COUNT,1)=xNode;
-CLOSED(CLOSED_COUNT,2)=yNode;
+CLOSED(CLOSED_COUNT,1)=rcg(1);
+CLOSED(CLOSED_COUNT,2)=rcg(2);
 NoPath=1;
+
+for idxclo = 1:size(CLOSED,1)
+    Gobs(CLOSED(idxclo,1), CLOSED(idxclo,2)) = 1;
+end
+    
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
-%  plot(xNode+.5,yNode+.5,'go');
- exp_array=expand_array(xNode,yNode,path_cost,xTarget,yTarget,CLOSED,gs(1),gs(2));
+while((rcg(1) ~= gcg(1) || rcg(2) ~= gcg(2)) && NoPath == 1)
+%  plot(rcg(1)+.5,rcg(2)+.5,'go');
+ exp_array=Robot_PC_expand_array(rcg,path_cost,gcg,CLOSED,gs,2,Gobs);
  exp_count=size(exp_array,1);
  %UPDATE LIST OPEN WITH THE SUCCESSOR NODES
  %OPEN LIST FORMAT
@@ -144,8 +151,8 @@ while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
             OPEN(j,8)=min(OPEN(j,8),exp_array(i,5)); %#ok<*SAGROW>
             if OPEN(j,8)== exp_array(i,5)
                 %UPDATE PARENTS,gn,hn
-                OPEN(j,4)=xNode;
-                OPEN(j,5)=yNode;
+                OPEN(j,4)=rcg(1);
+                OPEN(j,5)=rcg(2);
                 OPEN(j,6)=exp_array(i,3);
                 OPEN(j,7)=exp_array(i,4);
             end;%End of minimum fn check
@@ -156,23 +163,23 @@ while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
     end;%End of j for
     if flag == 0
         OPEN_COUNT = OPEN_COUNT+1;
-        OPEN(OPEN_COUNT,:)=insert_open(exp_array(i,1),exp_array(i,2),xNode,yNode,exp_array(i,3),exp_array(i,4),exp_array(i,5));
+        OPEN(OPEN_COUNT,:)=insert_open(exp_array(i,1),exp_array(i,2),rcg(1),rcg(2),exp_array(i,3),exp_array(i,4),exp_array(i,5));
      end;%End of insert new element into the OPEN list
  end;%End of i for
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %END OF WHILE LOOP
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %Find out the node with the smallest fn 
-  index_min_node = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
+  index_min_node = min_fn(OPEN,OPEN_COUNT,gcg(1),gcg(2));
   if (index_min_node ~= -1)    
-   %Set xNode and yNode to the node with minimum fn
-   xNode=OPEN(index_min_node,2);
-   yNode=OPEN(index_min_node,3);
+   %Set rcg(1) and rcg(2) to the node with minimum fn
+   rcg(1)=OPEN(index_min_node,2);
+   rcg(2)=OPEN(index_min_node,3);
    path_cost=OPEN(index_min_node,6);%Update the cost of reaching the parent node
   %Move the Node to list CLOSED
   CLOSED_COUNT=CLOSED_COUNT+1;
-  CLOSED(CLOSED_COUNT,1)=xNode;
-  CLOSED(CLOSED_COUNT,2)=yNode;
+  CLOSED(CLOSED_COUNT,1)=rcg(1);
+  CLOSED(CLOSED_COUNT,2)=rcg(2);
   OPEN(index_min_node,1)=0;
   else
       %No path exists to the Target!!
@@ -192,7 +199,7 @@ Optimal_path(i,1)=rcg(1);
 Optimal_path(i,2)=rcg(2);
 i=i+1;
 
-if ( (rcg(1) == xTarget) && (rcg(2) == yTarget))
+if ( (rcg(1) == gcg(1)) && (rcg(2) == gcg(2)))
     inode=0;
    %Traverse OPEN and determine the parent nodes
    parent_x=OPEN(node_index(OPEN,rcg(1),rcg(2)),4);%node_index returns the index of the node

@@ -110,23 +110,23 @@ for i=1:gs(1)
 end
 CLOSED_COUNT=size(CLOSED,1);
 %set the starting node as the first node
-xNode=rcg(1);
-yNode=rcg(2);
+rcg(1)=rcg(1);
+rcg(2)=rcg(2);
 OPEN_COUNT=1;
 path_cost=0;
-goal_distance=distance(xNode,yNode,xTarget,yTarget);
-OPEN(OPEN_COUNT,:)=insert_open(xNode,yNode,xNode,yNode,path_cost,goal_distance,goal_distance);
+goal_distance=distance(rcg(1),rcg(2),xTarget,yTarget);
+OPEN(OPEN_COUNT,:)=insert_open(rcg(1),rcg(2),rcg(1),rcg(2),path_cost,goal_distance,goal_distance);
 OPEN(OPEN_COUNT,1)=0;
 CLOSED_COUNT=CLOSED_COUNT+1;
-CLOSED(CLOSED_COUNT,1)=xNode;
-CLOSED(CLOSED_COUNT,2)=yNode;
+CLOSED(CLOSED_COUNT,1)=rcg(1);
+CLOSED(CLOSED_COUNT,2)=rcg(2);
 NoPath=1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
-%  plot(xNode+.5,yNode+.5,'go');
- exp_array=expand_array(xNode,yNode,path_cost,xTarget,yTarget,CLOSED,gs(1),gs(2));
+while((rcg(1) ~= xTarget || rcg(2) ~= yTarget) && NoPath == 1)
+%  plot(rcg(1)+.5,rcg(2)+.5,'go');
+ exp_array=Robot_PC_expand_array(rcg,path_cost,xTarget,yTarget,CLOSED,gs(1),gs(2));
  exp_count=size(exp_array,1);
  %UPDATE LIST OPEN WITH THE SUCCESSOR NODES
  %OPEN LIST FORMAT
@@ -144,8 +144,8 @@ while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
             OPEN(j,8)=min(OPEN(j,8),exp_array(i,5)); %#ok<*SAGROW>
             if OPEN(j,8)== exp_array(i,5)
                 %UPDATE PARENTS,gn,hn
-                OPEN(j,4)=xNode;
-                OPEN(j,5)=yNode;
+                OPEN(j,4)=rcg(1);
+                OPEN(j,5)=rcg(2);
                 OPEN(j,6)=exp_array(i,3);
                 OPEN(j,7)=exp_array(i,4);
             end;%End of minimum fn check
@@ -156,7 +156,7 @@ while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
     end;%End of j for
     if flag == 0
         OPEN_COUNT = OPEN_COUNT+1;
-        OPEN(OPEN_COUNT,:)=insert_open(exp_array(i,1),exp_array(i,2),xNode,yNode,exp_array(i,3),exp_array(i,4),exp_array(i,5));
+        OPEN(OPEN_COUNT,:)=insert_open(exp_array(i,1),exp_array(i,2),rcg(1),rcg(2),exp_array(i,3),exp_array(i,4),exp_array(i,5));
      end;%End of insert new element into the OPEN list
  end;%End of i for
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -165,14 +165,14 @@ while((xNode ~= xTarget || yNode ~= yTarget) && NoPath == 1)
  %Find out the node with the smallest fn 
   index_min_node = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
   if (index_min_node ~= -1)    
-   %Set xNode and yNode to the node with minimum fn
-   xNode=OPEN(index_min_node,2);
-   yNode=OPEN(index_min_node,3);
+   %Set rcg(1) and rcg(2) to the node with minimum fn
+   rcg(1)=OPEN(index_min_node,2);
+   rcg(2)=OPEN(index_min_node,3);
    path_cost=OPEN(index_min_node,6);%Update the cost of reaching the parent node
   %Move the Node to list CLOSED
   CLOSED_COUNT=CLOSED_COUNT+1;
-  CLOSED(CLOSED_COUNT,1)=xNode;
-  CLOSED(CLOSED_COUNT,2)=yNode;
+  CLOSED(CLOSED_COUNT,1)=rcg(1);
+  CLOSED(CLOSED_COUNT,2)=rcg(2);
   OPEN(index_min_node,1)=0;
   else
       %No path exists to the Target!!
