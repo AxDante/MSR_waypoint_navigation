@@ -10,7 +10,7 @@
 gs = [10 10];
 Gobs = zeros(gs(1),gs(2));
 MAX_VAL=10;
-
+shape = 2;
 
 %This array stores the coordinates of the map and the 
 %Objects in each coordinate
@@ -133,7 +133,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 while((rcg(1) ~= gcg(1) || rcg(2) ~= gcg(2)) && NoPath == 1)
 %  plot(rcg(1)+.5,rcg(2)+.5,'go');
- exp_array=Robot_PC_expand_array(rcg,path_cost,gcg,CLOSED,gs,2,Gobs);
+ exp_array=Robot_PC_expand_array(rcg,path_cost,gcg,CLOSED,gs,shape,Gobs);
  exp_count=size(exp_array,1);
  %UPDATE LIST OPEN WITH THE SUCCESSOR NODES
  %OPEN LIST FORMAT

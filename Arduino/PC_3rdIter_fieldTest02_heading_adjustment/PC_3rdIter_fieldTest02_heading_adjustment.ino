@@ -43,7 +43,7 @@ float worldRobotTargetHeading = -56.0; //(for robotMode 3 or 4, which recognize 
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive true                 // Printing Debug information on Serial Port
+#define debugPrintActive false                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 
@@ -54,14 +54,13 @@ float worldRobotTargetHeading = -56.0; //(for robotMode 3 or 4, which recognize 
 #define debugRoboclawMotorActive true
 
 
-
 #define secureShapeActive true
 #define secureShapeLinearActive true
 
-#define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
-#define imuActive true
+#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
+#define imuActive false
 
-#define robotMode 3
+#define robotMode 1
 // ( 1: Read one input char from serial port every time, motion not stopping unless receieves next input)
 // ( 2: Read one input char from serial port every time, motion automatically stops after meeting certain conditions) 
 // ( 3: Read and move following string input (static, for debug use), motion automatically stops after meeting certain conditions)

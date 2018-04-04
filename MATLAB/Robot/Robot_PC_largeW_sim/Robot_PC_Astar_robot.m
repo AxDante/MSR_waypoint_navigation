@@ -5,14 +5,21 @@
 %   Copyright 2009-2010 The MathWorks, Inc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%function Wp = Robot_PC_Astar_robot(gs, Gobs, )
 
-%DEFINE THE 2-D MAP ARRAY
-gs = [13 13];
-MAX_VAL=13;
+gs = [10 10];
+Gobs = zeros(gs(1),gs(2));
+MAX_VAL=10;
+shape = 2;
 
+Gobs(3,5) = 1;
+Gobs(4,5) = 1;
+Gobs(5,5) = 1;
+Gobs(3,6) = 1;
 
-%This array stores the coordinates of the map and the 
-%Objects in each coordinate
+scg = [1 2]; % start center grid
+gcg = [7 7]; % goal center grid
+rcg = scg;
 MAP=2*(ones(gs(1),gs(2)));
 
 % Obtain Obstacle, Target and Robot Position
@@ -26,60 +33,22 @@ grid on;
 hold on;
 n=0;%Number of Obstacles
 
-% BEGIN Interactive Obstacle, Target, Start Location selection
-pause(1);
-h=msgbox('Please Select the Target using the Left Mouse button');
-uiwait(h,5);
-if ishandle(h) == 1
-    delete(h);
-end
-xlabel('Please Select the Target using the Left Mouse button','Color','black');
-but=0;
-while (but ~= 1) %Repeat until the Left button is not clicked
-    [rcg(1),rcg(2),but]=ginput(1);
-end
-rcg(1)=floor(rcg(1));
-rcg(2)=floor(rcg(2));
-xTarget=rcg(1);%X Coordinate of the Target
-yTarget=rcg(2);%Y Coordinate of the Target
+MAP(gcg(1),gcg(2))=0;%Initialize MAP with location of the target
+plot(gcg(1)+.5,gcg(2)+.5,'gd');
+text(gcg(1)+1,gcg(2)+.5,'Target')
 
-MAP(rcg(1),rcg(2))=0;%Initialize MAP with location of the target
-plot(rcg(1)+.5,rcg(2)+.5,'gd');
-text(rcg(1)+1,rcg(2)+.5,'Target')
-
-pause(2);
-h=msgbox('Select Obstacles using the Left Mouse button,to select the last obstacle use the Right button');
-  xlabel('Select Obstacles using the Left Mouse button,to select the last obstacle use the Right button','Color','blue');
-uiwait(h,10);
-if ishandle(h) == 1
-    delete(h);
+for idxx = 1:gs(1)
+    for idxy = 1:gs(2)
+        if Gobs(idxx, idxy) == 1
+            MAP(idxx,idxy) = -1;
+            plot(idxx+0.5, idxy+0.5, 'ro');
+        end
+    end
 end
-while but == 1
-    [rcg(1),rcg(2),but] = ginput(1);
-    rcg(1)=floor(rcg(1));
-    rcg(2)=floor(rcg(2));
-    MAP(rcg(1),rcg(2))=-1;%Put on the closed list as well
-    plot(rcg(1)+.5,rcg(2)+.5,'ro');
- end%End of While loop
  
-pause(1);
 
-h=msgbox('Please Select the Vehicle initial position using the Left Mouse button');
-uiwait(h,5);
-if ishandle(h) == 1
-    delete(h);
-end
-xlabel('Please Select the Vehicle initial position ','Color','black');
-but=0;
-while (but ~= 1) %Repeat until the Left button is not clicked
-    [rcg(1),rcg(2),but]=ginput(1);
-    rcg(1)=floor(rcg(1));
-    rcg(2)=floor(rcg(2));
-end
-xStart=rcg(1);%Starting Position
-yStart=rcg(2);%Starting Position
-MAP(rcg(1),rcg(2))=1;
- plot(rcg(1)+.5,rcg(2)+.5,'bo');
+MAP(scg(1),scg(2))=1;
+plot(scg(1)+0.5,scg(2)+0.5,'bo');
 %End of obstacle-Target pickup
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,23 +79,26 @@ for i=1:gs(1)
 end
 CLOSED_COUNT=size(CLOSED,1);
 %set the starting node as the first node
-rcg(1)=rcg(1);
-rcg(2)=rcg(2);
 OPEN_COUNT=1;
 path_cost=0;
-goal_distance=distance(rcg(1),rcg(2),xTarget,yTarget);
+goal_distance=distance(rcg(1),rcg(2),gcg(1),gcg(2));
 OPEN(OPEN_COUNT,:)=insert_open(rcg(1),rcg(2),rcg(1),rcg(2),path_cost,goal_distance,goal_distance);
 OPEN(OPEN_COUNT,1)=0;
 CLOSED_COUNT=CLOSED_COUNT+1;
 CLOSED(CLOSED_COUNT,1)=rcg(1);
 CLOSED(CLOSED_COUNT,2)=rcg(2);
 NoPath=1;
+
+%for idxclo = 1:size(CLOSED,1)
+%    Gobs(CLOSED(idxclo,1), CLOSED(idxclo,2)) = 1;
+%end
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while((rcg(1) ~= xTarget || rcg(2) ~= yTarget) && NoPath == 1)
+while((rcg(1) ~= gcg(1) || rcg(2) ~= gcg(2)) && NoPath == 1)
 %  plot(rcg(1)+.5,rcg(2)+.5,'go');
- exp_array=Robot_PC_expand_array(rcg,path_cost,xTarget,yTarget,CLOSED,gs(1),gs(2));
+ exp_array=Robot_PC_expand_array(rcg,path_cost,gcg,CLOSED,gs,shape,Gobs);
  exp_count=size(exp_array,1);
  %UPDATE LIST OPEN WITH THE SUCCESSOR NODES
  %OPEN LIST FORMAT
@@ -163,7 +135,7 @@ while((rcg(1) ~= xTarget || rcg(2) ~= yTarget) && NoPath == 1)
  %END OF WHILE LOOP
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %Find out the node with the smallest fn 
-  index_min_node = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
+  index_min_node = min_fn(OPEN,OPEN_COUNT,gcg(1),gcg(2));
   if (index_min_node ~= -1)    
    %Set rcg(1) and rcg(2) to the node with minimum fn
    rcg(1)=OPEN(index_min_node,2);
@@ -192,13 +164,13 @@ Optimal_path(i,1)=rcg(1);
 Optimal_path(i,2)=rcg(2);
 i=i+1;
 
-if ( (rcg(1) == xTarget) && (rcg(2) == yTarget))
+if ( (rcg(1) == gcg(1)) && (rcg(2) == gcg(2)))
     inode=0;
    %Traverse OPEN and determine the parent nodes
    parent_x=OPEN(node_index(OPEN,rcg(1),rcg(2)),4);%node_index returns the index of the node
    parent_y=OPEN(node_index(OPEN,rcg(1),rcg(2)),5);
    
-   while( parent_x ~= xStart || parent_y ~= yStart)
+   while( parent_x ~= scg(1) || parent_y ~= scg(2))
            Optimal_path(i,1) = parent_x;
            Optimal_path(i,2) = parent_y;
            %Get the grandparents:-)
