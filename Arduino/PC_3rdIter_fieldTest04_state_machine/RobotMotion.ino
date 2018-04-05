@@ -513,7 +513,7 @@ void stateMotion()
     }
   }
   else if (robotState == 8){
-    if (charInput == 'F'){  
+    if (charInput == 'f'){  
       for (char j = 0; j < 4; j ++){
         switch(M_Forward[RobotForm-1][j]){
           case 'F':
@@ -541,7 +541,7 @@ void stateMotion()
         }
       }
     }
-    if (charInput == 'B')
+    if (charInput == 'b')
     {  
       for (char j = 0; j < 4; j ++){
         switch(M_Backward[RobotForm-1][j]){
@@ -570,7 +570,7 @@ void stateMotion()
         }
       }
     }
-    if (charInput == 'R')
+    if (charInput == 'r')
     {  
       for (char j = 0; j < 4; j ++){
         switch(M_Right[RobotForm-1][j]){
@@ -599,7 +599,7 @@ void stateMotion()
         }
       }
     }
-    if (charInput == 'L')
+    if (charInput == 'l')
     {  
       for (char j = 0; j < 4; j ++){
         switch(M_Left[RobotForm-1][j]){
