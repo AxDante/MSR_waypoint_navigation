@@ -12,7 +12,7 @@ void imuRead()
   heading_filtered = 0.7*heading_filtered + 0.3*heading_raw ;
 
   if (magX == 7 && magY == -30){
-        imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+    imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
     // Use setGyroFSR() and setAccelFSR() to configure the
     // gyroscope and accelerometer full scale ranges.
     // Gyro options are +/- 250, 500, 1000, or 2000 dps
@@ -36,15 +36,14 @@ void imuRead()
     // set using the setCompassSampleRate() function.
     // This value can range between: 1-100Hz
     imu.setCompassSampleRate(10); // Set mag rate to 10Hz
-    delay(500);
+    delay(1000);
+    if (debugPrintActive) Serial.println("Resetting IMU");
   }
 }
 
 // Simple function for the robot to determine the heading is reached.
 // TODO: Improve the preformance of these functions.
 int reachTargetHeading( float currentAng){
-
-  degreeToPos = rotateTargetHeading - currentAng;
 
     if (currentAng <  rotateTargetLower){
       return 1;

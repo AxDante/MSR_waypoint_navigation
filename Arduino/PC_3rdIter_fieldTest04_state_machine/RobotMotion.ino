@@ -73,7 +73,8 @@ void checkRobotState(){
     }
   }
 
-  if (charInput == '1' || charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7'){
+  if (charInput == '1' || charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7' 
+      || charInput == '8'){
     robotState = 6;
   }    
 
@@ -87,6 +88,12 @@ void checkRobotState(){
 
 void stateMotion()
 {
+
+  rotateTargetHeading = worldRobotTargetHeading;   
+  rotateTargetLower = rotateTargetHeading - angleTolerance;
+  rotateTargetUpper = rotateTargetHeading + angleTolerance; 
+  degreeToPos = rotateTargetHeading - heading_filtered;
+  
   if (robotState == 0){
     stopMotorDC();
   }
@@ -410,45 +417,61 @@ void stateMotion()
       {
         straight();
         RobotForm = 1;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '2':
       {
         square();
         RobotForm = 2;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '3':
       {
         L_4th();
         RobotForm = 3;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '4':
       {
         L_1st();
         RobotForm = 4;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '5':
       {
         Z_1_4();
         RobotForm = 5;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '6':
       {
         plus();
         RobotForm = 6;
+        worldRobotTargetHeading = worldTargetHeading;
         break;
       }
       case '7':
       {
         S_1_3();
         RobotForm = 7;
+        worldRobotTargetHeading = worldTargetHeading;
+        break;
+      }
+      case '8':
+      {
+        straight();
+        RobotForm = 1;
+        worldRobotTargetHeading = worldTargetHeading - 90;
         break;
       }
     } 
+    delay(1000);
+    robotState = 7;
   }  
   else if (robotState == 7){
     if (reachTargetHeading(heading_filtered) == 1){

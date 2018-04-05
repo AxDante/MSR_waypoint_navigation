@@ -38,12 +38,12 @@ char* S_State[] = {"STOP", "IDLE", "IDLE: angle adjusting", "LINEAR", "LINEAR: a
 
 String stringStream = "FRBLLF";    //test
 int linerMotionStopTime = 5000;
-float worldRobotTargetHeading = -64.0; //(for robotMode 3 or 4, which recognize its initial position)
+float worldRobotTargetHeading; //(for robotMode 3 or 4, which recognize its initial position)
 
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive true                 // Printing Debug information on Serial Port
+#define debugPrintActive false                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 
@@ -53,7 +53,7 @@ float worldRobotTargetHeading = -64.0; //(for robotMode 3 or 4, which recognize 
 #define debugRoboclawSetupActive true
 #define debugRoboclawMotorActive true
 
-
+#define worldTargetHeading -60
 
 #define secureShapeActive true
 #define secureShapeLinearActive true
@@ -72,7 +72,7 @@ float worldRobotTargetHeading = -64.0; //(for robotMode 3 or 4, which recognize 
                                               // in advance or be set through serial ports.
 
 #define linearPower 43  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
-#define linearAdjustPower 35 
+#define linearAdjustPower 20
 #define rotatePower 58  // Power provided to DC motors during robot rotation (r, l) (max: 128)
 #define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
@@ -128,7 +128,8 @@ void setup()
 { 
   Serial.begin(9600);
   RobotForm = 2;   // Default shape: square
-
+  worldRobotTargetHeading = worldTargetHeading;
+  
   counterSecureShape = 0;
   
   // IMU Setup
@@ -207,11 +208,6 @@ void setup()
   timerLinearMotion = millis();
 
   // Heading setup
-  if (!initialPositionAsWorldFrame){
-    rotateTargetHeading = worldRobotTargetHeading;   
-    rotateTargetLower = rotateTargetHeading - angleTolerance;
-    rotateTargetUpper = rotateTargetHeading + angleTolerance; 
-  }
 }
 
 // Main Loop
