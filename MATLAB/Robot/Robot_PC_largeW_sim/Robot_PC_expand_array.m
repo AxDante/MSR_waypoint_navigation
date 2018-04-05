@@ -22,7 +22,13 @@ function exp_array= Robot_PC_expand_array(rcg,hn,gcg,CLOSED,gs, shape, Gobs)
         if (isvalid)
             exp_array(exp_count,1) = Rg_cmd(2,1);
             exp_array(exp_count,2) = Rg_cmd(2,2);
-            exp_array(exp_count,3) = hn+distance(rcg(1),rcg(2),Rg_cmd(2,1),Rg_cmd(2,2));    %cost of travelling to node
+            
+            if (rcg(2) == Rg_cmd(2,2) || rcg(2)-Rg_cmd(2,2)==1)
+                discost = 0.7;
+            else
+                discost = distance(rcg(1),rcg(2),Rg_cmd(2,1),Rg_cmd(2,2));
+            end
+            exp_array(exp_count,3) = hn+discost;    %cost of travelling to node
             exp_array(exp_count,4) = distance(gcg(1),gcg(2),Rg_cmd(2,1),Rg_cmd(2,2));       %distance between node and goal
             exp_array(exp_count,5) = exp_array(exp_count,3)+exp_array(exp_count,4);         %fn
             exp_count=exp_count+1;
