@@ -27,12 +27,12 @@ navigation_mode = 'Point';
 % Time Frame Setup
 max_step = 20000;
 interval_system_time = 2;
-interval_normal_linear_command_send = 10;
+interval_normal_linear_command_send = 30;
 interval_rotation_command_send = 10;
 
 % Robot Dynamics Setup
 tol_transform = pi/50;
-Dy_angv_transform = pi/48;
+Dy_angv_transform = pi/4;
 tol_heading = pi/7;
 
 update_rate_streaming = 1;                      
@@ -62,14 +62,14 @@ is_fixed_offset = false;
 is_sim_normal_noise_on= true;
 is_sim_large_noise_y_on = true;
 is_sim_heading_correction = false;
-is_streaming_collect_single_values = true;
+is_streaming_collect_single_values = false;
 
 % Data streaming setup
 streaming_max_single_val = 1000;                 % unit: cm
 streaming_max_shift_dis = 35;                       % unit: cm 
 streaming_max_shift_dis_single_value = 20;    % unit: cm
 
-max_pos_initialize = 20;
+max_pos_initialize = 10;
 
 % Simulation Setup
 sim_noise_normal = 20;                        %unit: cm
@@ -166,7 +166,10 @@ grid_dhw = sqrt(2) / 2 * grid_w;
 count_pos_initialize = 0;
 is_pos_initialized = false;
 pos_initial = [];
-
+valid_angle = 0;
+heading_angle = 0;
+turncheck = false;
+start_sending = false;
 if (is_xbee_on)
     delete(instrfindall);
     arduino = serial(Serial_port,'BaudRate',baudrate);
@@ -389,9 +392,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             txt_Streaming=txt_Streaming{1};
             fclose(fid);
             txt_rows=size(txt_Streaming,1);
-            if  (txt_Streaming(end, 2) == 0)
+            if  (txt_Streaming(end, 4) == 13)
                 txt_endLine_2 = txt_Streaming(end, 5:6);
-            else
+            end
+            if (txt_Streaming(end, 4) == 2)
                 txt_endLine_1 = txt_Streaming(end, 5:6);
             end
             
@@ -402,7 +406,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                 txt_endLine_2 = txt_endLine_2*100 + flex_offset;
                 txt_endLine_1 = txt_endLine_1*100 + flex_offset;
             end
-            
+            valid_angle = 0;
             % Initialize starting position
             if (~is_pos_initialized && (txt_endLine_2(1) ~= 0 &&  ~isnan(txt_endLine_2(1))  &&  txt_endLine_2(2) ~= 0 &&  ~isnan(txt_endLine_2(2))))
                 if (txt_endLine_2(1) < streaming_max_single_val && txt_endLine_2(2) < streaming_max_single_val)
@@ -422,37 +426,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             elseif  (is_pos_initialized)
                 % Streaming with Dashboard data
                 if (~is_streaming_collect_single_values && txt_endLine_1(1) ~= 0 &&  ~isnan(txt_endLine_1(1))  &&  txt_endLine_1(2) ~= 0 &&  ~isnan(txt_endLine_1(2)) )
-                    if (txt_endLine_1_last(1) ~= txt_endLine_1(1) || txt_endLine_1_last(2) ~= txt_endLine_1(2)) 
-                        if norm(txt_endLine_1_last - txt_endLine_1) < streaming_max_shift_dis
-                            txt_endLine_1_last = txt_endLine_1;
-                            pos_uwb_1 = (1 - update_rate_streaming) * pos_uwb_1 + update_rate_streaming * txt_endLine_1_last.' ;
-                        end
+                    if (norm(txt_endLine_1))< 300
+                     txt_endLine_1_last = txt_endLine_1;
+                     pos_uwb_1 = (1 - update_rate_streaming) * pos_uwb_1 + update_rate_streaming * txt_endLine_1_last.' ;
                     end
-                elseif (is_streaming_collect_single_values && txt_endLine_1(1) ~= 0  && txt_endLine_1(2) ~= 0 )
-                     if(~isnan(txt_endLine_1(1)) && ~isnan(txt_endLine_1(2)))
-                        if (txt_endLine_1_last(1) ~= txt_endLine_1(1) || txt_endLine_1_last(2) ~= txt_endLine_1(2)) 
-                            if norm(txt_endLine_1_last - txt_endLine_1) < streaming_max_shift_dis
-                                txt_endLine_1_last = txt_endLine_1;
-                                pos_uwb_1 = (1 - update_rate_streaming) * pos_uwb_1 + update_rate_streaming * txt_endLine_1_last.' ;
-                            end
-                        end
-                     elseif(~isnan(txt_endLine_1(1)))
-                        if (txt_endLine_1_last(1) ~= txt_endLine_1(1))
-                            txt_endLine_1 = [txt_endLine_1(1) txt_endLine_1_last(2)];
-                            if norm(txt_endLine_1_last - txt_endLine_1) < streaming_max_shift_dis_single_value
-                                txt_endLine_1_last = txt_endLine_1;
-                                pos_uwb_1 = (1 - update_rate_streaming_single_value) *  pos_uwb_1+ update_rate_streaming_single_value * txt_endLine_1_last.' ;
-                            end
-                        end
-                    elseif(~isnan(txt_endLine_1(2)))
-                        if (txt_endLine_1_last(2) ~= txt_endLine_1(2))
-                            txt_endLine_1 = [txt_endLine_1_last(1) txt_endLine_1(2)];
-                            if norm(txt_endLine_1_last - txt_endLine_1) < streaming_max_shift_dis_single_value
-                                txt_endLine_1_last = txt_endLine_1;
-                                pos_uwb_1= (1 - update_rate_streaming_single_value) *pos_uwb_1 + update_rate_streaming_single_value * txt_endLine_1_last.'  ;
-                            end
-                        end
-                     end
                 end
                 if (~is_streaming_collect_single_values && txt_endLine_2(1) ~= 0 &&  ~isnan(txt_endLine_2(1))  &&  txt_endLine_2(2) ~= 0 &&  ~isnan(txt_endLine_2(2)) )
                     if (txt_endLine_2_last(1) ~= txt_endLine_2(1) || txt_endLine_2_last(2) ~= txt_endLine_2(2)) 
@@ -467,48 +444,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                         pos_uwb(:, step+1) = pos_uwb(:, step);
                     end
                 % Single value allowed for data streaming at higher frequency
-                elseif (is_streaming_collect_single_values && txt_endLine_2(1) ~= 0  && txt_endLine_2(2) ~= 0 )
-                     if(~isnan(txt_endLine_2(1)) && ~isnan(txt_endLine_2(2)))
-                        if (txt_endLine_2_last(1) ~= txt_endLine_2(1) || txt_endLine_2_last(2) ~= txt_endLine_2(2)) 
-                            if norm(txt_endLine_2_last - txt_endLine_2) < streaming_max_shift_dis
-                                line([txt_endLine_2_last(1) txt_endLine_2(1)], [txt_endLine_2_last(2) txt_endLine_2(2)]);
-                                txt_endLine_2_last = txt_endLine_2;
-                                pos_uwb(:, step+1) = (1 - update_rate_streaming) * pos_uwb(:, step) + update_rate_streaming * txt_endLine_2_last.' ;
-                            else
-                                pos_uwb(:, step+1) = pos_uwb(:, step);
-                            end
-                        else
-                            pos_uwb(:, step+1) = pos_uwb(:, step);
-                        end
-                     elseif(~isnan(txt_endLine_2(1)))
-                        if (txt_endLine_2_last(1) ~= txt_endLine_2(1))
-                            txt_endLine_2 = [txt_endLine_2(1) txt_endLine_2_last(2)];
-                            if norm(txt_endLine_2_last - txt_endLine_2) < streaming_max_shift_dis_single_value
-                                line([txt_endLine_2_last(1) txt_endLine_2(1)], [txt_endLine_2_last(2) txt_endLine_2_last(2)]);
-                                txt_endLine_2_last = txt_endLine_2;
-                                pos_uwb(:, step+1) = (1 - update_rate_streaming_single_value) * pos_uwb(:, step) + update_rate_streaming_single_value * txt_endLine_2_last.' ;
-                            else
-                                pos_uwb(:, step+1) = pos_uwb(:, step);
-                            end
-                        else
-                            pos_uwb(:, step+1) = pos_uwb(:, step);
-                        end
-                    elseif(~isnan(txt_endLine_2(2)))
-                        if (txt_endLine_2_last(2) ~= txt_endLine_2(2))
-                            txt_endLine_2 = [txt_endLine_2_last(1) txt_endLine_2(2)];
-                            if norm(txt_endLine_2_last - txt_endLine_2) < streaming_max_shift_dis_single_value
-                                line([txt_endLine_2_last(1) txt_endLine_2_last(1)], [txt_endLine_2_last(2) txt_endLine_2(2)]);
-                                txt_endLine_2_last = txt_endLine_2;
-                                pos_uwb(:, step+1) = (1 - update_rate_streaming_single_value) * pos_uwb(:, step) + update_rate_streaming_single_value * txt_endLine_2_last.'  ;
-                            else
-                                pos_uwb(:, step+1) = pos_uwb(:, step);
-                            end
-                        else
-                            pos_uwb(:, step+1) = pos_uwb(:, step);
-                        end
-                    else
-                        pos_uwb(:, step+1) = pos_uwb(:, step);
-                    end
+                
                 else
                     pos_uwb(:, step+1) = pos_uwb(:, step);
                 end
@@ -576,36 +512,54 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         else
             % Waypoint navigation
             if (strcmp(navigation_mode,'Point') || strcmp(navigation_mode,'Point02') || strcmp(navigation_mode,'Point03'))
-               heading_angle = atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
-                if (heading_angle > 8)
-                    char_command = 'O';
-                elseif (heading_angle < 8)
+
+                %if (valid_angle == 2)
+                   if (~isnan(heading_angle))
+                       heading_angle = 0.5*heading_angle + 0.5 *atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
+                   else
+                       heading_angle = 0.5 *atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
+                   end
+                %end
+                %disp(['a1:', num2str(pos_uwb(1, step+1)), ' a2', num2str(pos_uwb(2, step+1)), ' b1:', num2str(pos_uwb_1(1)), ' b2:', num2str(pos_uwb_1(2))]);
+                %disp(['HA:', num2str(heading_angle)]);
+                
+                if ( turncheck == true && heading_angle < 12 &&  heading_angle > -12)
+                    start_sending = true;
+                    char_command = 'S';
+                    turncheck = false;
+                elseif ( heading_angle > 25)
                     char_command = 'P';
-                elseif norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp +0
-                    if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
+                    turncheck = true;
+                elseif ( heading_angle < -20)
+                    char_command = 'O';
+                    turncheck = true;
+                elseif( heading_angle < 25 &&  heading_angle > -20)
+                    if norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp + 0
+                        if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                            if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
+                            end
                         else
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
+                            if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
+                            end
+                        end
+                   elseif abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
                         end
                     else
                         if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
                         else
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                         end
-                    end
-               elseif abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
-                    else
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
-                    end
-                else
-                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
-                    else
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                     end
                 end
                 
@@ -683,14 +637,14 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         
         % Xbee Communication
-        if (~is_transforming && ~strcmp(char_command,char(prev_char_command)) && (command_count_normal_linear >= interval_normal_linear_command_send/2) ...
-                 ||(command_count_normal_linear >= interval_normal_linear_command_send*2)  )
-            if (is_xbee_on)
+        if (~is_transforming && ~strcmp(char_command,char(prev_char_command)) ...
+                 ||(command_count_normal_linear >= interval_normal_linear_command_send)  )
+            if (is_xbee_on && start_sending)
                 writedata = char(char_command);
                 fwrite(arduino,writedata,'char');
             end
             prev_char_command = char_command;
-            if (is_print_sent_commands) 
+            if (is_print_sent_commands && start_sending) 
                 disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , char_command, ''''])
             end
             command_count_normal_linear = 0;
