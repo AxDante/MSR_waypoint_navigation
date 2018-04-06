@@ -30,8 +30,8 @@ char* M_Backward[] = {"BBBB", "BBFF", "BBBF", "FBBB", "FBBF", "LBFB", "LBFR"};
 char* M_Right[] = {"RRRR", "RRLL", "RRRL", "LRRR", "LRRL", "BRLR", "BRLF"};
 char* M_Left[] = {"LLLL", "LLRR", "LLLR", "RLLL", "RLLR", "FLRL", "FLRB"};
 
-char* R_LeftTurn[] = {"RRLL", "RBRB", "RRLL", "LRLL", "BRLF", "BBRF", "BBRL"};
-char* R_RightTurn[] = {"LLRR", "FRFR", "LLRL", "RLRR", "FLRB", "FFLB", "FFLR"};
+char* R_LeftTurn[] = {"RRLL", "RBRB", "RFLF", "BRBL", "BRLF", "BBRF", "BBRL"};
+char* R_RightTurn[] = {"LLRR", "FRFR", "LBRB", "FLFR", "FLRB", "FFLB", "FFLR"};
 
 char* S_Shape[] = {"Straight", "Square", "L-shape (4th)", "L-shape (1st)", "Z-shape", "T-shape", "S-shape"};
 char* S_State[] = {"STOP", "IDLE", "IDLE: angle adjusting", "LINEAR", "LINEAR: angle adjusting", "ROTATION", "TRANSFORMATION", "TRANSFORMATION: angle adjusting", "LINEAR: deviation adjusting"};
@@ -71,9 +71,9 @@ float worldRobotTargetHeading; //(for robotMode 3 or 4, which recognize its init
                                               // and perform rotations based on it; while set false, the initial heading can be either given
                                               // in advance or be set through serial ports.
 
-#define linearPower 60  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
+#define linearPower 56  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
 #define linearAdjustPower 20
-#define rotatePower 45  // Power provided to DC motors during robot rotation (r, l) (max: 128)
+#define rotatePower 37  // Power provided to DC motors during robot rotation (r, l) (max: 128)
 #define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
 #define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)

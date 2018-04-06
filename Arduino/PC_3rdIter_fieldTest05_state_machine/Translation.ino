@@ -129,7 +129,7 @@ int DCMotorPower(){
       return rotateAdjustPower;
     case 5:
       if (charInput == 'O'){
-        return rotatePower + 35;
+        return rotatePower + 40;
       }
       else{
         return rotatePower;
