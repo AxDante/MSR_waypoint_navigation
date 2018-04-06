@@ -300,6 +300,22 @@ elseif (strcmp(navigation_mode,'Astar_algorithm'))
     disp('Generating waypoints...')
     wp_current = 1;
     Wp = wp_generator_a_star(grid_size, grid_w, Grid_obstacle, 2, starting_grid, true);
+    
+    Wp_hack = [];
+    for idx = 1: grid_size(2)
+        if (mod(idx, 4) == 1)
+            Wp_hack = [Wp_hack; 0.5*grid_w  (idx+0.5)*grid_w 1];
+        end
+        if (mod(idx, 4) == 2)
+            Wp_hack = [Wp_hack; (grid_size(1) - 1.5)*grid_w  (idx-0.5)*grid_w 1];
+        end
+        if (mod(idx, 4) == 3)
+            Wp_hack = [Wp_hack; (grid_size(1) - 1.5)*grid_w (idx+0.5)*grid_w 1];
+        end
+        if (mod(idx, 4) == 0)
+            Wp_hack = [Wp_hack; 0.5*grid_w  (idx-0.5)*grid_w 1];
+        end
+    end
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -311,13 +327,14 @@ end
 
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+title('hTetro Waypoint Map')
 hold on
 
 
  % Draw Waypoints
 if (is_display_wp)
-    for idx = 1: size(Wp,1)
-        Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+    for idx = 1: size(Wp_hack,1)
+        Circle_Wp(idx) = plot(Wp_hack(idx, 1), Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
     end
 end
 
@@ -478,6 +495,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         if (is_display_grid_coverage_map)
             figure(2)
+            title('hTetro Coverage Map')
             imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
             cmap = colormap(grid_coverage_colormap);
             cmap(1,:) = zeros(1,3);

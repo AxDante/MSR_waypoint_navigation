@@ -13,7 +13,11 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 grid_size = [10 10];
 grid_w = 25;
 
-tol_wp = 9;                    
+sendTime = 0;
+stopAwhile = false;
+justTurnOneDir = false;
+justTurnOneDirCount = 0;
+tol_wp = 9.5;                    
 tol_line_width = 12;
 
 cvg_sample_side = [20 20];
@@ -22,17 +26,17 @@ starting_grid = [1 2];
 
 % Algorithms
 Algorithm = 'square_waypoint';
-navigation_mode = 'Point';
+navigation_mode = 'Point04';
 
 % Time Frame Setup
 max_step = 20000;
 interval_system_time = 2;
 interval_normal_linear_command_send = 30;
-interval_rotation_command_send = 10;
+interval_rotation_command_send = 15;
 
 % Robot Dynamics Setup
 tol_transform = pi/50;
-Dy_angv_transform = pi/48;
+Dy_angv_transform = pi/4;
 tol_heading = pi/7;
 
 update_rate_streaming = 1;                      
@@ -66,8 +70,8 @@ is_streaming_collect_single_values = false;
 
 % Data streaming setup
 streaming_max_single_val = 1000;                 % unit: cm
-streaming_max_shift_dis = 35;                       % unit: cm 
-streaming_max_shift_dis_single_value = 20;    % unit: cm
+streaming_max_shift_dis = 45;                       % unit: cm 
+streaming_max_shift_dis_single_value = 30;    % unit: cm
 
 max_pos_initialize = 10;
 
@@ -86,7 +90,7 @@ heading = [0 0 pi pi];
 
 time_pause = interval_system_time/100;
 
-pos_uwb_offset = [0 -3];
+pos_uwb_offset = [12.5 37.5];
 flex_offset = [0 0];
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
@@ -170,6 +174,7 @@ valid_angle = 0;
 heading_angle = 0;
 turncheck = false;
 start_sending = false;
+
 if (is_xbee_on)
     delete(instrfindall);
     arduino = serial(Serial_port,'BaudRate',baudrate);
@@ -318,7 +323,7 @@ elseif (strcmp(navigation_mode,'Point02'))
                 Wp = [Wp; 8.5*grid_w  3.5*grid_w 1 0];
             elseif (idx == 3)
                 Wp = [Wp; 8.5*grid_w  3.5*grid_w 1 0];
-                Wp = [Wp; 6.5*grid_w  3.5*grid_w 1 0];
+                Wp = [Wp; 7.5*grid_w  3.5*grid_w 1 0];
                 Wp = [Wp; 6.5*grid_w  3.5*grid_w 3 0];
                 Wp = [Wp; 4.5*grid_w  3.5*grid_w 3 0];
             elseif (idx == 4)   
@@ -336,6 +341,38 @@ elseif (strcmp(navigation_mode,'Point02'))
                 Wp = [Wp; 4.5*grid_w  7.5*grid_w 2 0];
                 Wp = [Wp; 6.5*grid_w  7.5*grid_w 2 0];
                 Wp = [Wp; 8.5*grid_w  7.5*grid_w 2 0];
+            end
+    end
+elseif (strcmp(navigation_mode,'Point04'))
+    disp('Generating waypoints...')
+    wp_current = 1;
+    starting_grid = [5 6];
+    pos_uwb_offset = [25*4+12.5 25*5+12.5];
+    for idx = 1: grid_size(1)-2
+            if (idx == 1)
+                Wp = [Wp; 4.5*grid_w  5.5*grid_w 2 1];
+                Wp = [Wp; 6.5*grid_w  5.5*grid_w 2 0];
+                Wp = [Wp; 8.5*grid_w  5.5*grid_w 2 0];
+            elseif (idx == 2)
+                
+                Wp = [Wp; 7.5*grid_w  5.5*grid_w 1 0];
+                
+                Wp = [Wp; 8.5*grid_w  5.5*grid_w 1 0];
+                Wp = [Wp; 8.5*grid_w  7.5*grid_w 1 0];
+            elseif (idx == 3)
+                Wp = [Wp; 8.5*grid_w  7.5*grid_w 1 0];
+                Wp = [Wp; 5.5*grid_w  7.5*grid_w 1 0];
+            elseif (idx == 4)   
+                Wp = [Wp; 4.5*grid_w  7.5*grid_w 1 0];  
+                Wp = [Wp; 4.5*grid_w  7.5*grid_w 3 0];  
+            elseif (idx == 5)
+                Wp = [Wp; 4.5*grid_w  8.5*grid_w 3 0];
+                Wp = [Wp; 2.5*grid_w  8.5*grid_w 3 0];
+                Wp = [Wp; 0.5*grid_w  8.5*grid_w 3 0];
+                Wp = [Wp; 0.5*grid_w  8.5*grid_w 4 0];
+                Wp = [Wp; 0.5*grid_w  6.5*grid_w 4 0];
+                Wp = [Wp; 0.5*grid_w  5.5*grid_w 4 0];
+                Wp = [Wp; 0.5*grid_w  3.5*grid_w 4 0];
             end
     end
 else
@@ -480,15 +517,21 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
             if (command_count_rotation >= interval_rotation_command_send)
                 is_transforming = true;
+                turncheck = true;
                 if (is_xbee_on)
                     writedata = char(num2str(Wp(wp_current, 3)));
+                    fwrite(arduino,writedata,'char');
                     fwrite(arduino,writedata,'char');
                 end
                 prev_char_command = char(num2str(Wp(wp_current, 3)));
                 if (is_print_sent_commands) 
                     disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , num2str(Wp(wp_current, 3)), ''''])
                 end
+                if (robot_Form == 2 && Wp(wp_current, 3) == 1)
+                    justTurnOneDir = true;
+                end
                 command_count_rotation = 0;
+                sendTime = toc;
             else
                 command_count_rotation = command_count_rotation + 1;
             end
@@ -511,56 +554,108 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
             % Waypoint navigation
-            if (strcmp(navigation_mode,'Point') || strcmp(navigation_mode,'Point02') || strcmp(navigation_mode,'Point03'))
+            if (strcmp(navigation_mode,'Point') || strcmp(navigation_mode,'Point02') || strcmp(navigation_mode,'Point03')|| strcmp(navigation_mode,'Point04') || strcmp(navigation_mode,'Point05'))
 
                 %if (valid_angle == 2)
                    if (~isnan(heading_angle))
-                       heading_angle = 0.5*heading_angle + 0.5 *atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
+                       heading_angle = 0.2 * heading_angle + 0.8 *atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
                    else
-                       heading_angle = 0.5 *atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
+                       heading_angle = atan((pos_uwb(1, step+1)-pos_uwb_1(1))/(pos_uwb(2, step+1)-pos_uwb_1(2)))*180/pi;
                    end
                 %end
                 %disp(['a1:', num2str(pos_uwb(1, step+1)), ' a2', num2str(pos_uwb(2, step+1)), ' b1:', num2str(pos_uwb_1(1)), ' b2:', num2str(pos_uwb_1(2))]);
                 %disp(['HA:', num2str(heading_angle)]);
+                if(~start_sending)
+                    disp(['HA:', num2str(heading_angle)]);
+                end
                 
-                if ( turncheck == true && heading_angle < 12 &&  heading_angle > -12)
+                if ( ~start_sending  && heading_angle < 24 &&  heading_angle > -24)
                     start_sending = true;
-                    char_command = 'S';
+                end
+                
+                if ( turncheck &&  heading_angle < 16 &&  heading_angle > -8)
                     turncheck = false;
-                elseif ( heading_angle > 20)
-                    char_command = 'P';
-                    turncheck = true;
-                elseif (heading_angle < -20)
-                    char_command = 'O';
-                    turncheck = true;
-                elseif norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp +0
-                    if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
+                end
+
+                if (justTurnOneDir)
+                    if (heading_angle < 15 &&  heading_angle > -15)
+                        char_command = 'S';
+                        if (justTurnOneDirCount >= 3)
+                            justTurnOneDirCount = 0;
+                            justTurnOneDir = false;
                         else
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
+                        justTurnOneDirCount = justTurnOneDirCount+1; 
+                        end
+                    else
+                        char_command = 'P';
+                    end
+                elseif( stopAwhile && heading_angle < 16 &&  heading_angle > -15)
+                    char_command = 'S';
+                    stopAwhile = false;
+                elseif ( heading_angle > 16)
+                    char_command = 'P';
+                    stopAwhile = true;
+                elseif ( heading_angle < -15)
+                    char_command = 'O';
+                    stopAwhile = true;
+                elseif( ~turncheck && ~stopAwhile && heading_angle < 16 &&  heading_angle > -15)
+                    if norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp + 0
+                        if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                            if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
+                            end
+                        else
+                            if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
+                            end
+                        end
+                   elseif abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
                         end
                     else
                         if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
                         else
-                            char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
                         end
                     end
-               elseif abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
-                    if Wp(wp_current, 1) - pos_uwb(1,step) > 0
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                end
+                if (~is_streaming_on)
+                     if norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp + 0
+                        if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                            if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate,4));  
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+2,4));
+                            end
+                        else
+                            if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+1,4));
+                            else
+                                char_command = Char_command_array_linear_adjustment(1+mod(heading_command_compensate+3,4));
+                            end
+                        end
+                   elseif abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
+                        if Wp(wp_current, 1) - pos_uwb(1,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate,4));  
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
+                        end
                     else
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+2,4));
-                    end
-                else
-                    if Wp(wp_current, 2) - pos_uwb(2,step) > 0
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
-                    else
-                        char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
+                        if Wp(wp_current, 2) - pos_uwb(2,step) > 0
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+1,4));
+                        else
+                            char_command = Char_command_array_linear(1+mod(heading_command_compensate+3,4));
+                        end
                     end
                 end
-                
             % Line navigation
             elseif (strcmp(navigation_mode,'Line'))
                 if (Wp(wp_current, 4) == 1)
