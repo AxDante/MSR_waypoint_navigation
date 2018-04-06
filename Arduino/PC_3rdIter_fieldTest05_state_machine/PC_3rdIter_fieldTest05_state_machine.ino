@@ -43,7 +43,7 @@ float worldRobotTargetHeading; //(for robotMode 3 or 4, which recognize its init
 //****************************************
 /////////////  Definitions  //////////////
 //****************************************
-#define debugPrintActive true                 // Printing Debug information on Serial Port
+#define debugPrintActive false                 // Printing Debug information on Serial Port
 #define debugMotorSetupActive true           
 
 
@@ -58,7 +58,7 @@ float worldRobotTargetHeading; //(for robotMode 3 or 4, which recognize its init
 #define secureShapeActive true
 #define secureShapeLinearActive true
 
-#define headingCorrectionDuringMotion true   // While active, the robot prioritise rotating to the ideal heading during motion
+#define headingCorrectionDuringMotion false   // While active, the robot prioritise rotating to the ideal heading during motion
 #define imuActive true
 
 #define robotMode 1
@@ -73,7 +73,7 @@ float worldRobotTargetHeading; //(for robotMode 3 or 4, which recognize its init
 
 #define linearPower 60  // Power provided to DC motors during robot linear motion (F, B, R, L) (max: 128)
 #define linearAdjustPower 20
-#define rotatePower 58  // Power provided to DC motors during robot rotation (r, l) (max: 128)
+#define rotatePower 45  // Power provided to DC motors during robot rotation (r, l) (max: 128)
 #define rotateAdjustPower 58 // Power provided to DC motors during robot heading self adjustment (max: 128)
 
 #define angleTolerance 5  // Angle tolerance for robot rotation (+- degree away from targeted heading)

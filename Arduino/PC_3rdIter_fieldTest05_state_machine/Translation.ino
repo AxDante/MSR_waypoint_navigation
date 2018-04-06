@@ -128,7 +128,12 @@ int DCMotorPower(){
     case 4: 
       return rotateAdjustPower;
     case 5:
-      return rotatePower;
+      if (charInput == 'O'){
+        return rotatePower + 35;
+      }
+      else{
+        return rotatePower;
+      }
     case 6:
       return 0;
     case 7:

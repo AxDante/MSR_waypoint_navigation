@@ -44,7 +44,7 @@ void imuRead()
 // Simple function for the robot to determine the heading is reached.
 // TODO: Improve the preformance of these functions.
 int reachTargetHeading( float currentAng){
-    if (headingCorrectionDuringMotion){
+    if (~headingCorrectionDuringMotion){
       return 0;
     }
     if (currentAng <  rotateTargetLower){

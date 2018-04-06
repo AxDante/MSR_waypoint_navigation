@@ -44,33 +44,11 @@ void checkRobotState(){
   }
 
   if (charInput == 'O' ||charInput == 'P'){
-    if ( robotState == 0 || robotState == 1 || robotState == 3 || robotState == 8){
       robotState = 5;
       rotateStartHeading = heading_filtered;
 
       if (charInput == 'P') robotDir = 1;
       if (charInput == 'O') robotDir = -1;
-      
-      if (initialPositionAsWorldFrame){
-        rotateTargetHeading = rotateStartHeading + robotDir * 90;
-      } else {
-        worldRobotTargetHeading +=  robotDir * 90;
-        rotateTargetHeading = worldRobotTargetHeading;
-      }
-
-      if (rotateTargetHeading > 180) rotateTargetHeading -= 360;
-      if (rotateTargetHeading < -180) rotateTargetHeading += 360;
-
-      rotateTargetLower = rotateTargetHeading - angleTolerance;
-      rotateTargetUpper = rotateTargetHeading + angleTolerance;
-
-      if (rotateTargetLower > 180) rotateTargetLower -= 360;
-      if (rotateTargetLower < -180) rotateTargetLower += 360;
-
-      if (rotateTargetUpper > 180) rotateTargetUpper -= 360;
-      if (rotateTargetUpper < -180) rotateTargetUpper += 360;
-
-    }
   }
 
   if (charInput == '1' || charInput == '2' ||charInput == '3' ||charInput == '4' ||charInput == '5' ||charInput == '6' ||charInput == '7' 
@@ -348,7 +326,7 @@ void stateMotion()
     }
   }
   else if (robotState == 5){
-    if (reachTargetHeading(heading_filtered) == 1){
+    if (robotDir == 1){
       for (char j = 0; j < 4; j ++){
         switch(R_LeftTurn[RobotForm-1][j]){
           case 'F':
@@ -376,7 +354,7 @@ void stateMotion()
         }
       }
     }
-    else if (reachTargetHeading(heading_filtered) == -1){
+    else if (robotDir == -1){
       for (char j = 0; j < 4; j ++){
         switch(R_RightTurn[RobotForm-1][j]){
           case 'F':
@@ -403,10 +381,6 @@ void stateMotion()
           secureShape(RobotForm);
         }
       }
-    }
-    else if (reachTargetHeading(heading_filtered) == 0){
-      robotState = 1;
-      stopMotorDC();
     }
   }
   else if (robotState == 6){
