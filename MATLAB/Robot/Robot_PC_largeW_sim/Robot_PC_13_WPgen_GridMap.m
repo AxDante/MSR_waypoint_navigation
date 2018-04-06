@@ -13,7 +13,7 @@ file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 8; %18    % Waypoint tolerance (unit:cm)               
+tol_wp = 6; %18    % Waypoint tolerance (unit:cm)               
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 

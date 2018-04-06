@@ -45,8 +45,8 @@ baudrate = 9600;
 
 
 % Toggle 
-is_xbee_on = true;
-is_streaming_on = true;
+is_xbee_on = false;
+is_streaming_on = false;
 
 is_calculate_coverage = false;
 is_display_coverage_map = false;
@@ -69,7 +69,7 @@ streaming_max_single_val = 1000;                 % unit: cm
 streaming_max_shift_dis = 35;                       % unit: cm 
 streaming_max_shift_dis_single_value = 20;    % unit: cm
 
-max_pos_initialize = 20;
+max_pos_initialize = 15;
 
 % Simulation Setup
 sim_noise_normal = 20;                        %unit: cm
@@ -316,24 +316,31 @@ elseif (strcmp(navigation_mode,'Point02'))
             elseif (idx == 3)
                 Wp = [Wp; 8.5*grid_w  3.5*grid_w 1 0];
                 Wp = [Wp; 6.5*grid_w  3.5*grid_w 1 0];
-                Wp = [Wp; 6.5*grid_w  3.5*grid_w 3 0];
-                Wp = [Wp; 4.5*grid_w  3.5*grid_w 3 0];
-            elseif (idx == 4)   
+                Wp = [Wp; 4.5*grid_w  3.5*grid_w 1 0];
+            else if (idx == 4)
+                Wp = [Wp; 4.5*grid_w  3.5*grid_w 3 0];     
                 Wp = [Wp; 2.5*grid_w  3.5*grid_w 3 0];  
                 Wp = [Wp; 0.5*grid_w  3.5*grid_w 3 0];  
-            elseif (idx == 5)
-                Wp = [Wp; 0.5*grid_w  3.5*grid_w 3 0];
-                Wp = [Wp; 2.5*grid_w  3.5*grid_w 3 0];
-                Wp = [Wp; 4.5*grid_w  3.5*grid_w 3 0];
-                Wp = [Wp; 4.5*grid_w  3.5*grid_w 2 0];
+            else if (idx == 5)
+                Wp = [Wp; 0.5*grid_w  3.5*grid_w 2 0];
+                Wp = [Wp; 0.5*grid_w  4.5*grid_w 2 0];
+                Wp = [Wp; 2.5*grid_w  4.5*grid_w 2 0];
+                Wp = [Wp; 4.5*grid_w  4.5*grid_w 2 0];
                 Wp = [Wp; 4.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 2.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 0.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 2.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 4.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 6.5*grid_w  7.5*grid_w 2 0];
+                
                 Wp = [Wp; 8.5*grid_w  7.5*grid_w 2 0];
-            end
+                
+                end
     end
 else
     disp('Navigation method is invalid.')
@@ -530,7 +537,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             pos_uwb(:, step+1) = pos_uwb(:, step);
         else
             % Waypoint navigation
-            if (strcmp(navigation_mode,'Point') || strcmp(navigation_mode,'Point02') || strcmp(navigation_mode,'Point03'))
+            if (strcmp(navigation_mode,'Point'))
 
                if norm(pos_uwb(:, step).' - Wp(wp_current, 1:2)) < tol_wp +0
                 if abs(Wp(wp_current, 1) - pos_uwb(1,step)) > abs(Wp(wp_current, 2) - pos_uwb(2,step)) 
