@@ -9,10 +9,9 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
-file_map = '10_10_astar02';   % Set Map as 'Empty' for empty map
+file_map = '10_10_astar03';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
-
 
 tol_wp = 4; %18    % Waypoint tolerance (unit:cm)               
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
@@ -208,8 +207,6 @@ count_pos_initialize = 0;
 is_pos_initialized = false;
 pos_initial = [];
 
-fig_1_title_name = '';
-
 if (is_xbee_on)
     delete(instrfindall);
     arduino = serial(Serial_port,'BaudRate',baudrate);
@@ -304,8 +301,6 @@ elseif (strcmp(navigation_mode,'Astar_algorithm'))
     if (strcmp(wp_gen_set,'demo01'))
         [Wp, Wp_hack] = PC_WPgen_astar_demo01(grid_size, grid_w, Grid_obstacle, starting_grid);
     end
-    pos_uwb_offset = [37.5 37.5];
-    fig_1_title_name = 'A* Navigation Waypoint Map';
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -317,7 +312,7 @@ end
 
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
-title(fig_1_title_name)
+title('Astar Navigation Waypoint Map')
 hold on
 
 
