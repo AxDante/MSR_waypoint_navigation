@@ -1,7 +1,7 @@
 function [Wp, Wp_hack] = PC_WPgen_astar_demo01(gs, gw, Gobs, rcg)
 
     Wp_hack = [2 2 2;
-                   8 8 2;
+                   8 8 3;
                    2 2 1;
                    8 8 8];
                

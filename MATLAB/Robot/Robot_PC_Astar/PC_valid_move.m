@@ -17,6 +17,8 @@
     
     
     rms = robot_motion_sequence(shape);  % Robot Motion Sequece Array
+
+    
     
     switch command
         case 'F'
@@ -27,6 +29,8 @@
             Rg_cmd = Rg + rms(3,:);
         case 'L'
             Rg_cmd = Rg + rms(4,:);
+        case '8'
+            if shape == 2
     end
     
     % Check if the next command is valid
