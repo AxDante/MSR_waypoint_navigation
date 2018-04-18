@@ -9,7 +9,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
-file_map = '10_10_simple01';   % Set Map as 'Empty' for empty map
+file_map = 'Empty';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
@@ -29,7 +29,7 @@ grid_coverage_increase = 1; % Grid color map value increased for each step durin
 
 % Algorithms
 Algorithm = 'square_waypoint';
-navigation_mode = 'Astar_algorithm';
+navigation_mode = 'Point';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
@@ -41,7 +41,7 @@ interval_rotation_command_send = 10;    % Robot rotation commands sending interv
 % Robot Dynamics Setup
 robot_Form = 2; % Robot starting shape
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
-Dy_angv_transform = pi/24;  % Robot transformation angular velocity (unit:rad)
+Dy_angv_transform = pi/4;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
 
 update_rate_streaming = 1;  % Robot position update rate during data streaming
@@ -333,8 +333,8 @@ hold on
 
  % Draw Waypoints
 if (is_display_wp)
-    for idx = 1: size(Wp_hack,1)
-        Circle_Wp(idx) = plot(Wp_hack(idx, 1), Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+    for idx = 1: size(Wp,1)
+        Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
     end
 end
 
