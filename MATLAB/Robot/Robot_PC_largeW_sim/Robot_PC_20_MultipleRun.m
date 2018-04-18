@@ -166,7 +166,7 @@ else
 end
 
 
-for run = 8
+for run = 11:12
     
     clf
     robot_Form = 24; % Robot starting shape
@@ -664,5 +664,5 @@ for run = 8
         disp(['L to J  transformation: ',  num2str(count_LtoJ_tf), ' times']);
         disp(['J to L  transformation: ',  num2str(count_JtoL_tf), ' times']);
     end
-    saveas(figure(1),['TilingSet' +num2str(run) +'.jpg']);
+    %saveas(figure(1),['TilingSet' +num2str(run) +'.jpg']);
 end
