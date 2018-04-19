@@ -1,0 +1,18 @@
+Row,Data
+TilingSet,10
+L rotation 90deg clockwise,0
+L rotation 90deg counterclockwise,4
+L rotation 180deg turn,2
+J rotation 90deg clockwise,2
+J rotation 90deg counterclockwise,4
+J rotation 180deg turn,3
+L to J  transformation,4
+J to L  transformation,5
+J F_distance,192
+J R_distance,168
+J B_distance,150
+J L_distance,30
+L F_distance,150
+L R_distance,36
+L B_distance,210
+L L_distance,72

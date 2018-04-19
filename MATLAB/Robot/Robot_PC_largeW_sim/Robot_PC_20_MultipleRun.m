@@ -166,7 +166,7 @@ else
 end
 
 
-for run = 11:12
+for run = 10:12
     
     clf
     robot_Form = 24; % Robot starting shape
@@ -175,11 +175,23 @@ for run = 11:12
     pos_uwb_offset = Wp(1, 1:2);
     wp_current = 1;
     distance_travelled = 0;
-    count_J_rot = 0;
-    count_L_rot = 0;
+    count_J_rot_clockwise = 0;
+    count_J_rot_counterclockwise = 0;
+    count_L_rot_clockwise = 0;
+    count_L_rot_counterclockwise = 0;
+    count_L_rot_180deg = 0;
+    count_J_rot_180deg = 0;
     count_JtoL_tf = 0;
     count_LtoJ_tf = 0;
-    
+    J_F_distance = 0;
+    J_R_distance = 0;
+    J_L_distance = 0;
+    J_B_distance = 0;
+  
+    L_F_distance = 0;
+    L_R_distance = 0;
+    L_L_distance = 0;
+    L_B_distance = 0;
     
     pos_uwb_raw =  zeros(2, max_step);
     pos_uwb = zeros(2, max_step);
@@ -373,22 +385,29 @@ for run = 11:12
                 heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
                 if mod(robot_Form, 7) == 3
                     if mod(Wp(wp_current, 3) , 7) == 4
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    dif = abs(heading_command_compensate-prev_heading_command_compensate);
-                    if dif == 3
-                        dif = 1;
-                    end
-                    count_J_rot = count_J_rot + dif*90;
-                elseif mod(robot_Form, 7) == 4
-                    if mod(Wp(wp_current, 3) , 7) == 3
                         count_JtoL_tf = count_JtoL_tf + 1;
                     end
-                    dif = abs(heading_command_compensate-prev_heading_command_compensate);
-                    if dif == 3
-                        dif = 1;
+                    dif = heading_command_compensate-prev_heading_command_compensate;
+                    
+                    if dif == 1 || dif == -3
+                        count_J_rot_clockwise = count_J_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_J_rot_counterclockwise = count_J_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_J_rot_180deg = count_J_rot_180deg + 1;
                     end
-                    count_L_rot = count_L_rot + dif*90;
+                    
+                elseif mod(robot_Form, 7) == 4
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    end
+                    if dif == 1 || dif == -3
+                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_L_rot_180deg = count_L_rot_180deg + 1;
+                    end
                 end
                 prev_heading_command_compensate = heading_command_compensate;
                 robot_Form = Wp(wp_current, 3);
@@ -437,10 +456,33 @@ for run = 11:12
                     pos_uwb(:, step+1) = Dy_v(2, :, step).' * interval_system_time+ ...
                                                         update_rate_sim* (pos_uwb(:, step) + sim_noise)...
                                                        + (1 - update_rate_sim)* pos_uwb(:, step);
-
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        switch(char_command)
+                            case 'F'
+                                J_F_distance = J_F_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'B'
+                                J_B_distance = J_B_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'R'
+                                J_R_distance = J_R_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'L'
+                                J_L_distance = J_L_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                        end
+                    elseif  mod(Wp(wp_current, 3) , 7) == 4
+                        switch(char_command)
+                            case 'F'
+                                L_F_distance = L_F_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'B'
+                                L_B_distance = L_B_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'R'
+                                L_R_distance = L_R_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                            case 'L'
+                                L_L_distance = L_L_distance + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
+                       end
+                    end
                 end
             end
-
+          
+            
             if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp && ~is_require_transform)
                 if (is_display_wp && is_display_wp_clearing)
                     delete(Circle_Wp(wp_current));
@@ -658,11 +700,37 @@ for run = 11:12
     hold off
     if (is_calculate_coverage)
         disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
-        disp(['Total Distance Travelled: ',  num2str(distance_travelled), ' cm']);
-        disp(['L rotation angle: ',  num2str(count_L_rot), ' degrees']);
-        disp(['J rotation angle: ',  num2str(count_J_rot), ' degrees']);
-        disp(['L to J  transformation: ',  num2str(count_LtoJ_tf), ' times']);
-        disp(['J to L  transformation: ',  num2str(count_JtoL_tf), ' times']);
+        %disp(['Total Distance Travelled: ',  num2str(distance_travelled), ' cm']);
+        %disp(['L rotation angle: ',  num2str(count_L_rot_clockwise), ' degrees']);
+        %disp(['J rotation angle: ',  num2str(count_J_rot), ' degrees']);
+        %disp(['L to J  transformation: ',  num2str(count_LtoJ_tf), ' times']);
+        %disp(['J to L  transformation: ',  num2str(count_JtoL_tf), ' times']);
     end
+    
+    Name = {'TilingSet'; 'L rotation 90deg clockwise'; 'L rotation 90deg counterclockwise';...
+              'L rotation 180deg turn';'J rotation 90deg clockwise'; 'J rotation 90deg counterclockwise'; ...
+              'J rotation 180deg turn';'L to J  transformation'; 'J to L  transformation';
+               'J F_distance';'J R_distance';  'J B_distance';'J L_distance'; ...
+               'L F_distance';'L R_distance';  'L B_distance';'L L_distance'};
+    Data = [run;
+                     count_L_rot_clockwise;
+                     count_L_rot_counterclockwise;
+                     count_L_rot_180deg;
+                    count_J_rot_clockwise;
+                    count_J_rot_counterclockwise;
+                     count_J_rot_180deg;                   
+                      count_LtoJ_tf;
+                     count_JtoL_tf;
+                    J_B_distance;
+                    J_L_distance;
+                    J_F_distance;
+                    J_R_distance;
+                    L_B_distance;
+                    L_L_distance;
+                    L_F_distance;
+                    L_R_distance];
+    T = table(Data, 'RowNames', Name);
+    writetable(T,['TilingSet' ,num2str(run) ,'.csv'],'WriteRowNames',true);
+    
     %saveas(figure(1),['TilingSet' +num2str(run) +'.jpg']);
 end
