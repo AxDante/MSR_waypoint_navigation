@@ -1,18 +1,37 @@
 
 
-    pause_time = 1;
+max_step = 20;
+pause_time = 1;
     
-    gs = [25 25];
-               
-    Gobs = [4, 4;
+gs = [25 25];
+
+Grid_visited = zeros(gs(1),gs(2),max_step);
+Grid_obs = zeros(gs(1),gs(2),max_step);
+Activity = zeros(gs(1),gs(2),max_step);
+obstacle_map = [4, 4;
                 4, 5;
                 5, 5;
                 5, 6];
-    
-    rrange = 2;
-    nbrange = 1;
-    mu = 1;     
+
+
             
+rrange = 2;
+nbrange = 1;
+mu = 1;     
+A = 0;
+B = 1;
+D = 1;
+E = 100;
+            
+for intidx = 1:size(obstacle_map,1)
+    Grid_obs(obstacle_map(intidx,1),obstacle_map(intidx,2)) = 1;
+end
+
+
+
+
+
+
    for selfrow = 1:gs(2)
        for selfcol = 1:gs(1)
            
@@ -28,26 +47,52 @@
        end
    end
    Weight
-            
-   tot_step = 20;
    
    
-   for step = 1:tot_step
+   
+   
+   
+   for step = 1:max_step
        pause(pause_time)
        
        for selfrow = 1:gs(2)
            for selfcol = 1:gs(1)
-
+               
+               sums = 0;
+               
                for shiftrow = -nbrange:nbrange
                    for shiftcol = -nbrange:nbrange
                        nextrow = selfrow + shiftrow;
                        nextcol = selfcol + shiftcol;
-                       if (nextrow <= gs(2) && nextrow > 0 && nextcol <= gs(1) && nextcol > 0)
-                            Weight(selfrow, selfcol, nextrow, nextcol) = mu/norm([nextrow, nextcol]-[selfrow,selfcol]);
+                       if (shiftrow == 0 && shiftcol == 0)
+                           a = 1+1;
+                       elseif (nextrow <= gs(2) && nextrow > 0 && nextcol <= gs(1) && nextcol > 0)
+                           
+                           if Activity(nextrow, nextcol, step) <= 0
+                               nextactivity = 0;
+                           else
+                               nextactivity =  Activity(nextrow, nextcol, step);
+                           end
+                           sums = sums + nextactivity*Weight(selfrow, selfcol, nextrow, nextcol);
                        end
-                       if shiftrow == 0)
                    end
                end
+               if (Grid_visited(selfrow,selfcol) == 0)
+                   excitatory_input = E;
+               else
+                   excitatory_input = 0;
+               end
+               if (Grid_obs(selfrow,selfcol) == 1)
+                   inhibitory_input = E;
+               else
+                   inhibitory_input = 0;
+               end
+               
+               Activity(selfrow, selfcol, step+1) = Activity(selfrow, selfcol, step) +...
+                                                (-A*Activity(selfrow, selfcol, step) +...
+                                               (B-Activity(selfrow, selfcol, step))*(excitatory_input + sums)+...
+                                               -(D+A*Activity(selfrow, selfcol, step)))
+               
            end
        end
        
