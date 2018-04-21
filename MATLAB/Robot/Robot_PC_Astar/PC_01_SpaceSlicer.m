@@ -3,7 +3,8 @@
 max_step = 20;
 pause_time = 1;
 time_interval = 0.1;
-max_slices_approach = 5;
+max_slice_approach = 20;
+
 
 gs = [8 8];
 
@@ -11,7 +12,7 @@ gs = [8 8];
 obstacle_map = [3 4;
                         3 5;
                         4 4;
-                        5 4];
+                        5 4; ];
 Grid_visited = zeros(gs(1),gs(2),max_step);
 Grid_obs = zeros(gs(1),gs(2));
 
@@ -24,8 +25,11 @@ end
 
 is_all_covered = false;
 
-Grid_inslice
-for slice_run = 1:5
+Slice_final = [];
+slice_approach = 0;
+Grid_inslice;
+while ismember(0, Grid_inslice) || slice_approach > max_slice_approach
+    slice_approach = slice_approach +1;
     Slice_candidates=[];
     for rowidx = 1:gs(1)
         for colidx = 1:gs(2)
@@ -77,6 +81,16 @@ for slice_run = 1:5
             Grid_inslice(rowidx,colidx) = 1;
         end
     end
-    
-    Grid_inslice
+    Slice_final = [Slice_final; Slice_candidates(max_Sliceidx,:)];
 end
+Slice_final
+
+Wpd_approach = [];
+max_wpd_approach = 10;
+
+
+for sliceidx = 1:size(Slice_final,1)
+    % Row and column are odd
+
+end
+
