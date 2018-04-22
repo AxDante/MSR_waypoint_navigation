@@ -88,9 +88,6 @@ Slice_final
 Wpd_approach = [];
 max_wpd_approach = 10;
 
+[Slice_Info, Slice_Wp] = get_slice_info(Slice_final);
 
-for sliceidx = 1:size(Slice_final,1)
-    % Row and column are odd
-
-end
 
