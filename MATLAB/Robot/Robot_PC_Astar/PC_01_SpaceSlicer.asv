@@ -5,7 +5,7 @@ max_slice_approach = 20;
 
 
 gs = [8 8];
-
+gw = 15
 
 obstacle_map = [3 4;
                         3 5;
@@ -91,31 +91,51 @@ max_wpd_approach = 10;
 min_distance = 10^10;
 min_slice_idx = 0;
 min_slice_sequence = [];
+min_des_sequence = [];
 
 for intidx = 1:prod(Slice_Info_size)
-    des_sequence = [];
     slice_sequence = [];
     slice_info = [];
-    tot_distance = 0;
-    perms_slice = perms(2:size(Slice_final,1)-1);
+    perms_slice = perms(2:size(Slice_final,1));
     for sliceidx = 1:size(perms_slice,1)
+        des_sequence = [];
         des_quotients = intidx;
+        tot_distance = 0;
         des_remainings = 0;
         slice_sequence = [1 perms_slice(sliceidx,:)];
         last_slice_info = [1 1 1 1 0 0];
         for desidx = 1:size(Slice_final,1)
-            des_remainings = mod(des_quotients, Slice_Info_size(desidx))+1;
-            slice_info = Slice_Info{desidx, des_remainings};
+            des_remainings = mod(des_quotients, Slice_Info_size(slice_sequence(desidx)))+1;
+            slice_info = Slice_Info{slice_sequence(desidx), des_remainings};
             tot_distance = tot_distance + slice_info(6);
             tot_distance = tot_distance + abs(slice_info(1)-last_slice_info(3)) + abs(slice_info(2)-last_slice_info(4));
-            des_quotients = floor(des_quotients/Slice_Info_size(desidx));
+            des_quotients = floor(des_quotients/Slice_Info_size(slice_sequence(desidx)));
             des_sequence = [des_sequence, des_remainings];
+            last_slice_info = slice_info;
         end
-    end
-    if tot_distance < min_distance
-        min_distance = tot_distance;
-        min_slice_idx = desidx;
-        min_slice_sequence = des_sequence;
+        if tot_distance < min_distance
+            min_distance = tot_distance;
+            min_slice_idx = desidx;
+            min_des_sequence = des_sequence;
+            min_slice_sequence = slice_sequence;
+        end
     end
 end
 
+Wp_final = [];
+for intidx = 1:size(min_des_sequence,1)
+    Wp_final = [Wp_final; Slice_Wp{min_slice_sequence(intidx), min_des_sequence(intidx)}];
+end
+
+Wp_gw_final = (Wp_final - 0.5)*gw;
+
+Line_Border = [];
+figure(1)
+axis([-gw gw*(gs(1)+1) -gw gw*(gs(2)+1)])
+title('Optimal Path')
+hold on
+for intidx = 1:size(Wp_final,1)
+    Line_Border(intidx) =line([gw*grid_size(1) 0], [gw*grid_size(2) gw*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
+end
+hold off
+min_slice_sequence

@@ -18,8 +18,6 @@
     
     rms = robot_motion_sequence(shape);  % Robot Motion Sequece Array
 
-    
-    
     switch command
         case 'F'
             Rg_cmd = Rg + rms(1,:);

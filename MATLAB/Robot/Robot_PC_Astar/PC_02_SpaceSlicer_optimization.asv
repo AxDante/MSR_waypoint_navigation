@@ -7,9 +7,9 @@ max_slice_approach = 20;
 gs = [8 8];
 gw = 15;
 
-Map_obs = [4 6;
-                  3 6;
-                  3 7];
+Map_obs = [3 5;
+                 4 5
+                 4 6];
  
 Map_obs1 = [2 5;
                   3 6;
@@ -23,7 +23,7 @@ Map_obs2 = [5 5;
                   4 7;
                   5 7];  
               
-Map_obs = [5 4;
+Map_obs3 = [5 4;
                   4 4;
                   3 4;
                   2 4;
@@ -44,12 +44,14 @@ is_all_covered = false;
 Slice_final = [];
 slice_approach = 0;
 Grid_inslice;
+
+%  Space Slicing
 while ismember(0, Grid_inslice) || slice_approach > max_slice_approach
     slice_approach = slice_approach +1;
     Slice_candidates=[];
     for rowidx = 1:gs(1)
         for colidx = 1:gs(2)
-            % Find Avaliable grid for biggest slice
+            % Find avaliable grid for biggest slice
             is_possible_slice_start = true;
             if (Grid_inslice(rowidx, colidx)~= 0)
                 is_possible_slice_start = false;
@@ -99,11 +101,12 @@ while ismember(0, Grid_inslice) || slice_approach > max_slice_approach
     end
     Slice_final = [Slice_final; Slice_candidates(max_Sliceidx,:)];
 end
-Slice_final
 
 Wpd_approach = [];
 max_wpd_approach = 10;
 
+
+%  Space Slicing
 [Slice_Info, Slice_Wp, Slice_Info_size] = get_slice_info(Slice_final);
 
 min_distance = 10^10;
@@ -158,7 +161,6 @@ for idxobs = 1:size(Map_obs,1)
     Obstacles = rectangle('Position', [gw*(Map_obs(idxobs, :) - [1 1]), gw gw], ...
                                                 'FaceColor', [0 0 0]);
 end
-
 
 Line_Border(1) = line([0 0], [0 gw*gs(2)], 'Color', 'black', 'LineWidth', 2);
 Line_Border(2) =line([0 gw*gs(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
