@@ -1,16 +1,12 @@
-function exp_array= PC_Astar_expand_array(rcg,hn,gcg,CLOSED,gs, shape, Gobs)
+
+function exp_array= PC_Astar_expand_array(rcg,hn,gcg,gs, shape, Gobs)
     %Function to return an expanded array
     %This function takes a node and returns the expanded list
     %of successors,with the calculated fn values.
-    %The criteria being none of the successors are on the CLOSED list.
-    %
-    %   Copyright 2009-2010 The MathWorks, Inc.
+    %The criteria being none of the successors are on the Closed_List list.
     
     exp_array=[];
     exp_count=1;
-    c2=size(CLOSED,1);%Number of elements in CLOSED including the zeros
-    
-    %CLOSED
     
     rmc = ['F', 'R', 'B', 'L']; % Robot movement commands
     

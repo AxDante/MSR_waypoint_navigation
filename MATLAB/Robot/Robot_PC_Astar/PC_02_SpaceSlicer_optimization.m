@@ -1,3 +1,11 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Space Slicer
+% Focus on Optimization to reduce comutational complexity (allowing obstacles in grid)
+% 04-23-2018
+% Author: Ping-Cheng Ku
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 max_step = 20;
 pause_time = 1;
 time_interval = 0.1;

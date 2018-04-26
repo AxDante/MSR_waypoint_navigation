@@ -33,7 +33,7 @@ zigzag_mode = 'simple';
 
 % Time Frame Setup
 max_step = 20000;   % Maximum system steps
-interval_system_time = 3;   % Robot dynamics update intervals
+interval_system_time =2;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
@@ -41,7 +41,7 @@ interval_rotation_command_send = 10;    % Robot rotation commands sending interv
 robot_Form = 24; % Robot starting shape
 heading = [0 pi pi*3/2 pi/2];
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
-Dy_angv_transform = pi/12;  % Robot transformation angular velocity (unit:rad)
+Dy_angv_transform = pi/48;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
 
 update_rate_streaming = 1;  % Robot position update rate during data streaming
@@ -59,7 +59,7 @@ is_streaming_on = false;
 
 is_calculate_coverage = true;
 is_calculate_grid_coverage_duration = true;
-is_display_coverage_map = false;
+is_display_coverage_map = true;
 is_display_wp = true;   
 is_display_wp_clearing = false;
 is_display_route = true;
@@ -166,7 +166,7 @@ else
 end
 
 
-for run = 10:12
+for run = 1
     
     clf
     robot_Form = 24; % Robot starting shape
@@ -262,7 +262,7 @@ for run = 10:12
 
 
     figure(1)
-    axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+    axis([-grid_w*1.5 grid_w*(grid_size(1)+1.5) -grid_w*1.5 grid_w*(grid_size(2)+1.5)])
     title('hTetro Waypoint Map')
     hold on
 
@@ -563,22 +563,28 @@ for run = 10:12
                 Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                         [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
+                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
                 Line_Robot(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
                 Line_Robot(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
                 Line_Robot(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'yellow', 'LineWidth', 2);
+                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
                  end
             end
-
+            
+            if (is_display_wp)
+                for idx = 1: size(Wp,1)
+                    Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+                end
+            end
+            
             % Draw Outer Border
             Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
             Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);

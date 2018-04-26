@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Space Slicer
+% General Space Slicing + Path Optimization
+% 04-19-2018
+% Author: Ping-Cheng Ku
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 max_step = 20;
 pause_time = 1;
 time_interval = 0.1;

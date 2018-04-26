@@ -2,15 +2,14 @@
 % A* ALGORITHM Demo
 % Interactive A* search demo
 % 04-26-2005
-%   Copyright 2009-2010 The MathWorks, Inc.
+% Copyright 2009-2010 The MathWorks, Inc.
+% 
+% Revised by Ping-Cheng Ku on  04-04-2018
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function Wp = PC_Astar_origin_algorithm(gs, Gobs, shape, scg, gcg)
     
     %Linear Motion
-
-
-
-
     rcg = scg;
     MAP=2*(ones(gs(1),gs(2)));
     MAP(gcg(1),gcg(2))=0;%Initialize MAP with location of the target
@@ -37,6 +36,7 @@ function Wp = PC_Astar_origin_algorithm(gs, Gobs, shape, scg, gcg)
             end
         end
     end
+    
     CLOSED_COUNT=size(CLOSED,1);
     %set the starting node as the first node
     OPEN_COUNT=1;
@@ -113,7 +113,6 @@ function Wp = PC_Astar_origin_algorithm(gs, Gobs, shape, scg, gcg)
                parent_y=OPEN(inode,5);
                i=i+1;
        end
-       
        Wp = flipud(Optimal_path);
     else
         Wp = [];

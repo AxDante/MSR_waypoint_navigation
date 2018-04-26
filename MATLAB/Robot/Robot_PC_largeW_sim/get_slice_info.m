@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Slice Info Generator
+% Produces zigzag path and calculate path cost for each slices
+% 04-22-2018
+% Author: Ping-Cheng Ku
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [Slice_Info, Slice_Wp, Slice_Info_size] = get_slice_info(Slice_final)
     
     Slice_Info = {};
