@@ -5,11 +5,7 @@ function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
         
         
         
-        for rowidx = rowsweeptot +1 : rowsweeptot + Row_sweep(rowsweepidx)
-            for colidx = 1:gs(2)
-                GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
-            end
-        end
+        for rowsweepodx
         
         
         
