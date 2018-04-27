@@ -7,9 +7,9 @@ clc;
 
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
-
+addpath('C:\Users\IceFox\Desktop\ERMINE\HTo_PC\MATLAB\Robot\Robot_PC_largeW_sim')
 % General Map Setup
-file_map = '10_10_astar02';   % Set Map as 'Empty' for empty map
+file_map = '15_10_astar04';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
@@ -302,7 +302,7 @@ elseif (strcmp(navigation_mode,'Astar_algorithm'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PC_WPgen_astar_demo01(grid_size, grid_w, Grid_obstacle, starting_grid);
+        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Grid_obstacle, starting_grid);
     end
     pos_uwb_offset = [37.5 37.5];
     fig_1_title_name = 'A* Navigation Waypoint Map';

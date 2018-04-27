@@ -7,35 +7,30 @@
 % Revised by Ping-Cheng Ku on  04-04-2018
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function Wp = PC_Astar_origin_algorithm(gs, Gobs, shape, scg, gcg)
+function Wp = PC_Astar_rev_algorithm(gs, Gobs, shape, scg, gcg)
     
     %Linear Motion
     rcg = scg;
-    MAP=2*(ones(gs(1),gs(2)));
-    MAP(gcg(1),gcg(2))=0;%Initialize MAP with location of the target
+    Map=2*(ones(gs(1),gs(2)));
+    Map(gcg(1),gcg(2))=0;%Initialize MAP with location of the target
 
+    
     for idxx = 1:gs(1)
         for idxy = 1:gs(2)
             if Gobs(idxx, idxy) == 1
-                MAP(idxx,idxy) = -1;
+                Map(idxx,idxy) = -1;
             end
         end
     end
 
-    MAP(scg(1),scg(2))=1;
+    %Map (0: goal, -1:obs, 1: start, 2:others)
+    
+    Map(scg(1),scg(2))=1;
     OPEN=[];
-    CLOSED=[];
-
-    k=1;%Dummy counter
-    for i=1:gs(1)
-        for j=1:gs(2)
-            if(MAP(i,j) == -1)
-                CLOSED(k,1)=i; 
-                CLOSED(k,2)=j; 
-                k=k+1;
-            end
-        end
-    end
+    CLOSED=Gobs;
+    
+    %
+    Gvis = zeros(gs(1),gs(2));
     
     CLOSED_COUNT=size(CLOSED,1);
     %set the starting node as the first node
@@ -50,7 +45,7 @@ function Wp = PC_Astar_origin_algorithm(gs, Gobs, shape, scg, gcg)
     NoPath=1;
 
     while((rcg(1) ~= gcg(1) || rcg(2) ~= gcg(2)) && NoPath == 1)
-     exp_array=Robot_PC_expand_array_rev(rcg,path_cost,gcg,CLOSED,gs,shape,Gobs);
+     [exp_array, Gvis]=Robot_PC_expand_array_rev(rcg,path_cost,gcg,gs,shape,Gobs,Gvis);
      exp_count=size(exp_array,1);
      for i=1:exp_count
         flag=0;
