@@ -1,18 +1,31 @@
 function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
 
+
+
+
+    for rowidx = 1:gs(1)
+        for colidx = 1:gs(2)
+             GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
+                [rowidx colidx]
+        end
+    end
+
+
+
+
     rowsweeptot = 0;
     for rowsweepidx = 1:size(Row_sweep,1)
         
         for rowidx = rowsweeptot +1 : rowsweeptot + Row_sweep(rowsweepidx)
             for colidx = 1:gs(2)
-                GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
+                %GA = checkGridAvalibility(rowidx,colidx, gs, Gobs);
+                %[rowidx colidx]
+                %GA
+                
             end
+            rowsweeptot = rowsweeptot +1;
         end
-        
-        
-        
-        
-        
+
         
         %{
         score = 0;

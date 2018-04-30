@@ -13,15 +13,15 @@ function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
      
      
      for shape = 1:8          
-         rotationMatrix(Rgp, shape)
-         newShape = zeros(1,3,2);
-         newShape(1,:,:) = rotationMatrix(Rgp, shape);
-         RRgp(shape,:,:) = newShape;       % Rotated Relative grid positions
-         size(RRgp(shape,1,:))
-         Rg = [ RRgp(shape,1,:);                                % Robot Grid values
+         newShape = rotationMatrix(Rgp, shape);
+         %newShape = zeros(1,3,2);
+         %newShape(1,:,:) = rotationMatrix(Rgp, shape);
+         %RRgp(shape,:,:) = newShape;       % Rotated Relative grid positions
+         %size(RRgp(shape,1,:))
+         Rg = [ newShape(1,:);                                % Robot Grid values
                      0 0;
-                     RRgp(shape,2,:);
-                     RRgp(shape,3,:)] +[rowidx, colidx];
+                      newShape(2,:);
+                      newShape(3,:)] +[rowidx, colidx];
         
         isvalid = true;
         for idx = 1:size(Rg,1)   
@@ -29,8 +29,10 @@ function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
                     Rg(idx,2) > gs(2) || Rg(idx,2) <= 0)
                 isvalid = false;
             else
-                if Gobs(Rg(idx,1), Rg(idx,2)) == 1
-                    isvalid = false;
+                for obsidx = 1:size(Gobs,1)
+                    if (Rg(idx,1) == Gobs(obsidx,1) && Rg(idx,2) == Gobs(obsidx,2))
+                        isvalid = false;
+                    end
                 end
             end
         end
