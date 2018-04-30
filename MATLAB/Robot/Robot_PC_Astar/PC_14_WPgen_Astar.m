@@ -298,11 +298,19 @@ elseif (strcmp(navigation_mode,'Shape_O_I_gen'))
     disp('Generating waypoints...')
     wp_current = 1;
     Wp = wp_generator_Shape_O_I(grid_size, grid_w, Grid_obstacle, 2, true);
-elseif (strcmp(navigation_mode,'Astar_algorithm'))
+elseif (strcmp(navigation_mode,'Astar_algorithm_OLD'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
         [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Grid_obstacle, starting_grid);
+    end
+    pos_uwb_offset = [37.5 37.5];
+    fig_1_title_name = 'A* Navigation Waypoint Map';
+elseif (strcmp(navigation_mode,'Astar_algorithm'))
+    disp('Generating waypoints...')
+    wp_current = 1;
+    if (strcmp(wp_gen_set,'demo01'))
+        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs(2:end,:) , starting_grid);
     end
     pos_uwb_offset = [37.5 37.5];
     fig_1_title_name = 'A* Navigation Waypoint Map';

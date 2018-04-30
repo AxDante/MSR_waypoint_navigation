@@ -1,9 +1,7 @@
 function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
 
     rowsweeptot = 0;
-    for rowsweepidx = 1:size(rowsweepidx,1)
-        
-        
+    for rowsweepidx = 1:size(Row_sweep,1)
         
         for rowidx = rowsweeptot +1 : rowsweeptot + Row_sweep(rowsweepidx)
             for colidx = 1:gs(2)
@@ -16,18 +14,7 @@ function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        %{
         score = 0;
         Gvis_t = Gvis;
 
@@ -68,6 +55,6 @@ function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
         
         
         rowsweeptot = rowsweeptot + Row_sweep(rowsweepidx);
+        %}
     end
-    
 end

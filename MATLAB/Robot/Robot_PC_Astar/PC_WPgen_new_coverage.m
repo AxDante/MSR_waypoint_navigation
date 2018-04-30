@@ -12,9 +12,10 @@ function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
                           2;
                           0;
                           2;
-                          0]
+                          0];
     
     Gvis = zeros(gs(1),gs(2));
+    Gobs
     for obsidx = 1:size(Gobs,1)
         Gvis(Gobs(obsidx,1), Gobs(obsidx,2)) = -1;
     end
