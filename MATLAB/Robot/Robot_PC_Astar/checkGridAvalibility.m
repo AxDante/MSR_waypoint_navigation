@@ -14,10 +14,6 @@ function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
      
      for shape = 1:8          
          newShape = rotationMatrix(Rgp, shape);
-         %newShape = zeros(1,3,2);
-         %newShape(1,:,:) = rotationMatrix(Rgp, shape);
-         %RRgp(shape,:,:) = newShape;       % Rotated Relative grid positions
-         %size(RRgp(shape,1,:))
          Rg = [ newShape(1,:);                                % Robot Grid values
                      0 0;
                       newShape(2,:);
