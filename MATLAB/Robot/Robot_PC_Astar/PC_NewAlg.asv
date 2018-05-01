@@ -1,69 +1,19 @@
-function Wp_s = PC_NewAlg(gs, Gobs, Wp, Row_sweep, Gvis, scg, gcg)
-
-    rowsweeptot = 0;
-    for rowsweepidx = 1:size(rowsweepidx,1)
-        
-        
-        
-        for rowsweepodx
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        score = 0;
-        Gvis_t = Gvis;
-
-        rmc = ['F', 'R', 'B', 'L']; % Robot movement commands
-
-        for idxmp = 1:size(rmc,2) 
-            [isvalid, Rg_cmd, cost] = PC_valid_move(rcg, shape, rmc(idxmp), Gobs, gs, 1, true);
-            if (isvalid)
-                exp_array(exp_count,1) = Rg_cmd(2,1);
-                exp_array(exp_count,2) = Rg_cmd(2,2);
-
-                if (rcg(2) == Rg_cmd(2,2) || rcg(2)-Rg_cmd(2,2)==1)
-                    discost = 0.7;
-                else
-                    discost = distance(rcg(1),rcg(2),Rg_cmd(2,1),Rg_cmd(2,2));
-                end
-                exp_array(exp_count,3) = hn+discost;    %cost of travelling to node
-                exp_array(exp_count,4) = distance(gcg(1),gcg(2),Rg_cmd(2,1),Rg_cmd(2,2));       %distance between node and goal
-                exp_array(exp_count,5) = exp_array(exp_count,3)+exp_array(exp_count,4);         %fn
-                exp_count=exp_count+1;
-            end%Populate the exp_array list!!!
-        end%End of j for loop
-
-        totGridSweeped = 0;
-        totGridMissed = 0;
-        for rowidx = rowsweeptot +1 : rowsweeptot + Row_sweep(rowsweepidx)
-            for colidx = 1:gs(2)
-                if Gvis_t(rowidx, colidx) == 1
-                    totGridSweeped = totGridSweeped + 1;
-                elseif Gvis_t(rowidx, colidx) == 0
-                    totGridMissed = totGridMissed + 1;
-                end
-            end
-        end
-        score = score - totGridMissed*10;
-        
-        
-        
-        
-        rowsweeptot = rowsweeptot + Row_sweep(rowsweepidx);
-    end
+function Wp_s = PC_NewAlg(gs, Gobs, Wp, Gvis, scg, gcg, GA, rows, cols)
+    
+    ccg = scg;   % Current Center Grid
+    cost = 0;
+    cost_best = 1000;
+    Wp_best = [];
+    Wp = [];
+    
+    shape = 2;
+    
+    disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
+    cols
+    [Wp_best, Wp, cost_best, cost] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, [0 0], rows, cols);
+    Wp_s = Wp_best;
+    disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...
+        , ' cost = ', num2str(cost_best)]);
+    disp(['best 
     
 end

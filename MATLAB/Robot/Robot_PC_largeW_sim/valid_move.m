@@ -1,4 +1,4 @@
- function [isvalid, Rg_cmd, Gvis_new, cost] = valid_move(rcg, shape, command, Gobs, gs, cost, side_as_wall)
+ function [isvalid, Rg_cmd, Gvis_new, cost] = valid_move(rcg, shape, command, Gobs, gs, Gvis, cost, side_as_wall)
 
     Rgp = [0 -1; 0 1; 0 2;                         % Relative grid positions between modules
               0 -1; 1 0; 1 -1;

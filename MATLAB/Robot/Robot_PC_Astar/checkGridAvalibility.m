@@ -1,4 +1,4 @@
-function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
+function ga = checkGridAvalibility(rowidx,colidx, gs, Gobs)
 
     Rgp = [0 -1; 0 1; 0 2;                         % Relative grid positions between modules
                   0 -1; 1 0; 1 -1;
@@ -9,7 +9,7 @@ function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
                   1 -1; 1 0; 2 -1];         
      
      RRgp = zeros(8,3,2);
-     GA = zeros(1,8);
+     ga = zeros(1,8);
      
      
      for shape = 1:8          
@@ -33,7 +33,7 @@ function GA = checkGridAvalibility(rowidx,colidx, gs, Gobs)
             end
         end
         if (isvalid)
-            GA(shape) = 1;
+            ga(shape) = 1;
         end
      end         
 end

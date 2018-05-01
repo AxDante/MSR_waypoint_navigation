@@ -212,11 +212,6 @@ void setup()
 
 // Main Loop
 void loop() {
-  
-  if (millis() - timerSerialThread > timerSerialThreadPeriod){
-    threadSerial();
-    timerSerialThread = millis();
-  }
 
   if(imuActive){
     //if ( imu.dataReady() )
@@ -224,10 +219,6 @@ void loop() {
       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
       imuRead();
     //}
-  }
-  
-  if ( millis() > imuCalibrationTime){ 
-    threadMotion();
   }
   
   if (debugPrintActive){
