@@ -1,4 +1,4 @@
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init)
    
     Rgp = [0 -1; 0 1; 0 2;                         % Relative grid positions between modules
                   0 -1; 1 0; 1 -1;
@@ -63,12 +63,15 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                     cost = cost+1;
                     Rgp = ncg + [0 -1; 0 0; 1 0; 1 -1];
                     for rgpidx = 1:size(Rgp,1)
+                        if Gvis(Rgp(rgpidx,1), Rgp(rgpidx,2)) == 1
+                            
+                        end
                         Gvis(Rgp(rgpidx,1), Rgp(rgpidx,2)) = 1;
                     end
                     
                     if (ncg == gcg)
                         if (rows(1)~=0 || rows(2) ~= 0)
-                            for rowidx = 3 : 4
+                            for rowidx =1:rows_init(2)
                                 for colidx = 1:gs(2)
                                     if Gvis(colidx, rowidx) == 1
                                         cost = cost - 2.5;
@@ -84,10 +87,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                             Gvis_best = Gvis;
                             return
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best);
+                            return
+                            %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init);
                         end
                     else
-                        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best);
+                        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, cost, cost_best, Wp, Wp_best, shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init);
                     end
                     
                     Gvis = Gvis_temp;
