@@ -28,6 +28,7 @@ function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
     for rowidx = 1:gs(1)
         for colidx = 1:gs(2)
              GA{rowidx,colidx} = checkGridAvalibility(rowidx,colidx, gs, Gobs);
+             GSC{rowidx,colidx} = checkGridShapeChange(rowidx,colidx, gs, Gobs);
         end
     end
     
@@ -44,7 +45,7 @@ function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
             cols = [gcg(1), gcg(1)];
             rows = [0 0];
         end
-        [Wp_s, Gvis_best] = PC_NewAlg(gs, Gobs, Wp_hack(idx,3), Gvis, scg, gcg, GA, rows, cols); %segemented Wp
+        [Wp_s, Gvis_best] = PC_NewAlg(gs, Gobs, Wp_hack(idx,3), Gvis, scg, gcg, GA, GSC, rows, cols); %segemented Wp
         Wp_s(:, 3) = Wp_hack(idx,3);
         Wp = [Wp; Wp_s];
         scg = gcg;
