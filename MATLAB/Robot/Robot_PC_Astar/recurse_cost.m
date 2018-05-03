@@ -40,7 +40,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                     cost_temp = cost;
                     Gvis_temp = Gvis;     
                     
-                    cost = cost + 1;
+                    cost = cost + 2000;
                     Wp = [Wp; ncg(1) ncg(2) 8];
                     
                     [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init);
@@ -61,7 +61,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                     cost_temp = cost;
                     Gvis_temp = Gvis;     
                     
-                    cost = cost + 1;
+                    cost = cost + 2000;
                     Wp = [Wp; ncg(1) ncg(2) 2];
                     
                     [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init);
