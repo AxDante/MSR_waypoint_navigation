@@ -9,7 +9,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 addpath('C:\Users\IceFox\Desktop\ERMINE\HTo_PC\MATLAB\Robot\Robot_PC_largeW_sim')
 % General Map Setup
-file_map = '10_10_pca01';   % Set Map as 'Empty' for empty map
+file_map = '20_20_dta01';   % Set Map as 'Empty' for empty map
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 

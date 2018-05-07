@@ -1,4 +1,4 @@
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
 
     %if cost > cost_best || cost > 50
     %    return
@@ -68,7 +68,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                     cost = cost + cost_shapeshift;
                     Wp = [Wp; ncg(1) ncg(2) 8];
                     
-                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
                     
                     updir = updir_temp;
                     downdir = downdir_temp;
@@ -93,7 +93,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                     cost = cost + cost_shapeshift;
                     Wp = [Wp; ncg(1) ncg(2) 2];
                     
-                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
                     
                     updir = updir_temp;
                     downdir = downdir_temp;
@@ -152,12 +152,6 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
 
                     if ga(Wp(end,3)) == 1 
 
-                        
-                        if (Gvis(10,4) == 1 && updir == 1 && Gvis(10,3) == 1 )
-                            Gvis
-                        end
-                        
-                        
                         Wp_temp = Wp;
                         ccg_temp = ccg;
                         cost_temp = cost;
@@ -184,18 +178,18 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                             if(Wp(end,3) == end_shape)
                                 if (rows(1)~=0 || rows(2) ~= 0)
                                     for rowidx =1:rows_init(2)
+                                        rows_init(2)
+                                        gs(2)
                                         for colidx = 1:gs(2)
                                             if Gvis(colidx, rowidx) == 1
-                                                cost = cost - 20 ;
+                                                cost = cost - 2 ;
                                             elseif Gvis(colidx, rowidx) == 0
                                                 cost = cost + 5;
                                             end
                                         end
                                     end
                                 end
-                                cost
                                 if (cost < cost_best)
-                                    
                                     Wp_best = Wp;
                                     cost_best = cost;
                                     Gvis_best = Gvis;
@@ -205,11 +199,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg,
                                     %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                                 end
                             else
-                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
 
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                         end
                         
                         Gvis = Gvis_temp;
