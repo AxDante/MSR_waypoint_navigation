@@ -125,9 +125,9 @@ pos_uwb_offset = [12.5 37.5];
     %         s01     s02      s03     s04      s05        s06       s07
     %   -----------------------------------------------------------------
     %
-    %          4                  3 4       4
-    %          3       2 3       2         3       4 3        2 3 4     2 3
-    %          2       1 4       1       1 2         2 1        1           1 4
+    %          4                  4         4
+    %          3       2 3       3         3       4 3        2 3 4           3 4
+    %          2       1 4       2 1    1 2          2 1        1          2 1 
     %          1                      
     %
     %         s08           s010         s11        s12       s13      s14
@@ -177,12 +177,65 @@ for run = 1
     distance_travelled = 0;
     count_J_rot_clockwise = 0;
     count_J_rot_counterclockwise = 0;
+    count_J_rot_180deg = 0;
+    
     count_L_rot_clockwise = 0;
     count_L_rot_counterclockwise = 0;
     count_L_rot_180deg = 0;
-    count_J_rot_180deg = 0;
+    
+    count_T_rot_clockwise = 0;
+    count_T_rot_counterclockwise = 0;
+    count_T_rot_180deg = 0;
+    
+    count_Z_rot_clockwise = 0;
+    count_Z_rot_counterclockwise = 0;
+    count_Z_rot_180deg = 0;
+    
+    count_S_rot_clockwise = 0;
+    count_S_rot_counterclockwise = 0;
+    count_S_rot_180deg = 0;
+    
+    count_O_rot_clockwise = 0;
+    count_O_rot_counterclockwise = 0;
+    count_O_rot_180deg = 0;
+    
     count_JtoL_tf = 0;
+    count_JtoT_tf = 0;
+    count_JtoZ_tf = 0;
+    count_JtoS_tf = 0;
+    count_JtoO_tf = 0;
+    
+    
     count_LtoJ_tf = 0;
+    count_LtoT_tf = 0;
+    count_LtoZ_tf = 0;
+    count_LtoS_tf = 0;
+    count_LtoO_tf = 0;
+    
+    count_TtoL_tf = 0;
+    count_TtoJ_tf = 0;
+    count_TtoZ_tf = 0;
+    count_TtoS_tf = 0;
+    count_TtoO_tf = 0;
+
+    count_ZtoL_tf = 0;
+    count_ZtoJ_tf = 0;
+    count_ZtoT_tf = 0;
+    count_ZtoS_tf = 0;
+    count_ZtoO_tf = 0;
+    
+    count_StoL_tf = 0;
+    count_StoJ_tf = 0;
+    count_StoZ_tf = 0;
+    count_StoT_tf = 0;
+    count_StoO_tf = 0;
+    
+    count_OtoL_tf = 0;
+    count_OtoJ_tf = 0;
+    count_OtoZ_tf = 0;
+    count_OtoT_tf = 0;
+    count_OtoS_tf = 0;   
+    
     J_F_distance = 0;
     J_R_distance = 0;
     J_L_distance = 0;
@@ -192,6 +245,27 @@ for run = 1
     L_R_distance = 0;
     L_L_distance = 0;
     L_B_distance = 0;
+    
+    T_F_distance = 0;
+    T_R_distance = 0;
+    T_L_distance = 0;
+    T_B_distance = 0;
+    
+    S_F_distance = 0;
+    S_R_distance = 0;
+    S_L_distance = 0;
+    S_B_distance = 0;
+    
+    Z_F_distance = 0;
+    Z_R_distance = 0;
+    Z_L_distance = 0;
+    Z_B_distance = 0;
+    
+    O_F_distance = 0;
+    O_R_distance = 0;
+    O_L_distance = 0;
+    O_B_distance = 0;
+    
     
     pos_uwb_raw =  zeros(2, max_step);
     pos_uwb = zeros(2, max_step);
@@ -383,7 +457,27 @@ for run = 1
                 end
             elseif (robot_Form ~= Wp(wp_current, 3) && ~is_require_transform)
                 heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
-                if mod(robot_Form, 7) == 3
+                
+                if mod(robot_Form, 7) == 2
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        count_OtoJ_tf = count_LtoJ_tf + 1;
+                    elseif mod(Wp(wp_current, 3) , 7) == 4
+                        count_OtoL_tf = count_LtoJ_tf + 1;
+                    elseif mod(Wp(wp_current, 3) , 7) == 5
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    elseif mod(Wp(wp_current, 3) , 7) == 6
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    elseif mod(Wp(wp_current, 3) , 7) == 7
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    end
+                    if dif == 1 || dif == -3
+                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_L_rot_180deg = count_L_rot_180deg + 1;
+                    end
+                elseif mod(robot_Form, 7) == 3
                     if mod(Wp(wp_current, 3) , 7) == 4
                         count_JtoL_tf = count_JtoL_tf + 1;
                     end
@@ -408,6 +502,39 @@ for run = 1
                     elseif dif == 2 || -2
                         count_L_rot_180deg = count_L_rot_180deg + 1;
                     end
+                elseif mod(robot_Form, 7) == 5
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    end
+                    if dif == 1 || dif == -3
+                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_L_rot_180deg = count_L_rot_180deg + 1;
+                    end
+                elseif mod(robot_Form, 7) == 6
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    end
+                    if dif == 1 || dif == -3
+                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_L_rot_180deg = count_L_rot_180deg + 1;
+                    end
+               elseif mod(robot_Form, 7) == 7
+                    if mod(Wp(wp_current, 3) , 7) == 3
+                        count_LtoJ_tf = count_LtoJ_tf + 1;
+                    end
+                    if dif == 1 || dif == -3
+                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
+                    elseif  dif == 3 || dif == -1
+                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
+                    elseif dif == 2 || -2
+                        count_L_rot_180deg = count_L_rot_180deg + 1;
+                    end     
                 end
                 prev_heading_command_compensate = heading_command_compensate;
                 robot_Form = Wp(wp_current, 3);
