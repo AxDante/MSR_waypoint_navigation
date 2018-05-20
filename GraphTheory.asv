@@ -15,15 +15,15 @@ if isempty(Gobs)
     W = [W 1 1 1 1 1 1 1 1];
 end
 
-
+G
 for intidx = 1:size(Gobs,1)
-    stripeidx = ceil(Gobs(intidx,1)/2);
-    Gobs_feed{stripeidx} =  [Gobs_feed{intidx}; Gobs(intidx,:)];
+    
+Gobs_feed = 
 end
 
 
 starting_row = 1;
-sweepingDirection = 1; % 1: right; 2:left
+sweepingDirection 
 
 tic
 col_size = tot_col;
@@ -32,16 +32,10 @@ Wp = [];
 
     for stripeidx = 1:tot_stripe
         
-        
-        
-        
-        [E, W]= CreateGraph(row_size, col_size, Gobs_feed{stripeidx}, shape);
-        E = [E; 1 17; 18 2; 5 21; 22 6; 9 25; 28 12; 29 13; 30 14];
-        W = [W 1 1 1 1 1 1 1 1];
-    
-    
+       
         n_node = row_size*col_size;
         
+
 
         E_matrix = zeros(n_node,n_node);
 

@@ -1,0 +1,8 @@
+function Wp = convertNodeToWp(col_size, node_array)
+    Wp = [];
+    
+    for intidx = 1:size(node_array)
+        Wp = [Wp; mod(node_array(intidx),col_size) floor(node_array(intidx)/col_size)];
+    end
+
+end
