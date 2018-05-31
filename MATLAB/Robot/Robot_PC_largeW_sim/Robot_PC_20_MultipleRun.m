@@ -166,7 +166,7 @@ else
 end
 
 
-for run = 1
+for run = 8
     
     clf
     robot_Form = 24; % Robot starting shape
