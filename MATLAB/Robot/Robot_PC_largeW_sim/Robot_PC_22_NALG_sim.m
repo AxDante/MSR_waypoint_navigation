@@ -13,21 +13,21 @@ file_map = 'Empty';   % Set Map as 'Empty' for empty map
 grid_size = [16 16];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 6; %18    % Waypoint tolerance (unit:cm)               
+tol_wp = 3; %18    % Waypoint tolerance (unit:cm)               
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 
-grid_coverage_sample_size = [48 48];
+grid_coverage_sample_size = [80 80];
 grid_coverage_sample_w = grid_size./grid_coverage_sample_size*grid_w;
 
 % Grid Map Setup
 starting_grid = [1 2];  % Robot starting grid
-clims = [-1000, 200];  % Grid color map limits
-grid_coverage_grid_default_value = -980;
-grid_coverage_colormap = 'parula'; % Colormap format
+clims = [-1000, 700];  % Grid color map limits
+grid_coverage_grid_default_value = -900;
+grid_coverage_colormap = 'jet'; % Colormap format
 grid_coverage_sim_increase = 8; % Grid color map value increased for each step during simulation;
 grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
@@ -39,15 +39,15 @@ navigation_mode = 'Point';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 20000;   % Maximum system steps
-interval_system_time = 4;   % Robot dynamics update intervals
+max_step = 5000;   % Maximum system steps
+interval_system_time = 2;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
 robot_Form = 2; % Robot starting shape
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
-Dy_angv_transform = pi/6;  % Robot transformation angular velocity (unit:rad)
+Dy_angv_transform = pi/20;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
 
 update_rate_streaming = 1;  % Robot position update rate during data streaming
@@ -63,7 +63,7 @@ baudrate = 9600;    % default:9600
 is_xbee_on = false; 
 is_streaming_on = false;
 
-is_calculate_coverage = false;
+is_calculate_coverage = true;
 is_calculate_grid_coverage_duration = true;
 is_display_coverage_map = false;
 is_display_wp = true;   
@@ -127,7 +127,7 @@ pos_center = zeros(4, 2, max_step);
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
 Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* grid_coverage_grid_default_value;
-Grid_coverage = ones(grid_coverage_sample_size(2)*grid_size(2),grid_coverage_sample_size(1)*grid_size(1),max_step)*grid_coverage_res;
+Grid_coverage = ones(grid_coverage_sample_size(2),grid_coverage_sample_size(1),max_step)*grid_coverage_grid_default_value;
 Grid_obstacle = zeros(grid_size(2),  grid_size(1), max_step);
 for idxobs = 2:size(Map_obs,1)
     Grid_visited(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = clims(1);
@@ -299,6 +299,7 @@ end
 
 
 figure(1)
+figure('pos',[10 10 900 600])
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
 title('hTetro Waypoint Map')
 hold on
@@ -445,11 +446,11 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                                                
                                
             end
-            updateCoverageMap = true;
+            
         else
             pos_uwb(:, step+1) = pos_uwb(:, step);
         end
-        
+        updateCoverageMap = true;
         if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_display_wp && is_display_wp_clearing)
                 delete(Circle_Wp(wp_current));
@@ -605,45 +606,25 @@ if ( strcmp( Algorithm, 'square_waypoint'))
                                                       pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 3);   
         end
         
+        
+        Grid_coverage(:,:,step+1) = Grid_coverage(:,:,step);
+        
         if(is_calculate_coverage)
             
             for  idxx = 1:grid_coverage_sample_size(1) 
                 for idxy = 1:grid_coverage_sample_size(2)
-                    saple_pos = [(idxx-0.5) (idxy-0.5)]*grid_coverage_sample_w
-                    if (abs(pos_center(2, :, step)-saple_pos) < 2.5*sqrt(2)*grid_w)
+                    sample_pos = [(idxx-0.5) (idxy-0.5)]*grid_coverage_sample_w(1);
+                    if (norm(pos_center(2, :, step)-sample_pos) < 3*sqrt(2)*grid_w)
                         for robidx = 1:4
-                                tri1_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
-                                              pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx)) ...
-                                              Cvg(cvg_idx, 1)];
-                                tri1_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
-                                              pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 2)];
-                                area1 = polyarea(tri1_x,tri1_y);
-                                tri2_x = [pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                              pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 1)];
-                                tri2_y = [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))  ...
-                                              pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 2)];
-                                area2 = polyarea(tri1_x,tri1_y);
-                                tri3_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                              pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 - heading(robidx)) ...
-                                              Cvg(cvg_idx, 1)];
-                                tri3_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))  ...
-                                              pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 2)];
-                                area3 = polyarea(tri3_x,tri3_y);
-                                tri4_x = [pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                              pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 1)];
-                                tri4_y = [pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                              pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
-                                              Cvg(cvg_idx, 2)];
-                                area4 =  polyarea(tri4_x,tri4_y);
-                                if area1 + area2 + area3 + area4 <= grid_w* grid_w + 0.1
-                                    Cvg(cvg_idx,3) = 1;
-                                    count_cvg_point = count_cvg_point+1;
+                            
+                            if (abs(sample_pos(1)-pos_center(robidx, 1, step)) < grid_w/2+0.2) && (abs(sample_pos(2)-pos_center(robidx, 2, step)) < grid_w/2+0.2)
+                               
+                                if (Grid_coverage(idxx,idxy,step+1) == grid_coverage_grid_default_value)
+                                    Grid_coverage(idxx,idxy,step+1) = 0;
+                                else
+                                    Grid_coverage(idxx,idxy,step+1) = Grid_coverage(idxx,idxy,step) + 6;
                                 end
+                            end
                         end
                     end
                 end
@@ -700,27 +681,10 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])
         
-        Grid_visited(:,:,step+1) = Grid_visited(:,:,step);
+
         
         if (is_display_grid_coverage_map && updateCoverageMap)
-            for idxbox = 1:4
-                if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
-                        robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))
-                    if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == grid_coverage_grid_default_value)
-                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = 0;
-                    else
-                        if(~is_streaming_on)
-                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
-                                Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_sim_increase;
-                        else
-                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
-                                Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_increase;
-                        end
-                    end
-                end
-            end
-                
-            
+
             %{
             for idxbox = 1:4
                 if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
@@ -741,7 +705,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
             %}
              figure(2)
             title('hTetro Coverage Map')
-            imagesc(flipud(transpose(Grid_visited(:,:,step+1))), clims)
+            imagesc(flipud(transpose(Grid_coverage(:,:,step+1))), clims)
             cmap = colormap(grid_coverage_colormap);
             cmap(1,:) = zeros(1,3);
             colormap(cmap);
