@@ -343,7 +343,6 @@ for wpidx = 1:2
     disp (['Waypoint series: ', num2str(wpidx)])
     disp (['Starting navigation simulation with shape: ', Wps_name{wpidx}, ' shape.'])
     wp_current = 1;
-    wp_prev = 1;
     Wp = Wps{wpidx};
     Wp(:,1:2) = (Wp(:,1:2) - 0.5)*grid_w;
     wp_total = size(Wp,1);
@@ -660,10 +659,8 @@ for wpidx = 1:2
             colorbar
         end
         
-        
-        if ( mod(wp_current,6) == 5 && wp_prev ~= wp_current)
-            disp(['Completed map percentage: ', num2str(round(wp_current/wp_total*100,1)), '%.'])
-            wp_prev = wp_current;
+        if ( mod(wp_current,6) == 5)
+            disp(['Completed percentage: ', num2str(round(wp_current/wp_total*100,1)), '%.'])
         end
         
     end
@@ -695,6 +692,6 @@ for wpidx = 1:2
     h = histogram(grid_coverage_column);
     h.BinEdges = [-0.1:5.1];
     h.BinWidth = 0.2;
-    axis([-0.2, 5.2, 0, 1800]);
-    title(['Amount of time required to cover a grid using shape ', Wps_name{wpidx}])
+    axis([-0.2, 5.2, 0, 1500]);
+    
 end 
