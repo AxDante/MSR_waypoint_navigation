@@ -90,6 +90,7 @@ robot_weight = [1.5 1.5 1.5 1.5]; % Robot weights (unit: kg)
 is_using_obs_map = false;
 
 Map_obs = [];
+%{
 if exist([file_map, '.txt'], 'file') == 2
     Map_obs = csvread([file_map, '.txt']);
     disp(['Map: ', file_map, '.txt loaded successfully!']);
@@ -98,6 +99,7 @@ if exist([file_map, '.txt'], 'file') == 2
 else
     disp('Default map loaded successfully!');
 end
+%}
 heading = [0 0 pi pi];
 
 time_pause = interval_system_time/4000;
@@ -182,6 +184,9 @@ if (strcmp(navigation_mode,'Point'))
    
     Wps_name{1} = 'O, vertical I, horizontal I';
     Wps_name{2} = 'O';
+    Wps_name{3} = 'O, vertical I';
+    Wps_name{4} = 'O, horizontal I';
+    Wps_name{5} = 'vertical I, horizontal I';
     
     Wps{1} = [1 2 2;
               1 4 2;
@@ -203,10 +208,8 @@ if (strcmp(navigation_mode,'Point'))
               3 8 8;
               3 5 8;
               2 5 8;
-              2 6 8;
-              2 6 2;
-              1 6 2;
-              1 12 2;
+              2 12 8;
+              2 12 2;
               3 12 2;
               3 10 2;
               10 10 2;
@@ -287,9 +290,154 @@ if (strcmp(navigation_mode,'Point'))
               3 16 2;
               3 14 2;
               1 14 2;
-              1 16 2];      
+              1 16 2];  
           
-      
+    Wps{3} = [1 2 2;
+              1 4 2;
+              4 4 2;
+              4 3 2;
+              3 3 2;
+              3 2 2;
+              8 2 2;
+              8 2 1;
+              8 2 1;
+              16 2 1;
+              16 6 1;
+              14 6 1;
+             14 6 2;
+             8 6 2;
+             8 8 2;
+             10 8 2;
+             10 9 2;
+             4 9 2;
+             4 6 2;
+             3 6 2;
+             3 6 1;
+             1 6 1;
+             1 10 1;
+             4 10 1;
+             2 10 1;
+             2 10 2;
+             10 10 2;
+             10 11 2;
+             9 11 2;
+             9 12 2;
+             14 12 2;
+             14 10 2;
+             14 10 1;
+             16 10 1;
+             16 14 1;
+              9 14 1;
+              9 14 2;
+              9 15 2;
+              7 15 2;
+              7 16 2;
+              5 16 2;
+              5 15 2;
+              4 15 2;
+              4 16 2;
+              3 16 2;
+              3 14 2;
+              1 14 2;
+               1 16 2];
+          
+    Wps{4} = [1 2 2;
+              1 4 2;
+              4 4 2;
+              4 3 2;
+              3 3 2;
+              3 2 2;
+              8 2 2;
+              8 4 2;
+              10 4 2;
+              10 2 2;
+              12 2 2;
+              12 4 2;
+              14 4 2;
+              14 2 2;
+              15 2 2;
+              15 8 2;
+              14 8 2;
+              14 6 2;
+              8 6 2;
+              9 6 2;
+              9 6 8;
+              9 8 8;
+              3 8 8;
+              3 5 8;
+              2 5 8;
+              2 12 8;
+              2 10 8;
+              3 10 8;
+              3 10 2;
+              10 10 2;
+              10 11 2;
+              9 11 2;
+              9 12 2;
+              14 12 2;
+              14 10 2;
+              15 10 2;
+              15 16 2;
+              14 16 2;
+              14 16 8;
+              14 13 8;
+              10 13 8;
+              10 16 8;
+              6 16 8;
+              6 14 8;
+              2 14 8;
+              2 13 8;
+              2 16 8;
+              2 16 2;
+              1 16 2;];  
+          
+    Wps{5} = [
+         1 2 1;
+         5 2 1;
+         3 2 1;
+         3 2 8;
+         3 1 8; 
+         7 1 8;
+         7 2 8;
+         8 2 8;
+         8 2 1;
+         16 2 1;
+         16 6 1;
+         14 6 1;
+         14 6 8;
+         13 6 8;
+         13 5 8;
+         9 5 8;
+         9 8 8;
+         3 8 8;
+         3 5 8;
+         2 5 8;
+         2 12 8;
+         2 10 8;
+         6 10 8;
+         6 9 8;
+         9 9 8;
+         9 10 8;
+         9 10 1;
+         11 10 1;
+         11 12 1;
+         14 12 1;
+         14 10 1;
+         16 10 1;
+         16 14 1;
+         9 14 1;
+         10 14 1;
+         10 14 8;
+         10 16 8;
+         6 16 8;
+         6 14 8;
+         2 14 8;
+         2 13 8;
+         2 16 8;
+         2 14 8;
+         2 14 1;
+         1 14 1;
+        ] ;
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -336,7 +484,7 @@ disp('==================')
 
 %% Square Waypoint  (SW)
 
-for wpidx = 1:2
+for wpidx = 1:5
     
     
     tic
@@ -626,8 +774,8 @@ for wpidx = 1:2
         
         Grid_coverage(:,:,step+1) = Grid_coverage(:,:,step);
         if(is_calculate_coverage && updateCoverageMap)
-            for  idxx = 1:grid_coverage_sample_size(1)+1
-                for idxy = 1:grid_coverage_sample_size(2)+1
+            for  idxx = 1:grid_coverage_sample_size(1)
+                for idxy = 1:grid_coverage_sample_size(2)
                     sample_pos = [(idxx-0.5) (idxy-0.5)]*grid_coverage_sample_w(1);
                     if (norm(pos_center(2, :, step)-sample_pos) < 3*sqrt(2)*grid_w)
                         for robidx = 1:4
@@ -672,9 +820,9 @@ for wpidx = 1:2
     disp('Robot Navigation Completed!');
     toc
     hold off
-    if (is_calculate_coverage)
-        disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
-    end
+    %if (is_calculate_coverage)
+    %    disp(['Final Map Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
+    %end
 
     figure(wpidx*3-1)
     set( figure(wpidx*3-1), 'Position', [100, 100, 1020, 900])
@@ -697,4 +845,8 @@ for wpidx = 1:2
     h.BinWidth = 0.2;
     axis([-0.2, 5.2, 0, 1800]);
     title(['Amount of time required to cover a grid using shape ', Wps_name{wpidx}])
+    
+    avg_time_on_grid = mean(grid_coverage_column);
+    disp(['Average time on each grid: ', num2str(avg_time_on_grid)]);
+    
 end 
