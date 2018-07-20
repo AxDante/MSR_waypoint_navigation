@@ -836,6 +836,7 @@ for wpidx = 1:5
     grid_coverage_column = Grid_coverage(:,:,step);
     grid_coverage_column = grid_coverage_column(:)/100;
     indices = find(grid_coverage_column<=0.1);
+    
     grid_coverage_column(indices) = [];
 
     figure(wpidx*3)
@@ -844,6 +845,7 @@ for wpidx = 1:5
     h.BinEdges = [-0.1:5.1];
     h.BinWidth = 0.2;
     axis([-0.2, 5.2, 0, 1800]);
+    set(gca,'fontsize',20)
     title(['Amount of time required to cover a grid using shape ', Wps_name{wpidx}])
     
     avg_time_on_grid = mean(grid_coverage_column);
