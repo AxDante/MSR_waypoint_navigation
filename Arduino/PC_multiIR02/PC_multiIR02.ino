@@ -2,7 +2,7 @@
 
 // To support more than 5 receivers, remember to change the define
 // IR_PARAMS_MAX in IRremoteInt.h as well.
-#define RECEIVERS 2
+#define RECEIVERS 3
 
 IRrecv *irrecvs[RECEIVERS];
 
@@ -10,6 +10,11 @@ char* IR_dict[] = {"c952508a", "ef1f150a", "5b2f91b5", "989d243a", "cc36ff5f"};
 
 int IR1_signal[6] = {0,0,0,0,0,0};
 int IR2_signal[6] = {0,0,0,0,0,0};
+int IR3_signal[6] = {0,0,0,0,0,0};
+
+
+int IR_front[6] = {1,1,1,0,0,0};
+int IR_back[6] = {0,0,0,1,1,0};
 
 bool paired = false;
 int timeInst = 1;
@@ -21,9 +26,9 @@ int positionInterval = 1000; // unit: ms
 void setup()
 {
   Serial.begin(9600);
-
-  irrecvs[0] = new IRrecv(12); // Receiver #0: pin 2
-  irrecvs[1] = new IRrecv(13); // Receiver #1: pin 3
+  irrecvs[0] = new IRrecv(11); // Receiver #1
+  irrecvs[1] = new IRrecv(12); // Receiver #2
+  irrecvs[2] = new IRrecv(13); // Receiver #3
 
   for (int i = 0; i < RECEIVERS; i++)
     irrecvs[i]->enableIRIn();
@@ -34,7 +39,7 @@ void setup()
 void loop() {
   
   if (millis()- prevTime < positionInterval){
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
       if (irrecvs[i]->decode(&results))
       {
@@ -53,6 +58,8 @@ void loop() {
               IR1_signal[dictidx] = 1;
             }else if (i == 1){
               IR2_signal[dictidx] = 1;
+            }else if (i == 2){
+              IR3_signal[dictidx] = 1;
             }
           }
         }
@@ -61,16 +68,22 @@ void loop() {
               IR1_signal[5] = 1;
             }else if (i == 1){
               IR2_signal[5] = 1;
+            }else if (i == 2){
+              IR3_signal[5] = 1;
           }
         }
         irrecvs[i]->resume();
       }
     }
+    
   }else{
+
+
+
     
     Serial.print("Time: ");
     Serial.println(timeInst);
-    for (int iridx = 0; iridx < 2; iridx++){
+    for (int iridx = 0; iridx < 3; iridx++){
       Serial.print("Receiver ");
       Serial.print(iridx+1);
       Serial.print(" :[");
@@ -79,20 +92,44 @@ void loop() {
           Serial.print(IR1_signal[idx]);
         }else if (iridx == 1){
           Serial.print(IR2_signal[idx]);
+        }else if (iridx == 2){
+          Serial.print(IR3_signal[idx]);
         }
         Serial.print(" ,");
       }
       Serial.print("]  ");
     }
     Serial.println();
-    Serial.println("=======================");
+    
     
     timeInst = timeInst+1;
     prevTime = millis();
 
+
+    if (array_cmp(IR1_signal, IR_front) && array_cmp(IR3_signal, IR_back)){
+      if (!array_cmp(IR2_signal, IR_front) && !array_cmp(IR2_signal, IR_back)){
+        Serial.print("Docking Ready!");
+      }else if (array_cmp(IR2_signal, IR_front)){
+        Serial.print("Docking adjustment required - Move backwards.");
+      }else if (array_cmp(IR2_signal, IR_back)){
+        Serial.print("Docking adjustment required - Move forward.");
+      }
+    }
+
+    Serial.println("=======================");
+
     for (int dictidx = 0; dictidx < 6; dictidx ++){
         IR1_signal[dictidx] = 0;
         IR2_signal[dictidx] = 0;
+        IR3_signal[dictidx] = 0;
     }
   }
+}
+
+
+boolean array_cmp(int *a, int *b, int len){
+     int n;
+
+     // test each element to be the same. if not, return false
+     for (n=0;n<len;n++) if (a[n]!=b[n]) return false;
 }

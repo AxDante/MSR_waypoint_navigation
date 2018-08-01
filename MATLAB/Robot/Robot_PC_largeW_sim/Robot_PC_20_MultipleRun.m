@@ -10,17 +10,17 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
 file_map = 'Empty';   % Set Map as 'Empty' for empty map
-grid_size = [8 8];   % Assign values for grid size if an empty map is chosen
+grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
-tol_wp = 6; %18    % Waypoint tolerance (unit:cm)               
+tol_wp = 5; %18    % Waypoint tolerance (unit:cm)               
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
-starting_grid = [1 2];  % Robot starting grid
+starting_grid = [1 10];  % Robot starting grid
 clims = [-1000, 200];  % Grid color map limits
 grid_coverage_grid_default_value = -980;
 grid_coverage_colormap = 'parula'; % Colormap format
@@ -32,42 +32,42 @@ navigation_mode = 'MultipleRun';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 20000;   % Maximum system steps
-interval_system_time =2;   % Robot dynamics update intervals
+max_step = 10000;   % Maximum system steps
+interval_system_time = 2;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
-robot_Form = 24; % Robot starting shape
+robot_Form = 6; % Robot starting shape
 heading = [0 pi pi*3/2 pi/2];
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
-Dy_angv_transform = pi/48;  % Robot transformation angular velocity (unit:rad)
+Dy_angv_transform = pi/12;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
 
 update_rate_streaming = 1;  % Robot position update rate during data streaming
 update_rate_streaming_single_value = 1; % Robot position update rate during data streaming with single values
-update_rate_sim = 0.2; % Robot position update rate during simulation
+update_rate_sim = 1; % Robot position update rate during simulation
 
 % Serial Communication Setup
 Serial_port = 'COM12';  % Communication port to XBee module
 baudrate = 9600;    % default:9600
 
-
 % Toggle 
 is_xbee_on = false; 
 is_streaming_on = false;
 
-is_calculate_coverage = true;
-is_calculate_grid_coverage_duration = true;
+is_calculate_coverage = false;
+is_calculate_grid_coverage_duration = false;
 is_display_coverage_map = true;
 is_display_wp = true;   
 is_display_wp_clearing = false;
-is_display_route = true;
-is_display_route_clearing = true;
+is_display_rbt_center = false;
+is_display_route = false;
+is_display_route_clearing = false;
 is_display_grid_on = true;
-is_display_obstacle = true;
+is_display_obstacle = false;
 is_display_grid_coverage_map = false;
-is_display_ignite_swept_grid = true;
+is_display_ignite_swept_grid = false;
 is_print_coverage = false;
 is_print_sent_commands = false;
 is_print_route_deviation = false;
@@ -75,7 +75,7 @@ is_fixed_offset = false;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
-is_streaming_collect_single_values = true;
+is_streaming_collect_single_values = false;
 
 % Data streaming setup
 streaming_max_single_val = 1000;                 % Accepted maximum streaming value from data log. (unit: cm)
@@ -106,17 +106,17 @@ else
     disp(['Default map loaded successfully!']);
 end
 
-
-RobotShapes = [0 0 0 0 ;              
+RobotShapes = [];
+initRobotShapes = [0 0 0 0 ;              
                         0 0 pi pi;
                         -pi 0 pi/2 -pi/2;
                         -pi 0 0 0;
                         -pi 0 0 -pi;
                         -pi/2 0 pi 0;
-                        -pi/2 0 pi pi/2];
+                        -pi 0 pi/2 pi/2];
 
 
-time_pause = interval_system_time/700;
+time_pause = interval_system_time/2000;
 
 pos_uwb_offset = [12.5 37.5];
 
@@ -133,9 +133,12 @@ pos_uwb_offset = [12.5 37.5];
     %         s08           s010         s11        s12       s13      s14
     %   -----------------------------------------------------------------
     %
-    %                        1 2 4        1              4         2            2
+    %                        1 2 4        1              4         2         2 
     %       1 2 3 4            3         2 3 4      2 3      1 3         1 3
-    %                                                     1           4         4
+    %                                                     1           4            4
+    %                                                     
+    %                                                                
+    %                                                      
     %  
 
     Robot_Relative_Pos = [0 -1; 0 1; 0 2;
@@ -152,12 +155,15 @@ pos_uwb_offset = [12.5 37.5];
     Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
 
 
-
+    
+Robot_center = [];
+    
+    
 %% Waypoint Generation
 Wp_series = [];
 if (strcmp(navigation_mode,'MultipleRun'))
     disp('Generating waypoints...')
-    [num_runs, Wp_series] = MultipleRunImport('asd',grid_w);
+    [num_runs, Wp_series] = MultipleRunImport_veera('asd',grid_w);
     
 else
     disp('Navigation method is invalid.')
@@ -166,11 +172,12 @@ else
 end
 
 
-for run = 8
+for run = 1
     
     clf
-    robot_Form = 24; % Robot starting shape
-    heading = [0 pi pi*3/2 pi/2];
+    robot_Form = 6; % Robot starting shape
+    heading = [-pi/2 0 pi 0];
+    
     Wp = [Wp_series(run,:,1); Wp_series(run,:,2); Wp_series(run,:,3)].';
     pos_uwb_offset = Wp(1, 1:2);
     wp_current = 1;
@@ -308,11 +315,13 @@ for run = 8
 
     is_transforming = false;
 
-
-    for idx = 1:3
-        RobotShapes = [RobotShapes; RobotShapes + pi/2*idx];
-    end
-
+    
+    RobotShapes = [initRobotShapes; initRobotShapes + pi/2*1];
+    RobotShapes = [RobotShapes; initRobotShapes + pi/2*2];
+    RobotShapes = [RobotShapes; initRobotShapes - pi/2*1];
+    
+    
+    
     prev_heading_command_compensate = 0;
     heading_command_compensate = 0;
 
@@ -336,6 +345,7 @@ for run = 8
 
 
     figure(1)
+    set(figure(1), 'Position', [100, 100, 1020, 900])
     axis([-grid_w*1.5 grid_w*(grid_size(1)+1.5) -grid_w*1.5 grid_w*(grid_size(2)+1.5)])
     title('hTetro Waypoint Map')
     hold on
@@ -380,7 +390,7 @@ for run = 8
 
             % Pause function
             pause(time_pause);
-
+            
             % Grid Info
             robot_center_Grid = [1+floor(pos_uwb(1, step)/grid_w) 1+floor(pos_uwb(2, step)/grid_w)];
             rotated_relative_grid_pos = rotationMatrix(Robot_Relative_Pos, Wp(wp_current, 3));
@@ -443,10 +453,6 @@ for run = 8
             if (robot_Form ~= Wp(wp_current, 3) && is_require_transform)
                 if (command_count_rotation >= interval_rotation_command_send)
                     is_transforming = true;
-                    if (is_xbee_on)
-                        writedata = char(num2str(Wp(wp_current, 3)));
-                        fwrite(arduino,writedata,'char');
-                    end
                     prev_char_command = char(num2str(Wp(wp_current, 3)));
                     if (is_print_sent_commands) 
                         disp(['Time:', num2str(round(toc,2)), 's; Command Sent: ''' , num2str(Wp(wp_current, 3)), ''''])
@@ -619,6 +625,10 @@ for run = 8
                 % Break condition
                 if wp_current > size(Wp,1)
                     break;
+                    if (~isempty(Circle_Wp))
+                        delete(Circle_Wp);
+                    end
+                    Circle_Wp = [];
                 end
 
             end
@@ -657,7 +667,7 @@ for run = 8
             Line_Robot = [];
             Line_Border = [];
             Line_Linear_Route = [];
-
+            Line_RbtCent = [];
             % Determine Robot center
             pos_center(2,:, step) = [pos_x pos_y];
             pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
@@ -681,33 +691,35 @@ for run = 8
                                        [sin(-pi/4 + heading(3))+sin(pi/4 + heading(4)) ...
                                         cos(-pi/4 + heading(3))+cos(pi/4 + heading(4))]; 
 
-                                    
-                                    
-
+                                   
             % plot robot BG
             if (is_display_coverage_map == true)
                 for robidx = 1:4
                 Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                         [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
+                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', [255 255 204]/255, 'LineWidth', 5);
                 Line_Robot(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', [255 255 204]/255, 'LineWidth', 5);
                 Line_Robot(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', [255 255 204]/255, 'LineWidth', 5);
                 Line_Robot(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'cyan', 'LineWidth', 5);
+                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', [255 255 204]/255, 'LineWidth', 5);
                  end
             end
             
+            if (~isempty(Circle_Wp))
+                delete(Circle_Wp);
+            end
+            Circle_Wp = [];
             if (is_display_wp)
-                for idx = 1: size(Wp,1)
+                for idx = wp_current: size(Wp,1)
                     Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
                 end
             end
@@ -744,7 +756,7 @@ for run = 8
                         line_linear_route_x = [line_linear_route_v1(1) line_linear_route_v2(1) line_linear_route_v2(1) line_linear_route_v1(1) line_linear_route_v1(1)];
                         line_linear_route_y = [line_linear_route_v1(2) line_linear_route_v1(2) line_linear_route_v2(2) line_linear_route_v2(2) line_linear_route_v1(2)];
                         %{route_norm_vector = null(Wp(Wpidx, 1:2) - Wp(Wpidx, 1:2)).';
-                        Line_Linear_Route = [ Line_Linear_Route, plot(line_linear_route_x, line_linear_route_y, 'b-')]; 
+                        %Line_Linear_Route = [ Line_Linear_Route, plot(line_linear_route_x, line_linear_route_y, 'b-')];
                     end
                 end
             end
@@ -755,19 +767,19 @@ for run = 8
                 Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                         [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
-                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 3);
+                                                         pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', [77, 77, 255]/255, 'LineWidth', 3);
                 Line_Robot(robidx,2) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 -  heading(robidx))... 
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 3);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color',  [77, 77, 255]/255, 'LineWidth', 3);
                 Line_Robot(robidx,3) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*-sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx)) ...
-                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 3);
+                                                          pos_center(robidx, 2, step)+grid_dhw*cos(pi/4 -  heading(robidx))], 'Color',  [77, 77, 255]/255, 'LineWidth', 3);
                 Line_Robot(robidx,4) = line([pos_center(robidx, 1, step)+grid_dhw*-cos(pi/4 -  heading(robidx)) ...
                                                          pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 -  heading(robidx))], ...
                                                         [ pos_center(robidx, 2, step)+grid_dhw*-sin(pi/4 -  heading(robidx))...
-                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', 'green', 'LineWidth', 3);   
+                                                          pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', [77, 77, 255]/255, 'LineWidth', 3);   
             end
 
             if(is_calculate_coverage)
@@ -815,17 +827,29 @@ for run = 8
                     disp(['Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
                 end
             end
+            
+            
             % Draw Robot Center
-            line([pos_x pos_nx], [pos_y pos_ny])
-
+            Robot_center(step,1,1:2) = [pos_x pos_nx];
+            Robot_center(step,2,1:2) = [pos_y pos_ny];
+            
+            if (is_display_rbt_center)
+                if (~isempty(Line_RbtCent))
+                    delete(Line_RbtCent);
+                end
+                Line_RbtCent = [];
+                for rbtcenidx = 1:size(Robot_center,1)
+                    Line_RbtCent = [Line_RbtCent, line([Robot_center(rbtcenidx,1,1) Robot_center(rbtcenidx,1,2)], ...
+                                                                    [Robot_center(rbtcenidx,2,1) Robot_center(rbtcenidx,2,2)])];
+                end
+            end
+            if (step == 1)
+                pause(10)
+            end
+            
         end
     end
-
-    if (is_xbee_on)
-         writedata = char('S');
-         fwrite(arduino,writedata,'char');
-    end
-
+    
     disp('===================');
     disp(['Tiling Set: ', num2str(run)])
     disp('Robot Navigation Completed!');
