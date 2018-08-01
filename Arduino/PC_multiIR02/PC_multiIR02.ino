@@ -15,8 +15,11 @@ int IR3_signal[6] = {0,0,0,0,0,0};
 
 int IR_front[6] = {1,1,1,0,0,0};
 int IR_back[6] = {0,0,0,1,1,0};
+int IR_back2[6] = {1,0,0,1,1,0};
 
 bool paired = false;
+bool isPrintSignal = false;
+
 int timeInst = 1;
 long prevTime = 0;
 decode_results results;
@@ -79,43 +82,50 @@ void loop() {
   }else{
 
 
-
-    
-    Serial.print("Time: ");
-    Serial.println(timeInst);
-    for (int iridx = 0; iridx < 3; iridx++){
-      Serial.print("Receiver ");
-      Serial.print(iridx+1);
-      Serial.print(" :[");
-      for (int idx = 0; idx < 6; idx++){
-        if (iridx == 0){
-          Serial.print(IR1_signal[idx]);
-        }else if (iridx == 1){
-          Serial.print(IR2_signal[idx]);
-        }else if (iridx == 2){
-          Serial.print(IR3_signal[idx]);
+    if (isPrintSignal){
+      
+      Serial.print("Time: ");
+      Serial.println(timeInst);
+      for (int iridx = 0; iridx < 3; iridx++){
+        Serial.print("Receiver ");
+        Serial.print(iridx+1);
+        Serial.print(" :[");
+        for (int idx = 0; idx < 6; idx++){
+          if (iridx == 0){
+            Serial.print(IR1_signal[idx]);
+          }else if (iridx == 1){
+            Serial.print(IR2_signal[idx]);
+          }else if (iridx == 2){
+            Serial.print(IR3_signal[idx]);
+          }
+          Serial.print(" ,");
         }
-        Serial.print(" ,");
+        Serial.print("]  ");
       }
-      Serial.print("]  ");
-    }
-    Serial.println();
+      Serial.println();
     
+    }
     
     timeInst = timeInst+1;
     prevTime = millis();
 
 
-    if (array_cmp(IR1_signal, IR_front) && array_cmp(IR3_signal, IR_back)){
-      if (!array_cmp(IR2_signal, IR_front) && !array_cmp(IR2_signal, IR_back)){
-        Serial.print("Docking Ready!");
-      }else if (array_cmp(IR2_signal, IR_front)){
-        Serial.print("Docking adjustment required - Move backwards.");
-      }else if (array_cmp(IR2_signal, IR_back)){
-        Serial.print("Docking adjustment required - Move forward.");
+    if (array_cmp(IR1_signal, IR_front,6) && array_cmp(IR3_signal, IR_back,6)){
+      if (!array_cmp(IR2_signal, IR_front,6) && !array_cmp(IR2_signal, IR_back,6)){
+        Serial.print("Docking Ready - Robot move in");
+      }else if (array_cmp(IR2_signal, IR_front,6)){
+        Serial.print("Docking minor adjustment required - Move backwards.");
+      }else if (array_cmp(IR2_signal, IR_back,6)){
+        Serial.print("Docking minor adjustment required - Move forward.");
       }
+    }else if (array_cmp(IR1_signal, IR_front,6) && array_cmp(IR3_signal, IR_back2,6)){
+       Serial.print("Docking variance");
+    }else if (array_cmp(IR1_signal, IR_back,6)){
+       Serial.print("Docking station nearby - Move forward.");
+    }else if (array_cmp(IR3_signal, IR_front,6)){
+       Serial.print("Docking station nearby -  Move backwards.");
     }
-
+    Serial.println();
     Serial.println("=======================");
 
     for (int dictidx = 0; dictidx < 6; dictidx ++){
