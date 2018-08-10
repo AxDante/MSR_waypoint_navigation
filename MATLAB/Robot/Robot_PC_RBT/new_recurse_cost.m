@@ -131,7 +131,8 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, 
             end
 
             if ~(ncg(2) >= bound_row(1) && ncg(2) <= bound_row(2) && ...
-                    ncg(1) >= bound_col(1) && ncg(1) <= bound_col(2))
+                    ncg(1) >= bound_col(1) && ncg(1) <= bound_col(2) && ...
+                ncg(1) > 0 && ncg(2) > 0)
                 invalid_move = true;
             end 
             
@@ -148,6 +149,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, 
                 end
                 
                 if isrepeat == false && (~(ncg(1) == closed_ncg(1) && ncg(2) == closed_ncg(2)))
+
                     ga = GA{ncg(1), ncg(2)};
 
                     if ga(Wp(end,3)) == 1 

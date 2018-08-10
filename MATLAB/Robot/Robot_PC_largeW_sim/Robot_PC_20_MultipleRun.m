@@ -150,11 +150,8 @@ pos_uwb_offset = [12.5 37.5];
                                      1 -1; 1 0; 2 -1];
 
 
-
     Char_command_array_linear = ['R', 'F', 'L', 'B'];
     Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
-
-
     
 Robot_center = [];
     
@@ -827,7 +824,7 @@ for run = 1
                     disp(['Coverage: ',  num2str(count_cvg_point*100 / numel(Cvg(:, 1))), ' %']);
                 end
             end
-            
+           
             
             % Draw Robot Center
             Robot_center(step,1,1:2) = [pos_x pos_nx];
