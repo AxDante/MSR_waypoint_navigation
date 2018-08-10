@@ -1,3 +1,6 @@
+
+
+
 function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs)
     
     start_shape = 2;

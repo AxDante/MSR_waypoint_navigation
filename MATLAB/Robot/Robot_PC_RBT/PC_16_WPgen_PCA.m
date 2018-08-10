@@ -10,10 +10,9 @@ clear
 addpath([erase(mfilename('fullpath'),mfilename), 'functions'])
 
 % General Map Setup
-file_map = '20_20_dta01';   % Set Map as 'Empty' for empty map
-%grid_size = [18 18];   % Assign values for grid size if an empty map is chosen
-grid_w = 25;    % Grid width (unit:cm)
+navmap_name = 'gbpp_10_01';  % Navigation map shoud be saved in '.mat' format
 
+grid_w = 25;    % Grid width (unit:cm)
 tol_wp = 4;     % Waypoint tolerance (unit:cm)               
 tol_line_width =  10;   % Route deviation tolerance (unit:cm)
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
@@ -21,7 +20,6 @@ fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
 %starting_grid = [1 2];  % Robot starting grid
-%pos_uwb_offset = [12.5 37.5];
 clims = [-1000, 200];  % Grid color map limits
 grid_coverage_grid_default_value = -980;
 grid_coverage_colormap = 'parula'; % Colormap format
@@ -79,34 +77,77 @@ sim_noise_normal = 20;  % Noise value during simulation (unit: cm)
 sim_noise_large_y_frequency = 0.05; % Frequency of large Y axis noise during simulation 
 sim_noise_large_y = 50; % large Y axis noise value during simulation (unit: cm)
 
+
+%% Navigation / Obstacle Map Loading
+
+Map_obs = []; % Obstacle map array initialization
+
+% Navigation map check
+if strcmp(navmap_name,'')
+    disp(['No navigation map detected! Please sepecify the navigation map!'])
+    return
+end
+navmap_path = ['navmap/',navmap_name, '.mat'];
+if exist(navmap_path, 'file') ~= 2
+    disp(['Navigation file ', navmap_path, ' unfound! Aborting...'])
+    return
+end
+
+% Loading navigation map
+disp(['Loading navigation map: ', navmap_path])
+load(navmap_path)
+
+% Obstacle map check
+if strcmp(obsmap_name,'')
+    disp('No obstacle map detected! Aborting...')
+    return
+end
+obsmap_path = ['obsmap/',obsmap_name, '.dat'];
+if exist(obsmap_path, 'file') ~= 2
+    disp(['Obstacle file ', obsmap_path, ' unfound! Aborting...'])
+    return
+end
+
+% Loading the obstacle map
+disp(['Loading obstacle map: ', obsmap_path])
+Map_obs = csvread(obsmap_path);
+disp('Successfully loaded navigation and obstacle map.')
+disp('=========================')
+
+%% Waypoint Generation
+
+if (strcmp(navigation_mode,'GBPP'))
+    disp('Navigation mode set to Graph-theory Based Path Planning')
+    disp('Generating waypoints...')
+    wp_current = 1;
+    if (strcmp(wp_gen_set,'demo01'))
+        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs);
+    end
+    pos_uwb_offset = (rcg-0.5)*grid_w;
+    fig_1_title_name = 'GBPP Waypoint Map';
+else
+    disp('Navigation method is invalid.')
+    disp('Terminating Matlab script...')
+    return
+end
+
+
+
+
 %% Variable initialization
 
-is_using_obs_map = false;
+heading = [0 0 pi pi];          % Robot heading angle, clockwise direction set to positive
 
-Map_obs = [];
-if exist([file_map, '.txt'], 'file') == 2
-    Map_obs = csvread([file_map, '.txt']);
-    disp(['Map: ', file_map, '.txt loaded successfully!']);
-    grid_size = Map_obs(1,:);
-    is_using_obs_map = true;
-else
-    disp(['Default map loaded successfully!']);
-end
-heading = [0 0 pi pi];
-
-time_pause = interval_system_time/700;
-flex_offset = [0 0];
+time_pause = interval_system_time/700;  % Time pause between each robot action
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
-
 pos_center = zeros(4, 2, max_step);
-
-%heading = zeros(4, max_step);
 
 Grid_setup = zeros(grid_size(2),  grid_size(1));
 Grid_current =  zeros(grid_size(2),  grid_size(1), max_step);
 Grid_visited =  ones(grid_size(2),  grid_size(1), max_step)* grid_coverage_grid_default_value;
 Grid_obstacle = zeros(grid_size(2),  grid_size(1), max_step);
+
 for idxobs = 2:size(Map_obs,1)
     Grid_visited(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = clims(1);
     Grid_obstacle(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = 1;
@@ -200,21 +241,6 @@ for idxx = 1:(cvg_sample_side(2)+1)
     end
 end
 
-%% Waypoint Generation
-
-if (strcmp(navigation_mode,'GBPP'))
-    disp('Generating waypoints...')
-    wp_current = 1;
-    if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs(2:end,:));
-    end
-    pos_uwb_offset = [37.5 37.5];
-    fig_1_title_name = 'GBPP Waypoint Map';
-else
-    disp('Navigation method is invalid.')
-    disp('Terminating Matlab script...')
-    return
-end
 
 %% DRAW MAP
 
@@ -232,7 +258,6 @@ if (is_display_wp)
     end
 end
 
-if (is_using_obs_map)
     if (is_display_obstacle)
         figure(1)
         for idxobs = 2:size(Map_obs,1)
@@ -240,7 +265,6 @@ if (is_using_obs_map)
                                                 'FaceColor', [0 0 0]);
         end
     end
-end
 
 txt_endLine = [0 0];
 txt_endLine_last = [0 0];

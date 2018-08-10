@@ -1,9 +1,0 @@
-
-filename = 
-
-gs = [18,18];  % Map size
-
-
-
-
-save('map/myFile.mat','A','B','-v7.3')
