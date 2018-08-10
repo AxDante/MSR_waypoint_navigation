@@ -1,4 +1,4 @@
-function [Wp_s, Gvis_best] = PC_NewAlg(gs, start_shape, end_shape, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir, row_eval)
+function [Wp_s, Gvis_best] = PC_NewAlg(gs, start_shape, end_shape, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
     
     ccg = scg;   % Current Center Grid
     cost = 0;

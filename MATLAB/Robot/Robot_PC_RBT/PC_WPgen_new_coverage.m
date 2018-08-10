@@ -1,4 +1,4 @@
-function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
+function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs)
     
     start_shape = 2;
     rcg = [2 2];
@@ -32,16 +32,6 @@ function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
                          0 0;
                          9 10];
    
-    Rows_evaluate = [1 2;
-                         0 0;
-                         1 4;
-                         0 0;
-                         1 6;
-                         0 0;
-                         1 8;
-                         0 0;
-                         1 10];                  
-                     
                      
     Row_sweep_dir = [1; 0; -1; 0; 1; 0; -1; 0; 1];
                      
@@ -69,7 +59,7 @@ function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs, rcg)
             cols = [gcg(1), gcg(1)];
             rows = [0 0];
         end
-        [Wp_s, Gvis_best] = PC_NewAlg(gs, start_shape, Wp_hack(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Row_sweep_dir(idx), Rows_evaluate(idx,:)); %segemented Wp
+        [Wp_s, Gvis_best] = PC_NewAlg(gs, start_shape, Wp_hack(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Row_sweep_dir(idx)); %segemented Wp
         Wp = [Wp; Wp_s];
         scg = gcg;
         Gvis = Gvis_best;

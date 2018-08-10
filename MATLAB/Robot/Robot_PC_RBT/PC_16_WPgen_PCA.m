@@ -2,6 +2,7 @@ clf
 cla
 close all;
 clc;
+clear
 
 %% Variable Setup
 
@@ -10,18 +11,17 @@ addpath([erase(mfilename('fullpath'),mfilename), 'functions'])
 
 % General Map Setup
 file_map = '20_20_dta01';   % Set Map as 'Empty' for empty map
-grid_size = [18 18];   % Assign values for grid size if an empty map is chosen
+%grid_size = [18 18];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
 tol_wp = 4;     % Waypoint tolerance (unit:cm)               
 tol_line_width =  10;   % Route deviation tolerance (unit:cm)
-
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
-starting_grid = [1 2];  % Robot starting grid
-pos_uwb_offset = [12.5 37.5];
+%starting_grid = [1 2];  % Robot starting grid
+%pos_uwb_offset = [12.5 37.5];
 clims = [-1000, 200];  % Grid color map limits
 grid_coverage_grid_default_value = -980;
 grid_coverage_colormap = 'parula'; % Colormap format
@@ -206,7 +206,7 @@ if (strcmp(navigation_mode,'GBPP'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs(2:end,:) , starting_grid);
+        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs(2:end,:));
     end
     pos_uwb_offset = [37.5 37.5];
     fig_1_title_name = 'GBPP Waypoint Map';
