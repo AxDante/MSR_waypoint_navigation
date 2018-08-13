@@ -56,7 +56,7 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, rf)
             cols = [gcg(1), gcg(1)];
             rows = [0 0];
         end
-        [Wp_s, Gvis_best] = PC_NewAlg(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Rsd(idx)); % segemented Wp
+        [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Rsd(idx)); % segemented Wp
         Wp = [Wp; Wp_s];
         scg = gcg;
         Gvis = Gvis_best;

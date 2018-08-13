@@ -9,13 +9,13 @@
 % save it as a ".mat" file for the main path planning algorithm. Please
 % specify the waypoint patterns along with the obstacle map used here.
 
-filename = 'gbp_10_01';
+filename = 'gbpp_10_01';
 
 obsmap_name = 'obs_10_01';
 
 grid_size = [10,10];        % Map grid size
 rcg = [2, 2];        % Robot starting center grid
-robot_Form = 2;   % Robot starting shape
+robot_Form = 8;   % Robot starting shape
 
 % Robot waypoints
 create_Wp = [9 2 2;
@@ -39,5 +39,5 @@ create_Row_sweep = [1 2;
                          0 0;
                          9 10];
                      
-save(['navmap/', filename], 'obsmap_name', 'grid_size', 'rcg', ...
+save(['navmap/', filename], 'obsmap_name', 'grid_size', 'rcg', 'robot_Form', ...
     'create_Wp', 'create_Row_sweep')

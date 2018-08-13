@@ -64,8 +64,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
        
         
         if (shapeshift == 8)
-            % Perform transform the last two robot forms are both not 8
-            if (Wp(end,3) ~= 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 8))
+            if (Wp(end,3) == 2 || Wp(end,3) == 1) && (size(Wp,1) == 1 || (~(Wp(end-1,3) == 8)    )
                 gsc = GSC{ncg(1), ncg(2)};
                 if gsc(2,8) == 1 
                     
@@ -91,7 +90,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 end
             end
         elseif (shapeshift == 2)
-            if (Wp(end,3) ~= 2) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
+            if (Wp(end,3) == 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
                 gsc = GSC{ncg(1), ncg(2)};
                 if gsc(8,2) == 1 
                     Wp_temp = Wp;
@@ -115,7 +114,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 end
             end
        elseif (shapeshift == 1)
-            if (Wp(end,3) ~= 1) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 1))
+            if (Wp(end,3) == 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
                 gsc = GSC{ncg(1), ncg(2)};
                 if gsc(8,2) == 1 
                     Wp_temp = Wp;
@@ -126,7 +125,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                     downdir_temp = downdir;
                     
                     cost = cost + cost_shapeshift;
-                    Wp = [Wp; ncg(1) ncg(2) 1];
+                    Wp = [Wp; ncg(1) ncg(2) 2];
                     
                     [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
                     

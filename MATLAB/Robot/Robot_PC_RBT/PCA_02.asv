@@ -308,7 +308,7 @@ if (true)
             figure(1)
         end
         
-        % Robot Transformation
+        % Transformation
         is_require_transform = false;
         for rbtidx = 1:4
             if abs(heading(rbtidx) - RobotShapes(Wp(wp_current, 3),rbtidx)) > tol_transform
@@ -382,7 +382,6 @@ if (true)
             end
         end
         
-        % Check if robot reaches the next waypoint
         if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_display_wp && is_display_wp_clearing)
                 delete(Circle_Wp(wp_current));
@@ -426,8 +425,6 @@ if (true)
                                    [sin(-pi/4 + heading(3))+sin(pi/4 + heading(4)) ...
                                     cos(-pi/4 + heading(3))+cos(pi/4 + heading(4))]; 
         
-        
-        % Robot coverage percentage calculation
         if(is_calculate_coverage)
                 for cvg_idx = 1: numel(Cvg(:, 1))
                     if (abs(pos_center(2, :, step)-Cvg(cvg_idx, 1:2)) < 2.5*sqrt(2)*grid_w)
@@ -482,13 +479,11 @@ if (true)
             delete(Line_Robot)
             delete(Line_Linear_Route)
         end
-        
-        Line_Robot = [];  % Robot outer border
-        Line_Border = [];  % Workspace outer border
+        Line_Robot = [];
+        Line_Border = [];
         Line_Linear_Route = [];
-        Line_RbtCent = [];  % Robot center trajectory
-        
-        % plot robot BG
+        Line_RbtCent = [];
+                    % plot robot BG
             if (is_display_coverage_map == true)
                 for robidx = 1:4
                 Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
