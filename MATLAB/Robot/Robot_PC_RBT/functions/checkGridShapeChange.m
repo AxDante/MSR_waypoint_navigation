@@ -1,3 +1,6 @@
+
+
+
 function gsc = checkGridShapeChange(rowidx,colidx, gs, Gobs)
 
     Rgp = [0 -1; 0 1; 0 2;                         % Relative grid positions between modules

@@ -1,3 +1,5 @@
+
+
 function R = rotationMatrix(M, config)
     shape = mod(config-1, 7)+1;
     deg = pi/2*floor((config-1)/7);

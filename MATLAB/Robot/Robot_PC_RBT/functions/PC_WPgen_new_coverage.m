@@ -1,10 +1,3 @@
-% -----------------------------------------------------------
-% Author: AxDante <knight16729438@gmail.com>
-% Singapore University of Technology and Design
-% Created: April 2018
-% Modified: August 2018
-% -----------------------------------------------------------
-
 function [Wp, Wp_hack] = PC_WPgen_new_coverage(gs, gw, Gobs)
     
     start_shape = 2;

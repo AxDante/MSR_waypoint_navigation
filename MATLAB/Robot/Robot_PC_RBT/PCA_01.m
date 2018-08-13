@@ -19,12 +19,10 @@ cvg_sample_side = [20 20];  % Robot map coverage samples size
 fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
-%starting_grid = [1 2];  % Robot starting grid
 clims = [-1000, 200];  % Grid color map limits
 grid_coverage_grid_default_value = -980;
 grid_coverage_colormap = 'parula'; % Colormap format
 grid_coverage_sim_increase = 8; % Grid color map value increased for each step during simulation;
-grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Algorithms
 navigation_mode = 'GBPP';
@@ -130,9 +128,6 @@ else
     disp('Terminating Matlab script...')
     return
 end
-
-
-
 
 %% Variable initialization
 
@@ -299,13 +294,8 @@ if (true)
                 if (Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) == grid_coverage_grid_default_value)
                     Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = 0;
                 else
-                    if(~is_streaming_on)
-                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
-                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_sim_increase;
-                    else
-                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
-                            Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_increase;
-                    end
+                    Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step+1) = ...
+                        Grid_visited(robot_Grid(idxbox,1),robot_Grid(idxbox,2),step) + grid_coverage_sim_increase;
                 end
             end
         end

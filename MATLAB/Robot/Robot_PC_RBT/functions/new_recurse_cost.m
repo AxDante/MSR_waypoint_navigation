@@ -1,10 +1,3 @@
-% -----------------------------------------------------------
-% Author: AxDante <knight16729438@gmail.com>
-% Singapore University of Technology and Design
-% Created: April 2018
-% Modified: August 2018
-% -----------------------------------------------------------
-
 function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
 
     %if cost > cost_best || cost > 50

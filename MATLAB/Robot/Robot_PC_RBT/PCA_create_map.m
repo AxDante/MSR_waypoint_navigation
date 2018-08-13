@@ -5,6 +5,10 @@
 % Modified: August 2018
 % -----------------------------------------------------------
 
+% Instructions: This is a matlab file that creates a navigation map and
+% save it as a ".mat" file for the main path planning algorithm. Please
+% specify the waypoint patterns along with the obstacle map used here.
+
 filename = 'gbp_10_01';
 
 obsmap_name = 'obs_10_01';
