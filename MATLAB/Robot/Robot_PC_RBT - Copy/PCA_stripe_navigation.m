@@ -10,8 +10,8 @@
 % srf: starting robot form (int)
 % grf: goal robot form (int)
 % Gvis: visited Grid (gs(1)xgs(2) array)
-% scg: starting center grid
-% gcg: goal center grid
+% scg: starting center grid (1x2 array)
+% gcg: goal center grid (1x2 array)
 % GA: grid availability cell array
 % GSC: grid shape change cell array
 % rows:
@@ -44,7 +44,7 @@ function [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, srf, grf, Gvis, scg, gcg,
         end
         
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
-        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
+        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
                                                                                [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(width/2), ceil(width/2));
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...

@@ -49,6 +49,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
 
     shapes = [1, 2, 8];
     
+    
     for idxrmc = size(rmc,2)
         
         invalid_move = false;
@@ -96,14 +97,12 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
             is_non_repeat = false;
             is_transform_clear = false;
 
+            
             % Proceed only if the previous two robot waypoints are not in
             % the same shape of the next shape.
             for intidx = 1:size(shapes,2)  
-                disp([num2str(Wp(end,3)), ' ', num2str(shapeshift)])
                 if  shapeshift == shapes(intidx) && (Wp(end,3) ~= shapeshift) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == shapeshift))
                     is_non_repeat = true;
-                    disp(['non repeat ', num2str(Wp(end,3)), ' ', num2str(shapeshift)])
-                    disp('a')
                 end
             end
             
@@ -111,12 +110,10 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
             gsc = GSC{ncg(1), ncg(2)};
             if gsc(Wp(end,3), shapeshift) == 1
                 is_transform_clear = true;
-                disp('a')
             end
                 
             if (is_non_repeat && is_transform_clear)    
                 
-                disp('asd')
                 Wp_temp = Wp;
                 ccg_temp = ccg;
                 cost_temp = cost;
@@ -137,6 +134,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 cost = cost_temp;
                     
             end
+            
         else
             if (up_move == 1)
                 updir_temp = updir;

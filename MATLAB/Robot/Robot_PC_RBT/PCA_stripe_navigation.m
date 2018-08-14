@@ -10,8 +10,8 @@
 % srf: starting robot form (int)
 % grf: goal robot form (int)
 % Gvis: visited Grid (gs(1)xgs(2) array)
-% scg: starting center grid
-% gcg: goal center grid
+% scg: starting center grid (1x2 array)
+% gcg: goal center grid (1x2 array)
 % GA: grid availability cell array
 % GSC: grid shape change cell array
 % rows:

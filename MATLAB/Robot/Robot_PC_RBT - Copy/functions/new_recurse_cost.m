@@ -1,11 +1,4 @@
-% -----------------------------------------------------------
-% Author: AxDante <knight16729438@gmail.com>
-% Singapore University of Technology and Design
-% Created: April 2018
-% Modified: August 2018
-% -----------------------------------------------------------
-
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
 
     %if cost > cost_best || cost > 50
     %    return
@@ -17,7 +10,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
     rgp{2} = [0 -1; 0 0; 1 0; 1 -1];
     rgp{8} = [-1 0; 0 0; 1 0; 2 0];
               
-    rmc = ['F', 'R', 'B', 'L', '2', '8', '1']; % Robot movement commands
+    rmc = ['F', 'R', 'B', 'L', '2', '8']; % Robot movement commands
     ncg = [];
 
     for idxrmc = 1:6
@@ -57,14 +50,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
             case '2'
                 ncg = ccg;
                 shapeshift = 2;
-            case '1'
-                ncg = ccg;
-                shapeshift = 1;
         end
        
         
         if (shapeshift == 8)
-            if (Wp(end,3) == 2 || Wp(end,3) == 1) && (size(Wp,1) == 1 || (~(Wp(end-1,3) == 8)    )
+            if (Wp(end,3) == 2) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 8))
                 gsc = GSC{ncg(1), ncg(2)};
                 if gsc(2,8) == 1 
                     
@@ -90,30 +80,6 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 end
             end
         elseif (shapeshift == 2)
-            if (Wp(end,3) == 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
-                gsc = GSC{ncg(1), ncg(2)};
-                if gsc(8,2) == 1 
-                    Wp_temp = Wp;
-                    ccg_temp = ccg;
-                    cost_temp = cost;
-                    Gvis_temp = Gvis;     
-                    updir_temp = updir;
-                    downdir_temp = downdir;
-                    
-                    cost = cost + cost_shapeshift;
-                    Wp = [Wp; ncg(1) ncg(2) 2];
-                    
-                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
-                    
-                    updir = updir_temp;
-                    downdir = downdir_temp;
-                    Gvis = Gvis_temp;
-                    ccg = ccg_temp;
-                    Wp = Wp_temp;
-                    cost = cost_temp;
-                end
-            end
-       elseif (shapeshift == 1)
             if (Wp(end,3) == 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
                 gsc = GSC{ncg(1), ncg(2)};
                 if gsc(8,2) == 1 
@@ -235,11 +201,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                                     %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                                 end
                             else
-                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
 
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                         end
                         
                         Gvis = Gvis_temp;

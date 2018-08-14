@@ -5,51 +5,22 @@
 % Modified: August 2018
 % -----------------------------------------------------------
 
-%  --- Function Inputs ---
-% gs: grid_size (1x2 array)
-% ccg: current center grid (1x2 array)
-% gcg: goal center grid  (1x2 array)
-% GA: grid availability cell array
-% GSC: grid shape change cell array
-% cost: current path cost (float)
-% cost_best: best path cost (float)
-% Wp: current waypoint series (n x 3 array)
-% Wp_best: waypoint series with minimum cost (n x 3 array)
-% grf: goal robot form (int)
-
-
-
-% --- Function Outputs ---
-% Gvis: visited grid array;
-% Gvis: visited grid array;
-% cost: current path cost (float)
-% cost_best: best path cost (float)
-% Wp: current waypoint series (n x 3 array)
-% Wp_best: waypoint series with minimum cost (n x 3 array)
-% -------------------------
-
-
-
-
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf , closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC,cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
 
     %if cost > cost_best || cost > 50
     %    return
     %end
 
- 
     cost_shapeshift = 1;
 
-    rgp = cell(8); %r
+    rgp = cell(8);
     rgp{2} = [0 -1; 0 0; 1 0; 1 -1];
     rgp{8} = [-1 0; 0 0; 1 0; 2 0];
               
-    rmc = ['F', 'R', 'B', 'L', '2', '8', '1']; % Robot movement commands
+    rmc = ['F', 'R', 'B', 'L', '2', '8']; % Robot movement commands
     ncg = [];
 
-    shapes = [1, 2, 8];
-    
-    for idxrmc = size(rmc,2)
+    for idxrmc = 1:6
         
         invalid_move = false;
         up_move = 0;
@@ -86,58 +57,61 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
             case '2'
                 ncg = ccg;
                 shapeshift = 2;
-            case '1'
-                ncg = ccg;
-                shapeshift = 1;
         end
        
-        if (shapeshift ~= 0)
-            
-            is_non_repeat = false;
-            is_transform_clear = false;
-
-            % Proceed only if the previous two robot waypoints are not in
-            % the same shape of the next shape.
-            for intidx = 1:size(shapes,2)  
-                disp([num2str(Wp(end,3)), ' ', num2str(shapeshift)])
-                if  shapeshift == shapes(intidx) && (Wp(end,3) ~= shapeshift) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == shapeshift))
-                    is_non_repeat = true;
-                    disp(['non repeat ', num2str(Wp(end,3)), ' ', num2str(shapeshift)])
-                    disp('a')
+        
+        if (shapeshift == 8)
+            if (Wp(end,3) == 2) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 8))
+                gsc = GSC{ncg(1), ncg(2)};
+                if gsc(2,8) == 1 
+                    
+                    Wp_temp = Wp;
+                    ccg_temp = ccg;
+                    cost_temp = cost;
+                    Gvis_temp = Gvis;     
+                    updir_temp = updir;
+                    downdir_temp = downdir;
+                    
+                    cost = cost + cost_shapeshift;
+                    Wp = [Wp; ncg(1) ncg(2) 8];
+                    
+                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+                    
+                    updir = updir_temp;
+                    downdir = downdir_temp;
+                    Gvis = Gvis_temp;
+                    ccg = ccg_temp;
+                    Wp = Wp_temp;
+                    cost = cost_temp;
+                    
                 end
             end
-            
-            % Check grid shape change
-            gsc = GSC{ncg(1), ncg(2)};
-            if gsc(Wp(end,3), shapeshift) == 1
-                is_transform_clear = true;
-                disp('a')
-            end
-                
-            if (is_non_repeat && is_transform_clear)    
-                
-                disp('asd')
-                Wp_temp = Wp;
-                ccg_temp = ccg;
-                cost_temp = cost;
-                Gvis_temp = Gvis;     
-                updir_temp = updir;
-                downdir_temp = downdir;
-                
-                cost = cost + cost_shapeshift;
-                Wp = [Wp; ncg(1) ncg(2) shapeshift];
-                
-                [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+        elseif (shapeshift == 2)
+            if (Wp(end,3) == 8) && (size(Wp,1) == 1 || ~(Wp(end-1,3) == 2))
+                gsc = GSC{ncg(1), ncg(2)};
+                if gsc(8,2) == 1 
+                    Wp_temp = Wp;
+                    ccg_temp = ccg;
+                    cost_temp = cost;
+                    Gvis_temp = Gvis;     
+                    updir_temp = updir;
+                    downdir_temp = downdir;
                     
-                updir = updir_temp;
-                downdir = downdir_temp;
-                Gvis = Gvis_temp;
-                ccg = ccg_temp;
-                Wp = Wp_temp;
-                cost = cost_temp;
+                    cost = cost + cost_shapeshift;
+                    Wp = [Wp; ncg(1) ncg(2) 2];
                     
+                    [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+                    
+                    updir = updir_temp;
+                    downdir = downdir_temp;
+                    Gvis = Gvis_temp;
+                    ccg = ccg_temp;
+                    Wp = Wp_temp;
+                    cost = cost_temp;
+                end
             end
         else
+            
             if (up_move == 1)
                 updir_temp = updir;
                 if (updir > 0)
@@ -210,7 +184,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                         end
 
                         if (ncg == gcg) 
-                            if(Wp(end,3) == grf)
+                            if(Wp(end,3) == end_shape)
                                 if (rows(1)~=0 || rows(2) ~= 0)
                                     for rowidx =1:rows_init(2)
                                         rows_init(2)
@@ -234,11 +208,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                                     %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                                 end
                             else
-                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
 
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                         end
                         
                         Gvis = Gvis_temp;

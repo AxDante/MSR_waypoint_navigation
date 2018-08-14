@@ -8,8 +8,10 @@
 %  --- Function Inputs ---
 % gs: grid_size (1x2 array)
 % srf: starting robot form (int)
-% erf: ending robot form (int)
-% Gbis 
+% grf: goal robot form (int)
+% Gvis: visited Grid (gs(1)xgs(2) array)
+% scg: starting center grid
+% gcg: goal center grid
 % gw: grid_width (int)
 % Gobs: grid obstacle map (gs(1)xgs(2) array)
 % rcg: robot center grid (1x2 array)
@@ -22,7 +24,7 @@
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PC_NewAlg(gs, srf, erf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
+function [Wp_s, Gvis_best] = PC_NewAlg(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
     
     ccg = scg;   % Current Center Grid
     cost = 0;
@@ -34,7 +36,7 @@ function [Wp_s, Gvis_best] = PC_NewAlg(gs, srf, erf, Gvis, scg, gcg, GA, GSC, ro
     
     rows_init = rows;
     
-    while (cost_best == 1000 && width < 5) 
+    while (cost_best == 1000 && width < 3) 
     
         if mod(width,2) == 1
             rows = [rows(1)-ceil(width/2) rows(2)];
@@ -43,7 +45,7 @@ function [Wp_s, Gvis_best] = PC_NewAlg(gs, srf, erf, Gvis, scg, gcg, GA, GSC, ro
         end
         
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
-        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, erf,...
+        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
                                                                                [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(width/2), ceil(width/2));
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...

@@ -13,13 +13,23 @@
 % Wpp: starting Waypoint profile (nx3 array)
 % Rsp: Robot sweeping profile (nx2 array)
 % rf: robot form
+%
 % --- Function Outputs ---
-% Wp: generated waypoints (nx3)
-% ------
+% Wp: generated waypoints (nx3 array)
+% Wpp: final Waypoint profile (nx3 array)
+%
+% --- Function Variables ---
+% Rsd: robot sweeping direction
+% GA: grid availability cell array
+% GSC: grid shape change cell array
+% scg: starting center grid
+
+% ---------------------------
+
 
 function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, rf)
 
-    Rsd = [1; 0; -1; 0; 1; 0; -1; 0; 1]; % Robot sweeping direction
+    Rsd = [1; 0; -1; 0; 1; 0; -1; 0; 1];
                      
     Gvis = zeros(gs(1),gs(2));
     
@@ -29,12 +39,12 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, rf)
   
     for rowidx = 1:gs(1)
         for colidx = 1:gs(2)
-             GA{rowidx,colidx} = checkGridAvalibility(rowidx,colidx, gs, Gobs);
-             GSC{rowidx,colidx} = checkGridShapeChange(rowidx,colidx, gs, Gobs);
+             GA{rowidx,colidx} = PCA_get_grid_availability(rowidx,colidx, gs, Gobs);
+             GSC{rowidx,colidx} = PCA_get_grid_shape_change(rowidx,colidx, gs, Gobs);
         end
     end
     
-    scg = rcg; % starting center grid
+    scg = rcg;
     Wp = [];
     
     for idx = 1: 4
@@ -46,12 +56,13 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, rf)
             cols = [gcg(1), gcg(1)];
             rows = [0 0];
         end
-        [Wp_s, Gvis_best] = PC_NewAlg(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Rsd(idx)); %segemented Wp
+        [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, rows, cols, Rsd(idx)); % segemented Wp
         Wp = [Wp; Wp_s];
         scg = gcg;
         Gvis = Gvis_best;
     end
     
+    % Converstion between grid based coordinate to workspace coordinates
     Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*gw;
     Wpp = (Wpp-0.5)*gw;
 end
