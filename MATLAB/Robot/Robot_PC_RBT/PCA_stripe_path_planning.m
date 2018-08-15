@@ -23,7 +23,7 @@
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
+function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
     
     ccg = scg;   % Current Center Grid
     cost = 0;

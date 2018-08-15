@@ -16,8 +16,7 @@ grid_w = 25;    % Grid width (unit:cm)
 tol_wp = 4;     % Waypoint tolerance (unit:cm)               
 tol_line_width =  10;   % Route deviation tolerance (unit:cm)
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
-
-starting_pause_time = 1;
+fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 % Grid Map Setup
 clims = [-1000, 200];  % Grid color map limits
@@ -37,6 +36,7 @@ interval_normal_linear_command_send = 15; % Robot normal linear commands sending
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
+robot_Form = 2; % Robot starting shape
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
 Dy_angv_transform = pi/24;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
@@ -47,6 +47,9 @@ update_rate_sim = 0.2; % Robot position update rate during simulation
 
 
 % Toggle 
+is_xbee_on = false; 
+is_streaming_on = false;
+
 is_calculate_coverage = false;
 is_calculate_grid_coverage_duration = true;
 is_display_coverage_map = false;
@@ -116,7 +119,7 @@ if (strcmp(navigation_mode,'GBPP'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, create_Row_sweep, Row_sweep_sequence, robot_Form);
+        [Wp, Wp_hack] = PC_WPgen_new_coverage(grid_size, grid_w, Map_obs);
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
@@ -127,6 +130,8 @@ else
 end
 
 %% Variable initialization
+
+heading = [0 0 pi pi];          % Robot heading angle, clockwise direction set to positive
 
 time_pause = interval_system_time/700;  % Time pause between each robot action
 pos_uwb_raw =  zeros(2, max_step);
@@ -150,13 +155,15 @@ prev_char_command = 'S';
 command_count_normal_linear = 0;
 command_count_rotation = 0;
 
-Dy_force = zeros(4, 2, max_step);       % Simulated movement force
-Dy_a = zeros(4, 2, max_step);            % Simulated movement acceleration
-Dy_v = zeros(4, 2, max_step);            % Simulated movement velocity
+Dy_force = zeros(4, 2, max_step);
+Dy_a = zeros(4, 2, max_step);
+Dy_v = zeros(4, 2, max_step);
 
 is_rotating = false;
 
+Wp = [];
 
+Circle_Wp = [];
 Obstacles = [];
 
 Line_Linear_Route = [];
@@ -205,10 +212,7 @@ Robot_Relative_Pos = [0 -1; 0 1; 0 2;
                                  1 -1; 1 0; 2 0;
                                  1 -1; 1 0; 2 -1];
                              
-heading = [0 0 0 0];
-for intidx = 1:4
-    heading(intidx)= RobotShapes(robot_Form,intidx);
-end                
+
 
 Char_command_array_linear = ['R', 'F', 'L', 'B'];
 Char_command_array_linear_adjustment =  ['r', 'f', 'l', 'b'];
@@ -235,36 +239,33 @@ end
 
 %% DRAW MAP
 
-% First figure: Navigation map
+
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
 title(fig_1_title_name)
 hold on
 
-% Draw waypoints 
- Circle_Wp = [];
+
+ % Draw Waypoints
 if (is_display_wp)
     for idx = 1: size(Wp_hack,1)
         Circle_Wp(idx) = plot(Wp_hack(idx, 1), Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
     end
 end
 
-% Draw obstacles
-if (is_display_obstacle)
-    figure(1)
-    for idxobs = 1:size(Map_obs,1)
-        Obstacles = rectangle('Position', [grid_w*(Map_obs(idxobs, :) - [1 1]), grid_w grid_w], ...
+    if (is_display_obstacle)
+        figure(1)
+        for idxobs = 2:size(Map_obs,1)
+                Obstacles = rectangle('Position', [grid_w*(Map_obs(idxobs, :) - [1 1]), grid_w grid_w], ...
                                                 'FaceColor', [0 0 0]);
+        end
     end
-end
 
 txt_endLine = [0 0];
 txt_endLine_last = [0 0];
 
 %% Main Algorithm  (SW)
-
-tic  % Start timer
-
+tic
 if (true)
     
     % Algorithm Setup
@@ -277,9 +278,10 @@ if (true)
         % Pause function
         pause(time_pause);
            
+        
         % Grid Info
         robot_center_Grid = [1+floor(pos_uwb(1, step)/grid_w) 1+floor(pos_uwb(2, step)/grid_w)];
-        rotated_relative_grid_pos = PCA_rotation_matrix(Robot_Relative_Pos, Wp(wp_current, 3));
+        rotated_relative_grid_pos = rotationMatrix(Robot_Relative_Pos, Wp(wp_current, 3));
         robot_Grid = [ rotated_relative_grid_pos(1,:);
                              0 0;
                             rotated_relative_grid_pos(2,:);
@@ -297,8 +299,6 @@ if (true)
                 end
             end
         end
-        
-        % Grid coverage map
         if (is_display_grid_coverage_map)
             figure(2)
             title('hTetro Coverage Map')
@@ -310,7 +310,7 @@ if (true)
             figure(1)
         end
         
-        % Robot Transformation
+        % Transformation
         is_require_transform = false;
         for rbtidx = 1:4
             if abs(heading(rbtidx) - RobotShapes(Wp(wp_current, 3),rbtidx)) > tol_transform
@@ -384,7 +384,6 @@ if (true)
             end
         end
         
-        % Check if robot reaches the next waypoint
         if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp )
             if (is_display_wp && is_display_wp_clearing)
                 delete(Circle_Wp(wp_current));
@@ -428,8 +427,6 @@ if (true)
                                    [sin(-pi/4 + heading(3))+sin(pi/4 + heading(4)) ...
                                     cos(-pi/4 + heading(3))+cos(pi/4 + heading(4))]; 
         
-        
-        % Robot coverage percentage calculation
         if(is_calculate_coverage)
                 for cvg_idx = 1: numel(Cvg(:, 1))
                     if (abs(pos_center(2, :, step)-Cvg(cvg_idx, 1:2)) < 2.5*sqrt(2)*grid_w)
@@ -484,13 +481,10 @@ if (true)
             delete(Line_Robot)
             delete(Line_Linear_Route)
         end
-        
-        Line_Robot = [];  % Robot outer border
-        Line_Border = [];  % Workspace outer border
+        Line_Robot = [];
+        Line_Border = [];
         Line_Linear_Route = [];
-        Line_RbtCent = [];  % Robot center trajectory
-        
-        % plot robot BG
+                    % plot robot BG
             if (is_display_coverage_map == true)
                 for robidx = 1:4
                 Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
@@ -512,7 +506,6 @@ if (true)
                  end
             end
             
-            % Draw Waypoints
             if (~isempty(Circle_Wp))
                 delete(Circle_Wp);
             end
@@ -581,6 +574,8 @@ if (true)
                                                           pos_center(robidx, 2, step)+grid_dhw*-cos(pi/4 -  heading(robidx))], 'Color', [77, 77, 255]/255, 'LineWidth', 3);   
             end
 
+
+           
             
             % Draw Robot Center
             Robot_center(step,1,1:2) = [pos_x pos_nx];
@@ -596,13 +591,17 @@ if (true)
                                                                     [Robot_center(rbtcenidx,2,1) Robot_center(rbtcenidx,2,2)])];
                 end
             end
-            
-            % Time pause at the beginning (for video recording)
             if (step == 1)
-                pause(starting_pause_time)
+                pause(10)
             end
+            
         
     end
+end
+
+if (is_xbee_on)
+     writedata = char('S');
+     fwrite(arduino,writedata,'char');
 end
 
 disp('===================');

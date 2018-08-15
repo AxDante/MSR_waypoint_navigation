@@ -29,9 +29,6 @@
 
 function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
 
-    Wpp
-    
-
     Rsd = [1; 0; -1; 0; 1; 0; -1; 0; 1];
                      
     Gvis = zeros(gs(1),gs(2));
@@ -57,31 +54,41 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
     % Stripe navigation
     for stridx = 1:stripe_num
         
-        % Set goal center grid to the one specified in waypoint properties.
-        gcg = [Wpp(stridx*2,1) Wpp(stridx*2,2)];
+        bound_row = [Rsp(stridx,1) Rsp(stridx,2)];
+        boundc
         
-        % Indicating the borders of the stripe
-        bound_row = [Rss(stridx,1) Rss(stridx,2)];
-        bound_col = [1 gs(2)];
+        [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, bound_row, cols, Rsd(idx)); % segemented Wp
         
-        % Begin stripe path planning
-        [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, rf, 2 , Gvis, scg, gcg, GA, GSC, bound_row, bound_col, Rsd(stridx)); % segemented Wp
         
-        % Append waypoint
-        Wp = [Wp; Wp_s];
         
-        Gvis = Gvis_best;
+        
+        
+        cols = 
         
         % Perform stripe waypoint navigation if the current stripe is not
         % the last stripe.
         if stridx ~= stripe_num
             % Ideal: A star algorithm
-            % Current: Hacked, direct movement
-            scg = [Wpp(stridx*2+1,1) Wpp(stridx*2+1,2)];
-            Wp = [Wp; [scg 2]];
-        end 
+        end
     end
     
+    
+    
+    
+    for idx = 1: 4
+        gcg = [ceil(Wpp(idx,1)) ceil(Wpp(idx,2))];
+        if (scg(1) - gcg(1) ~= 0)
+            cols = [0 0];
+            bound_row = [Rsp(idx,1) Rsp(idx,2)];
+        elseif  (scg(2) - gcg(2) ~= 0)
+            cols = [gcg(1), gcg(1)];
+            bound_row = [0 0];
+        end
+        [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, rf, Wpp(idx,3),Gvis, scg, gcg, GA, GSC, bound_row, cols, Rsd(idx)); % segemented Wp
+        Wp = [Wp; Wp_s];
+        scg = gcg;
+        Gvis = Gvis_best;
+    end
     
     % Converstion between grid based coordinate to workspace coordinates
     Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*gw;

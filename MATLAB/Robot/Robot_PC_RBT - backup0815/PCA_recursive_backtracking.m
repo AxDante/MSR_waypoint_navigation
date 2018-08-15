@@ -38,9 +38,6 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
     %    return
     %end
     
-    Wp
-    cost 
-    
     cost_shapeshift = 1;
 
     rgp = cell(8); %r
@@ -169,7 +166,6 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 bound_row = [1 gs(1)];
             end
 
-            % Check if the next center grid 
             if ~(ncg(2) >= bound_row(1) && ncg(2) <= bound_row(2) && ...
                     ncg(1) >= bound_col(1) && ncg(1) <= bound_col(2) && ...
                 ncg(1) > 0 && ncg(2) > 0)
@@ -207,6 +203,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                         Wp = [Wp; ncg(1) ncg(2) Wp(end,3)];
                         ccg = ncg;
                         cost = cost+1;
+                        rgp
                         Rgp = ncg + rgp{Wp(end,3)} ;
                         for rgpidx = 1:size(Rgp,1)
                             if Gvis(Rgp(rgpidx,1), Rgp(rgpidx,2)) == 1
@@ -215,34 +212,34 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                             Gvis(Rgp(rgpidx,1), Rgp(rgpidx,2)) = 1;
                         end
 
-                        % Check if next robot configuration equals to the
-                        % goal configuration
-                        if (isequal(ncg,gcg) && Wp(end,3) == grf) 
-                            
-                            disp('Reached destination')
-                            Wp
-                            cost
-                            disp('=============')
-                            
-                            for rowidx =1:rows_init(2)
-                                for colidx = 1:gs(2)
-                                    if Gvis(colidx, rowidx) == 1
-                                        cost = cost - 2 ;
-                                    elseif Gvis(colidx, rowidx) == 0
-                                        cost = cost + 5;
+                        if (ncg == gcg) 
+                            if(Wp(end,3) == grf)
+                                if (rows(1)~=0 || rows(2) ~= 0)
+                                    for rowidx =1:rows_init(2)
+                                        rows_init(2)
+                                        gs(2)
+                                        for colidx = 1:gs(2)
+                                            if Gvis(colidx, rowidx) == 1
+                                                cost = cost - 2 ;
+                                            elseif Gvis(colidx, rowidx) == 0
+                                                cost = cost + 5;
+                                            end
+                                        end
                                     end
                                 end
-                            end
-                            
-                            if (cost < cost_best)
-                                Wp_best = Wp;
-                                cost_best = cost;
-                                Gvis_best = Gvis;
-                                %return
+                                if (cost < cost_best)
+                                    Wp_best = Wp;
+                                    cost_best = cost;
+                                    Gvis_best = Gvis;
+                                    %return
+                                else
+                                    %return
+                                    %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                                end
                             else
-                                %return
-                                %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                               [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
+
                         else
                             [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                         end

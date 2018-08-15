@@ -10,20 +10,21 @@
 % srf: starting robot form (int)
 % grf: goal robot form (int)
 % Gvis: visited Grid (gs(1)xgs(2) array)
-% scg: starting center grid (1x2 array)
-% gcg: goal center grid (1x2 array)
-% GA: grid availability cell array
-% GSC: grid shape change cell array
-% rows:
-% cols:
-%
+% scg: starting center grid
+% gcg: goal center grid
+% gw: grid_width (int)
+% Gobs: grid obstacle map (gs(1)xgs(2) array)
+% rcg: robot center grid (1x2 array)
+% Wpp: starting Waypoint profile (nx3 array)
+% Rsp: Robot sweeping profile (nx2 array)
+% 
 % --- Function Outputs ---
-% Wp_s:
-% Gvis_best: 
+% Wp: generated waypoints (nx3 array)
+% Wpp: final Waypoint profile (nx3 array)
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
+function [Wp_s, Gvis_best] = PC_NewAlg(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
     
     ccg = scg;   % Current Center Grid
     cost = 0;
@@ -31,30 +32,28 @@ function [Wp_s, Gvis_best] = PCA_stripe_navigation(gs, srf, grf, Gvis, scg, gcg,
     Wp_best = [];
     
     Wp = [scg(1) scg(2) srf];
-    extra_width = 0;
+    width = 0;
     
     rows_init = rows;
     
+    while (cost_best == 1000 && width < 3) 
     
-    
-    while (cost_best == 1000 && extra_width < 3) 
-    
-        if mod(extra_width,2) == 1
-            rows = [rows(1)-ceil(extra_width/2) rows(2)];
-        elseif mod(extra_width,2) == 0
-            rows = [rows(1) rows(2)+extra_width/2];
+        if mod(width,2) == 1
+            rows = [rows(1)-ceil(width/2) rows(2)];
+        elseif mod(width,2) == 0
+            rows = [rows(1) rows(2)+width/2];
         end
         
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
-        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-                                                                               [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
+        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = new_recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
+                                                                               [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(width/2), ceil(width/2));
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...
             , ' cost = ', num2str(cost_best)]);
         disp(['best Wp:']);
         Wp_best
         
-        extra_width = extra_width +1;
+        width = width +1;
     end
     
 end
