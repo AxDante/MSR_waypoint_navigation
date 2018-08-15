@@ -65,4 +65,5 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, rf)
     % Converstion between grid based coordinate to workspace coordinates
     Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*gw;
     Wpp = (Wpp-0.5)*gw;
+    
 end

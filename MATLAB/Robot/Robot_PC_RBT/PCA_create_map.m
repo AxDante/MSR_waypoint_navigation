@@ -15,7 +15,7 @@ obsmap_name = 'obs_10_01';
 
 grid_size = [10,10];        % Map grid size
 rcg = [2, 2];        % Robot starting center grid
-robot_Form = 8;   % Robot starting shape
+robot_Form = 1;   % Robot starting shape
 
 % Robot waypoints
 create_Wp = [9 2 2;
