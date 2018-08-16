@@ -116,7 +116,7 @@ if (strcmp(navigation_mode,'GBPP'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, create_Row_sweep, robot_Form);
+        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, create_Row_sweep, Row_sweep_sequence, robot_Form);
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
@@ -241,7 +241,6 @@ axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
 title(fig_1_title_name)
 hold on
 
-
 % Draw waypoints 
  Circle_Wp = [];
 if (is_display_wp)
@@ -267,6 +266,7 @@ txt_endLine_last = [0 0];
 tic  % Start timer
 
 if (true)
+    
     % Algorithm Setup
     pos_uwb_raw(:, 1) = pos_uwb_offset;
     pos_uwb(:, 1) = pos_uwb_raw(:, 1);
@@ -596,7 +596,6 @@ if (true)
                                                                     [Robot_center(rbtcenidx,2,1) Robot_center(rbtcenidx,2,2)])];
                 end
             end
-            
             
             % Time pause at the beginning (for video recording)
             if (step == 1)

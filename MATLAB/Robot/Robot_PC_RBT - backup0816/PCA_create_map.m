@@ -15,18 +15,13 @@ obsmap_name = 'obs_10_01';
 
 grid_size = [10,10];        % Map grid size
 rcg = [2, 2];        % Robot starting center grid
-robot_Form = 8;   % Robot starting shape
+robot_Form = 1;   % Robot starting shape
 
 % Robot waypoints
-create_Wp = [9 2 2;
-                   9 3 2;
-                   2 3 2;
-                   2 6 2;
-                   9 6 2;
-                   9 8 2;
-                   2 7 2;
-                   2 9 2;
-                   9 10 2];
+create_Wp = [1 2;
+                    9 4;
+                    9 6;
+                    1 6];
 
 % Robot sweeping rows
 create_Row_sweep = [1 2;
@@ -39,5 +34,8 @@ create_Row_sweep = [1 2;
                          0 0;
                          9 10];
                      
+Row_sweep_sequence = [1 4; 5 8];                     
+                     
+                     
 save(['navmap/', filename], 'obsmap_name', 'grid_size', 'rcg', 'robot_Form', ...
-    'create_Wp', 'create_Row_sweep')
+    'create_Wp', 'create_Row_sweep', 'Row_sweep_sequence')
