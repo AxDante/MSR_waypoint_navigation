@@ -19,7 +19,7 @@ robot_Form = 1;   % Robot starting shape
 
 % Robot waypoints
 create_Wp = [1 2;
-                    9 2;
+                    9 4;
                     9 6;
                     1 6];
 

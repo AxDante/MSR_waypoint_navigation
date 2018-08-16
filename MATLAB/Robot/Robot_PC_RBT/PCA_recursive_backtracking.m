@@ -32,14 +32,11 @@
 
 
 
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf , closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf , closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow)
 
     %if cost > cost_best || cost > 50
     %    return
     %end
-    
-    Wp
-    cost 
     
     cost_shapeshift = 1;
 
@@ -126,16 +123,16 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                 ccg_temp = ccg;
                 cost_temp = cost;
                 Gvis_temp = Gvis;     
-                updir_temp = updir;
-                downdir_temp = downdir;
+                updir_temp = up_allow;
+                downdir_temp = down_allow;
                 
                 cost = cost + cost_shapeshift;
                 Wp = [Wp; ncg(1) ncg(2) shapeshift];
                 
-                [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, updir, downdir);
+                [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow);
                     
-                updir = updir_temp;
-                downdir = downdir_temp;
+                up_allow = updir_temp;
+                down_allow = downdir_temp;
                 Gvis = Gvis_temp;
                 ccg = ccg_temp;
                 Wp = Wp_temp;
@@ -145,17 +142,17 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
         else
             
             if (up_move == 1)
-                updir_temp = updir;
-                if (updir > 0)
-                    updir = updir - 1;
+                updir_temp = up_allow;
+                if (up_allow > 0)
+                    up_allow = up_allow - 1;
                 else
                     invalid_move = true;
                 end
             end
             if (down_move == 1)
-                downdir_temp = downdir;
-                if (downdir > 0)
-                    downdir = downdir - 1;
+                downdir_temp = down_allow;
+                if (down_allow > 0)
+                    down_allow = down_allow - 1;
                 else
                     invalid_move = true;
                 end
@@ -180,15 +177,16 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                %disp(['=================================='])
                %disp(['going from (',num2str(ccg(1)), ', ', num2str(ccg(2)), ') to (', num2str(ncg(1)), ', ', num2str(ncg(2)) ,').']);
                %Wp
-
-                isrepeat = false;
+                
+               %is_repeat = false;
                 for wpidx = 1:size(Wp,1)
                     if ncg == Wp(wpidx, 1:2)
-                        isrepeat = true;
+                        %is_repeat = true;
+                        repeat_allow = repeat_allow -1;
                     end
                 end
                 
-                if isrepeat == false && (~(ncg(1) == closed_ncg(1) && ncg(2) == closed_ncg(2)))
+                if repeat_allow > 0 && (~(ncg(1) == closed_ncg(1) && ncg(2) == closed_ncg(2)))
 
                     ga = GA{ncg(1), ncg(2)};
 
@@ -199,8 +197,8 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                         cost_temp = cost;
                         Gvis_temp = Gvis;
                         
-                        updir_temp = updir;
-                        downdir_temp = downdir;
+                        updir_temp = up_allow;
+                        downdir_temp = down_allow;
                         
                         closed_ncg = ncg;
 
@@ -219,15 +217,11 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                         % goal configuration
                         if (isequal(ncg,gcg) && Wp(end,3) == grf) 
                             
-                            disp('Reached destination')
-                            Wp
-                            cost
-                            disp('=============')
                             
                             for rowidx =1:rows_init(2)
                                 for colidx = 1:gs(2)
                                     if Gvis(colidx, rowidx) == 1
-                                        cost = cost - 2 ;
+                                        cost = cost ;
                                     elseif Gvis(colidx, rowidx) == 0
                                         cost = cost + 5;
                                     end
@@ -244,7 +238,7 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
                                 %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
+                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , up_allow, down_allow, repeat_allow);
                         end
                         
                         Gvis = Gvis_temp;
@@ -257,10 +251,10 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtra
             end
             
             if (up_move == 1)
-                updir = updir_temp;
+                up_allow = updir_temp;
             end
             if (down_move == 1)
-                downdir = downdir_temp;
+                down_allow = downdir_temp;
             end
         end
     end
