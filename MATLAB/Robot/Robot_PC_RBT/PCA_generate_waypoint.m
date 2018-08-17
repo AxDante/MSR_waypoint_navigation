@@ -32,7 +32,7 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
     Wpp
     
 
-    Rsd = [1; 0; -1; 0; 1; 0; -1; 0; 1];
+    Rsd = [1; -1; 1; -1; 1; -1];
                      
     Gvis = zeros(gs(1),gs(2));
     

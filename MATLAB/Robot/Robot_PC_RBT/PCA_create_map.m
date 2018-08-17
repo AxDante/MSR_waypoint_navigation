@@ -21,7 +21,7 @@ robot_Form = 1;   % Robot starting shape
 create_Wp = [1 2;
                     9 4;
                     9 6;
-                    1 6];
+                    1 8];
 
 % Robot sweeping rows
 create_Row_sweep = [1 2;
