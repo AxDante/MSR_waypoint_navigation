@@ -32,15 +32,16 @@
 
 
 
-function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf , closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow, grid_missed)
+function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf , closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow, grid_missed_best, Grid_miss)
 
-    %if cost > cost_best || cost > 50
-    %    return
-    %end
+    if cost > cost_best || cost > 100
+        return
+    end
     
-    cost_shapeshift = 1;
+    Grid_miss = [];
+    cost_shapeshift = 4;
 
-    rgp = cell(8); %r
+    rgp = cell(8);
     rgp{1} = [0 -1; 0 0; 0 1; 0 2];
     rgp{2} = [0 -1; 0 0; 1 0; 1 -1];
     rgp{8} = [-1 0; 0 0; 1 0; 2 0];
@@ -125,14 +126,16 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recu
                 Gvis_temp = Gvis;     
                 updir_temp = up_allow;
                 downdir_temp = down_allow;
+                repeat_temp = repeat_allow;
                 
                 cost = cost + cost_shapeshift;
                 Wp = [Wp; ncg(1) ncg(2) shapeshift];
                 
-                [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow, grid_missed);
+                [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init, row_sweep_dir, up_allow, down_allow, repeat_allow, grid_missed_best);
                     
                 up_allow = updir_temp;
                 down_allow = downdir_temp;
+                repeat_allow
                 Gvis = Gvis_temp;
                 ccg = ccg_temp;
                 Wp = Wp_temp;
@@ -166,7 +169,6 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recu
                 bound_row = [1 gs(1)];
             end
 
-            
             Rgp = ncg + rgp{Wp(end,3)};
             for rgpidx = 1:size(Rgp,1)
                 if ~(Rgp(rgpidx,2) >= bound_row(1) && Rgp(rgpidx,2) <= bound_row(2) && ...
@@ -223,13 +225,14 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recu
                         % goal configuration
                         if (isequal(ncg,gcg) && Wp(end,3) == grf) 
                             
-                            
+                            Grid_miss = [];
                             for rowidx =1:rows_init(2)
                                 for colidx = 1:gs(2)
                                     if Gvis(colidx, rowidx) == 1
                                         cost = cost ;
                                     elseif Gvis(colidx, rowidx) == 0
                                         cost = cost + 5;
+                                        Grid_miss = [Grid_miss; rowidx, colidx];
                                     end
                                 end
                             end
@@ -238,13 +241,14 @@ function [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recu
                                 Wp_best = Wp;
                                 cost_best = cost;
                                 Gvis_best = Gvis;
+                                grid_missed_best = Grid_miss;
                                 %return
                             else
                                 %return
                                 %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = recurse_cost(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, end_shape, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , updir, downdir);
                             end
                         else
-                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , up_allow, down_allow, repeat_allow, grid_missed);
+                            [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf, closed_ncg, rows, cols, Gvis, Gvis_best, rows_init,  row_sweep_dir , up_allow, down_allow, repeat_allow, grid_missed_best);
                         end
                         
                         Gvis = Gvis_temp;

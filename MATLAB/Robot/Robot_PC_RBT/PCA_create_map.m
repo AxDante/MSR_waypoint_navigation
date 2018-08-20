@@ -13,7 +13,7 @@ filename = 'gbpp_10_01';
 
 obsmap_name = 'obs_10_01';
 
-grid_size = [10,10];        % Map grid size
+grid_size = [10,12];        % Map grid size
 rcg = [2, 2];        % Robot starting center grid
 robot_Form = 1;   % Robot starting shape
 

@@ -33,18 +33,19 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
     Rsd = [1; -1; 1; -1; 1; -1];
                      
     Gvis = zeros(gs(1),gs(2));
+    size(
     
     for obsidx = 1:size(Gobs,1)
         Gvis(Gobs(obsidx,1), Gobs(obsidx,2)) = -1;
     end
   
-    
-    for rowidx = 1:gs(2)
-        for colidx = 1:gs(1)
+    for rowidx = 1:gs(1)
+        for colidx = 1:gs(2)
              GA{rowidx,colidx} = PCA_get_grid_availability(rowidx,colidx, gs, Gobs);
              GSC{rowidx,colidx} = PCA_get_grid_shape_change(rowidx,colidx, gs, Gobs);
         end
     end
+    
     scg = rcg;
     Wp = [];
     

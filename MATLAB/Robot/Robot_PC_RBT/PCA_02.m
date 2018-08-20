@@ -31,7 +31,7 @@ wp_gen_set = 'demo01';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 20000;   % Maximum system steps
+max_step = 1500;   % Maximum system steps
 interval_system_time = 2;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
@@ -286,6 +286,7 @@ if (true)
                             rotated_relative_grid_pos(3,:)] + robot_center_Grid;
                         
         Grid_visited(:,:,step+1) = Grid_visited(:,:,step);
+       
         for idxbox = 1:4
             if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
                     robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))

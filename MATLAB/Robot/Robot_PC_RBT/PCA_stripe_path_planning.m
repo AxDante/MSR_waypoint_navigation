@@ -28,7 +28,7 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
     ccg = scg;   % Current Center Grid
     cost = 0;
     cost_best = 1000;
-    grid_missed_best = 1000;
+    grid_miss_best = [];
     Wp_best = [];
     
     Wp = [scg(1) scg(2) srf];
@@ -43,23 +43,30 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
         
         if mod(extra_width,2) == 1
             rows = [rows(1)-ceil(extra_width/2) rows(2)];
+            if (rows(1) <= 0)
+                rows(1) = 0;
+            end
         elseif mod(extra_width,2) == 0
             rows = [rows(1) rows(2)+extra_width/2];
+            if (rows(2) >= gs(1))
+                rows(2) = gs(1);
+            end
         end
         
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
         %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
         %                                                                       [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
        
-        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_missed_best, grid_missed] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-                                                                               [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, 8, 8, 3, grid_missed_best);
+        [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_miss_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
+                                                                               [0 0], boundary , Gvis, Gvis, rows_init, row_sweep_dir, 6, 6, 2, grid_miss_best);
 
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...
             , ' cost = ', num2str(cost_best)])
         disp(['best Wp:'])
         Wp_best
-        disp(['grid missed: ', num2str(grid_missed_best)])
+        disp(['grid missed: '])
+        grid_miss_best
         
         extra_width = extra_width +1;
     end
