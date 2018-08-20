@@ -23,7 +23,7 @@
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
+function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir, stridx)
     
     ccg = scg;   % Current Center Grid
     cost = 0;
@@ -36,8 +36,6 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
     
     rows_init = rows;
     
-    
-    
     while (cost_best == 1000 && extra_width < 3) 
    
         
@@ -48,22 +46,19 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
             end
         elseif mod(extra_width,2) == 0
             rows = [rows(1) rows(2)+extra_width/2];
-            if (rows(2) >= gs )
-                rows(1) = 0;
+            if (rows(2) >= gs(1))
+                rows(2) = gs(1);
             end
         end
         
-        
-        boundary = [rows(1)  ]
-        
-        
+        gb = [1 gs(1) rows(1) rows(2)];
         
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
         %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
         %                                                                       [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
        
         [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_miss_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-                                                                               [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, 6, 6, 2, grid_miss_best);
+                                                                               [0 0], gb , Gvis, Gvis, rows_init, row_sweep_dir, 4, 4, 1, grid_miss_best, stridx);
 
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...

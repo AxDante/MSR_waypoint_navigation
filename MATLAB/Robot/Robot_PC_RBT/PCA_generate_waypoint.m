@@ -39,17 +39,21 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
     end
   
     
-    for rowidx = 1:gs(2)
-        for colidx = 1:gs(1)
-             GA{rowidx,colidx} = PCA_get_grid_availability(rowidx,colidx, gs, Gobs);
+    for rowidx = 1:gs(1)
+        for colidx = 1:gs(2)
+             GA{rowidx, colidx} = PCA_get_grid_availability(rowidx,colidx, gs, Gobs);
              GSC{rowidx,colidx} = PCA_get_grid_shape_change(rowidx,colidx, gs, Gobs);
         end
     end
+    
+    %GSC{9,11};
+    GA{9, 4}
+    GSC{9, 4}
+    
     scg = rcg;
     Wp = [];
     
-    stripe_num = size(Rss,2); % Number of stripes in the graph.
-    
+    stripe_num = size(Rss,1); % Number of stripes in the graph.
     
     
     % Stripe navigation
@@ -59,11 +63,10 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
         gcg = [Wpp(stridx*2,1) Wpp(stridx*2,2)];
         
         % Indicating the borders of the stripe
-        bound_row = [Rss(stridx,1) Rss(stridx,2)];
-        bound_col = [1 gs(2)];
+        bound_col = [Rss(stridx,1) Rss(stridx,2)];
         
         % Begin stripe path planning
-        [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, rf, 2 , Gvis, scg, gcg, GA, GSC, bound_row, bound_col, Rsd(stridx)); % segemented Wp
+        [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, rf, 2 , Gvis, scg, gcg, GA, GSC, bound_col, Rsd(stridx), stridx); % segemented Wp
         
         % Append waypoint
         Wp = [Wp; Wp_s];

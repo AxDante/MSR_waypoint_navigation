@@ -21,7 +21,9 @@ robot_Form = 1;   % Robot starting shape
 create_Wp = [1 2;
                     9 4;
                     9 6;
-                    1 8];
+                    1 8
+                    1 10
+                    9 12];
 
 % Robot sweeping rows
 create_Row_sweep = [1 2;
@@ -34,7 +36,7 @@ create_Row_sweep = [1 2;
                          0 0;
                          9 10];
                      
-Row_sweep_sequence = [1 4; 5 8];                     
+Row_sweep_sequence = [1 4; 5 8; 9 12];                     
                      
                      
 save(['navmap/', filename], 'obsmap_name', 'grid_size', 'rcg', 'robot_Form', ...

@@ -14,7 +14,7 @@
 % gcg: goal center grid (1x2 array)
 % GA: grid availability cell array
 % GSC: grid shape change cell array
-% rows:
+% cols:
 % cols:
 %
 % --- Function Outputs ---
@@ -23,7 +23,7 @@
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, rows, cols, row_sweep_dir)
+function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, cols, row_sweep_dir, stridx)
     
     ccg = scg;   % Current Center Grid
     cost = 0;
@@ -34,31 +34,31 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
     Wp = [scg(1) scg(2) srf];
     extra_width = 0;
     
-    rows_init = rows;
-    
-    
+    cols_init = cols;
     
     while (cost_best == 1000 && extra_width < 3) 
    
         
         if mod(extra_width,2) == 1
-            rows = [rows(1)-ceil(extra_width/2) rows(2)];
-            if (rows(1) <= 0)
-                rows(1) = 0;
+            cols = [cols(1)-ceil(extra_width/2) cols(2)];
+            if (cols(1) <= 0)
+                cols(1) = 0;
             end
         elseif mod(extra_width,2) == 0
-            rows = [rows(1) rows(2)+extra_width/2];
-            if (rows(2) >= gs(1))
-                rows(2) = gs(1);
+            cols = [cols(1) cols(2)+extra_width/2];
+            if (cols(2) >= gs(2))
+                cols(2) = gs(2);
             end
         end
         
+        gb = [1 gs(1) cols(1) cols(2)]
+        
         disp(['Begin navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').']);
         %[Wp_best, Wp, cost_best, cost, Gvis_best, Gvis] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-        %                                                                       [0 0], rows, cols, Gvis, Gvis, rows_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
+        %                                                                       [0 0], cols, cols, Gvis, Gvis, cols_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
        
         [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_miss_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-                                                                               [0 0], boundary , Gvis, Gvis, rows_init, row_sweep_dir, 6, 6, 2, grid_miss_best);
+                                                                               [0 0], gb , Gvis, Gvis, cols_init, row_sweep_dir, 4, 4, 1, grid_miss_best, stridx);
 
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...

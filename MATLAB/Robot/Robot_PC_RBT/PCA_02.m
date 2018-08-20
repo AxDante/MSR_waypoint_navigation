@@ -238,6 +238,7 @@ end
 % First figure: Navigation map
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+set(gcf,'units','points','position',[10,10,grid_size(1)*60,grid_size(2)*50])
 title(fig_1_title_name)
 hold on
 
