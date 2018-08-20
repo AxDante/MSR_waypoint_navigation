@@ -23,7 +23,7 @@
 % -------------------------
 
 
-function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, cols, row_sweep_dir, stridx)
+function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, gcg, GA, GSC, cols, row_sweep_dir, stridx, Allow)
     
     ccg = scg;   % Current Center Grid
     cost = 0;
@@ -58,7 +58,7 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
         %                                                                       [0 0], cols, cols, Gvis, Gvis, cols_init, row_sweep_dir, ceil(extra_width/2), ceil(extra_width/2));
        
         [Wp_best, Wp, cost_best, cost, Gvis_best, Gvis, grid_miss_best, Grid_miss] = PCA_recursive_backtracking(gs, ccg, gcg, GA, GSC, cost, cost_best, Wp, Wp_best, grf,...
-                                                                               [0 0], gb , Gvis, Gvis, cols_init, row_sweep_dir, 4, 4, 1, grid_miss_best, stridx);
+                                                                               [0 0], gb , Gvis, Gvis, cols_init, row_sweep_dir, Allow, grid_miss_best, stridx);
 
         Wp_s = Wp_best;
         disp(['End navigation from (',num2str(scg(1)), ', ', num2str(scg(2)), ') to (', num2str(gcg(1)), ', ', num2str(gcg(2)) ,').' ...

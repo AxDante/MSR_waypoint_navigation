@@ -26,7 +26,7 @@
 
 % ---------------------------
 
-function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
+function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allow)
 
     Wpp
     
@@ -66,7 +66,7 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rsp, Rss, rf)
         bound_col = [Rss(stridx,1) Rss(stridx,2)];
         
         % Begin stripe path planning
-        [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, rf, 2 , Gvis, scg, gcg, GA, GSC, bound_col, Rsd(stridx), stridx); % segemented Wp
+        [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, rf, 2 , Gvis, scg, gcg, GA, GSC, bound_col, Rsd(stridx), stridx, Allow); % segemented Wp
         
         % Append waypoint
         Wp = [Wp; Wp_s];

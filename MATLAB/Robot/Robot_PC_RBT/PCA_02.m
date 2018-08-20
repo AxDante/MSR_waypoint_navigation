@@ -116,7 +116,7 @@ if (strcmp(navigation_mode,'GBPP'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, create_Row_sweep, Row_sweep_sequence, robot_Form);
+        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, Row_sweep_sequence, robot_Form, Allow);
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
@@ -238,7 +238,7 @@ end
 % First figure: Navigation map
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
-set(gcf,'units','points','position',[10,10,grid_size(1)*60,grid_size(2)*50])
+set(gcf,'units','points','position',[10,10,grid_size(1)*55,grid_size(2)*50])
 title(fig_1_title_name)
 hold on
 
