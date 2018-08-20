@@ -38,7 +38,7 @@ function [Wp_s, Gvis_best] = PCA_stripe_path_planning(gs, srf, grf, Gvis, scg, g
     
     while (cost_best == 1000 && extra_width < 3) 
    
-        
+            
         if mod(extra_width,2) == 1
             cols = [cols(1)-ceil(extra_width/2) cols(2)];
             if (cols(1) <= 0)

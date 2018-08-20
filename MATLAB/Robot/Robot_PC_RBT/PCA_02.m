@@ -65,6 +65,7 @@ is_fixed_offset = false;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
+is_save_path_planning_data = true;
 
 
 % Simulation Setup
@@ -112,6 +113,19 @@ disp('=========================')
 %% Waypoint Generation
 
 if (strcmp(navigation_mode,'GBPP'))
+    
+    if(is_save_path_planning_data)
+        file_number = 0;
+        while (file_number <= 99)
+            datalog_path = ['datalog/', file_name, '_', num2str(file_number,'%02.f'),'.csv'];
+            if exist(datalog_path, 'file') ~= 2
+                fid = fopen(datalog_path, 'w') ;
+                break;
+            end
+            file_number = file_number + 1;
+        end
+    end    
+    
     disp('Navigation mode set to Graph-theory Based Path Planning')
     disp('Generating waypoints...')
     wp_current = 1;
@@ -120,6 +134,11 @@ if (strcmp(navigation_mode,'GBPP'))
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
+    
+    if(is_save_path_planning_data)
+        fclose(fid);
+    end   
+    
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')

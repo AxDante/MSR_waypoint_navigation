@@ -52,8 +52,11 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allo
     
     scg = rcg;
     Wp = [];
-    
+    s0
     stripe_num = size(Rss,1); % Number of stripes in the graph.
+    
+    
+    
     
     
     % Stripe navigation
