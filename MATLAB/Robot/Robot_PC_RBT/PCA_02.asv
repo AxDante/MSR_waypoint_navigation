@@ -31,7 +31,7 @@ wp_gen_set = 'demo01';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 20000;   % Maximum system steps
+max_step = 1500;   % Maximum system steps
 interval_system_time = 2;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
@@ -65,6 +65,7 @@ is_fixed_offset = false;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
+is_save_path_planning_data = true;
 
 
 % Simulation Setup
@@ -112,14 +113,39 @@ disp('=========================')
 %% Waypoint Generation
 
 if (strcmp(navigation_mode,'GBPP'))
+    
+    file_number = 0;
+    while (file_number <= 99)
+        datalog_path = ['datalog/', file_name, '_', num2str(file_number,'%02.f'),'.csv'];
+        if exist(datalog_path, 'file') ~= 2
+            fid = fopen(datalog_path, 'w') ;
+            fprintf(fid, '%s', ['Stripe No.,', 'Attempt,', 'Time Elapsed,', 'Grid Missed']);
+            fprintf(fid, '%s\n', '');
+            fclose(fid);
+            break;
+        end
+        file_number = file_number + 1;
+    end    
+    
     disp('Navigation mode set to Graph-theory Based Path Planning')
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, create_Row_sweep, Row_sweep_sequence, robot_Form);
+        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, Row_sweep_sequence, robot_Form, Allow, datalog_path);
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
+    
+    % Waypoint data csv file 
+    waypointlog_path = datalog_path;
+    fid = fopen(waypointlog_path , 'w') ;
+    fprintf(fid, '%s', ['row', 'col', 'config']);
+    fprintf(fid, '%s\n', '');
+    fclose(fid);
+    
+    % Write waypoint data in csv file
+    dlmwrite(waypointlog_path, Wp , '-append');
+    
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -238,6 +264,7 @@ end
 % First figure: Navigation map
 figure(1)
 axis([-grid_w grid_w*(grid_size(1)+1) -grid_w grid_w*(grid_size(2)+1)])
+set(gcf,'units','points','position',[10,10,grid_size(1)*55,grid_size(2)*50])
 title(fig_1_title_name)
 hold on
 
@@ -286,6 +313,7 @@ if (true)
                             rotated_relative_grid_pos(3,:)] + robot_center_Grid;
                         
         Grid_visited(:,:,step+1) = Grid_visited(:,:,step);
+       
         for idxbox = 1:4
             if (robot_Grid(idxbox,1) > 0 && robot_Grid(idxbox,2) > 0 &&...
                     robot_Grid(idxbox,1) <= grid_size(1) && robot_Grid(idxbox,2) <= grid_size(2))

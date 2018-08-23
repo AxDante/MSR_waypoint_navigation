@@ -28,12 +28,6 @@
 
 function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allow, datalog_path)
 
-
-    rgp = cell(8);
-    rgp{1} = [0 -1; 0 0; 0 1; 0 2];
-    rgp{2} = [0 -1; 0 0; 1 0; 1 -1];
-    rgp{8} = [-1 0; 0 0; 1 0; 2 0];
-
     Wpp
     
     Rsd = [1; -1; 1; -1; 1; -1];
@@ -85,16 +79,11 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allo
             % Ideal: A star algorithm
             % Current: Hacked, direct movement
             % TODO:Update Gvis map here
-            
             scg = [Wpp(stridx*2+1,1) Wpp(stridx*2+1,2)];
             Wp = [Wp; [scg 2]];
             
-            for intidx = Wp(end-1, 2): Wp(end, 2)
-                Rgp =  [Wp(end, 1) intidx] + rgp{2};
-                for rgpidx = 1:size(Rgp,1)
-                   Gvis(Rgp(rgpidx,1), Rgp(rgpidx,2)) = 1;
-                end
-            end
+            Rgp =  ncg + rgp{Wp(end,3)};
+            
         end 
         
         % Writing the stripe data in csv file
@@ -104,5 +93,9 @@ function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allo
         stripe_time = toc;
         
     end
+    
+    % Conversion from grid based coordinates to workspace coordinates
+    Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*gw;
+    Wpp = (Wpp-0.5)*gw;
     
 end

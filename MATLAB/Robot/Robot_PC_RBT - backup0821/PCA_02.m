@@ -136,15 +136,9 @@ if (strcmp(navigation_mode,'GBPP'))
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
     
-    % Waypoint data csv file 
-    waypointlog_path = ['datalog/', file_name, '_', num2str(file_number,'%02.f'),'_wp.csv'];
-    fid = fopen(waypointlog_path , 'w') ;
-    fprintf(fid, '%s', ['row,', 'col,', 'config']);
-    fprintf(fid, '%s\n', '');
-    fclose(fid);
-    
-    % Write waypoint data in csv file
-    dlmwrite(waypointlog_path, Wp , '-append');
+    if(is_save_path_planning_data)
+        
+    end   
     
 else
     disp('Navigation method is invalid.')
@@ -152,13 +146,7 @@ else
     return
 end
 
-% Conversion from grid based coordinates to workspace coordinates
-Wp(:, 1:2) = (Wp(:, 1:2) - 0.5)*grid_w;
-Wp_hack = (Wp_hack-0.5)*grid_w;
-
-
 %% Variable initialization
-   
 
 time_pause = interval_system_time/700;  % Time pause between each robot action
 pos_uwb_raw =  zeros(2, max_step);
