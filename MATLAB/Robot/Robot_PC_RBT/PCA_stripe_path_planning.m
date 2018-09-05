@@ -37,7 +37,6 @@ function [Wp_s, Gvis_best, attempt, grid_missed_num] = PCA_stripe_path_planning(
     
     while (cost_best == 1000 && attempt < 3) 
    
-            
         if mod(attempt,2) == 1
             cols = [cols(1)-ceil(attempt/2) cols(2)];
             if (cols(1) <= 0)

@@ -174,7 +174,7 @@ else
 end
 
 
-for run = 4
+for run = 1
     
     clf
     robot_Form = 6; % Robot starting shape
@@ -803,7 +803,7 @@ for run = 4
             tot_ele = tot_ele + coverage_Array(eleidx);
         end
     end
-    avg_grid_spent_time = (tot_ele/num_ele/4);
+    avg_grid_spent_time = (tot_ele/num_ele/6);
     
     if (is_calculate_coverage)
         

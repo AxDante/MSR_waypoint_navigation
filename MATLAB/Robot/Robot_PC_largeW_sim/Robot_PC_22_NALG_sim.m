@@ -132,7 +132,6 @@ Grid_obstacle = zeros(grid_size(2),  grid_size(1), max_step);
 for idxobs = 2:size(Map_obs,1)
     Grid_visited(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = clims(1);
     Grid_obstacle(Map_obs(idxobs,1),Map_obs(idxobs,2),1) = 1;
-    %Grid_coverage(Map_obs(idxobs,1),Map_obs(idxobs,2),1) =clims(1);
 end
 
 robot_center_Grid = [];
@@ -740,8 +739,7 @@ if ( strcmp( Algorithm, 'square_waypoint'))
         end
         % Draw Robot Center
         line([pos_x pos_nx], [pos_y pos_ny])
-        
-
+       
         
         if (is_display_grid_coverage_map)
              figure(2)

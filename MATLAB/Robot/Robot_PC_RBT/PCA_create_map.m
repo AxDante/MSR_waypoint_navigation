@@ -9,9 +9,9 @@
 % save it as a ".mat" file for the main path planning algorithm. Please
 % specify the waypoint patterns along with the obstacle map used here.
 
-file_name = 'gbpp_10_01'; 
+file_name = 'gbpp_10_16_01'; 
 
-obsmap_name = 'obs_10_01';
+obsmap_name = 'obs_10_16_01';
 
 grid_size = [10 16];        % Map grid size (row, column)
 rcg = [2 2];        % Robot starting center grid (row, column)

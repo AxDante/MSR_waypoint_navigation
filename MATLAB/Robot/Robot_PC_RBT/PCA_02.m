@@ -10,7 +10,7 @@ clear
 addpath([erase(mfilename('fullpath'),mfilename), 'functions'])
 
 % General Map Setup
-navmap_name = 'gbpp_10_01';  % Navigation map shoud be saved in '.mat' format
+navmap_name = 'gbpp_10_16_01';  % Navigation map shoud be saved in '.mat' format
 
 grid_w = 25;    % Grid width (unit:cm)
 tol_wp = 4;     % Waypoint tolerance (unit:cm)               
@@ -131,7 +131,7 @@ if (strcmp(navigation_mode,'GBPP'))
     disp('Generating waypoints...')
     wp_current = 1;
     if (strcmp(wp_gen_set,'demo01'))
-        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, grid_w, Map_obs, rcg, create_Wp, Row_sweep_sequence, robot_Form, Allow, datalog_path);
+        [Wp, Wp_hack] = PCA_generate_waypoint(grid_size, Map_obs, rcg, create_Wp, Row_sweep_sequence, robot_Form, Allow, datalog_path);
     end
     pos_uwb_offset = (rcg-0.5)*grid_w;
     fig_1_title_name = 'GBPP Waypoint Map';
@@ -159,7 +159,6 @@ Wp_hack = (Wp_hack-0.5)*grid_w;
 
 %% Variable initialization
    
-
 time_pause = interval_system_time/700;  % Time pause between each robot action
 pos_uwb_raw =  zeros(2, max_step);
 pos_uwb = zeros(2, max_step);
@@ -187,7 +186,6 @@ Dy_a = zeros(4, 2, max_step);            % Simulated movement acceleration
 Dy_v = zeros(4, 2, max_step);            % Simulated movement velocity
 
 is_rotating = false;
-
 
 Obstacles = [];
 
@@ -275,7 +273,7 @@ title(fig_1_title_name)
 hold on
 
 % Draw waypoints 
- Circle_Wp = [];
+Circle_Wp = [];
 if (is_display_wp)
     for idx = 1: size(Wp_hack,1)
         Circle_Wp(idx) = plot(Wp_hack(idx, 1), Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');

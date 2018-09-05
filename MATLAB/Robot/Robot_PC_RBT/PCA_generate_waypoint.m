@@ -26,8 +26,7 @@
 
 % ---------------------------
 
-function [Wp, Wpp] = PCA_generate_waypoint(gs, gw, Gobs, rcg, Wpp, Rss, rf, Allow, datalog_path)
-
+function [Wp, Wpp] = PCA_generate_waypoint(gs, Gobs, rcg, Wpp, Rss, rf, Allow, datalog_path)
 
     rgp = cell(8);
     rgp{1} = [0 -1; 0 0; 0 1; 0 2];
