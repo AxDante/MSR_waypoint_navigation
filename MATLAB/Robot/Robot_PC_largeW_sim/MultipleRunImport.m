@@ -1,4 +1,4 @@
-function [runs, Wp_series] = MultipleRunImport(gw)
+function [runs, Wp_series] = MultipleRunImport(file, gw)
 
     runs = 5;
     
