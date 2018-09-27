@@ -1,18 +1,18 @@
 Row,Data
 TilingSet,1
-L rotation 90deg clockwise,397
+L rotation 90deg clockwise,0
 L rotation 90deg counterclockwise,0
-L rotation 180deg turn,0
-J rotation 90deg clockwise,0
-J rotation 90deg counterclockwise,0
-J rotation 180deg turn,0
+L rotation 180deg turn,458
+J rotation 90deg clockwise,2
+J rotation 90deg counterclockwise,1
+J rotation 180deg turn,281
 L to J  transformation,0
 J to L  transformation,0
-J F_distance,0
-J R_distance,0
-J B_distance,0
-J L_distance,0
-L F_distance,0
-L R_distance,0
-L B_distance,0
-L L_distance,0
+J F_distance,292
+J R_distance,142
+J B_distance,154
+J L_distance,154
+L F_distance,358
+L R_distance,334
+L B_distance,184
+L L_distance,196

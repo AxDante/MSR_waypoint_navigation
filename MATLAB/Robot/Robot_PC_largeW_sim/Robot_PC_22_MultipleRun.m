@@ -17,7 +17,6 @@ tol_wp = 2; %18    % Waypoint tolerance (unit:cm)
 tol_line_width =  10; %12;    % Route deviation tolerance (unit:cm)
 
 cvg_sample_side = [20 20];  % Robot map coverage samples size 
-fixed_offset = [96.5 -54.5];    % Initial robot position offset (unit:cm)
 
 grid_coverage_sample_size = [100 100];
 grid_coverage_sample_w = grid_size./grid_coverage_sample_size*grid_w;
@@ -27,7 +26,7 @@ navigation_mode = 'MultipleRun';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 10000;   % Maximum system steps
+max_step = 5000;   % Maximum system steps
 interval_system_time = 1;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
@@ -43,8 +42,8 @@ grid_coverage_increase = 1; % Grid color map value increased for each step durin
 
 
 % Robot Dynamics Setup
-robot_Form = 2; % Robot starting shape
-heading = [0 pi pi*3/2 pi/2];
+robot_Form = 11; % Robot starting shape
+%heading = [0 pi pi*3/2 pi/2];
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
 Dy_angv_transform = pi/2;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
@@ -58,18 +57,14 @@ Serial_port = 'COM12';  % Communication port to XBee module
 baudrate = 9600;    % default:9600
 
 % Toggle 
-is_xbee_on = false; 
-is_streaming_on = false;
 
-
-is_display_wp_map = false;
+is_display_wp_map = true;
 is_display_grid_coverage_map = false;
 
-is_clear_wp = false;
+is_clear_wp = true;
 is_calculate_coverage = true;
 is_calculate_grid_coverage_duration = false;
 is_display_wp = true;   
-is_display_wp_clearing = false;
 is_display_rbt_center = true;
 is_display_grid_on = true;
 is_display_obstacle = false;
@@ -77,7 +72,6 @@ is_display_ignite_swept_grid = false;
 is_print_coverage = false;
 is_print_sent_commands = false;
 is_print_route_deviation = false;
-is_fixed_offset = false;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
@@ -120,10 +114,7 @@ initRobotShapes = [0 0 0 0 ;
                         -pi/2 0 pi 0;
                         -pi 0 pi/2 pi/2];
 
-
 time_pause = interval_system_time/2000;
-
-pos_uwb_offset = [12.5 37.5];
 
     %                                    Robot Shapes
     %   =====================================
@@ -165,8 +156,7 @@ Robot_center = [];
 %Wp_series = {};
 if (strcmp(navigation_mode,'MultipleRun'))
     disp('Generating waypoints...')
-    Wp_series = MultipleRunImport_veera('asd',grid_w);
-    
+    [Wp_series, Wp_hack_series] = MultipleRunImport_Veera(grid_w);
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -177,10 +167,11 @@ end
 for run = 1
     
     clf
-    robot_Form = 6; % Robot starting shape
-    heading = [-pi/2 0 pi 0];
+    robot_Form =11; % Robot starting shape
+    heading = [-pi 0 0 0] + pi/2;
     
     Wp = Wp_series{run};
+    Wp_hack = Wp_hack_series{run};
     %Wp = [Wp_series(run,:,1); Wp_series(run,:,2); Wp_series(run,:,3)].';
     pos_uwb_offset = Wp(1, 1:2);
     wp_current = 1;
@@ -311,9 +302,12 @@ for run = 1
     is_rotating = false;
 
     Circle_Wp = [];
+    Circle_Wp_outer = [];
     Obstacles = [];
     Line_Robot = [];
     Line_Robot_area = [];
+    Line_gridx = [];
+    Line_gridy = [];
     Line_Border = [];
     loc_center = [0 0];
 
@@ -346,18 +340,19 @@ for run = 1
     end
 
     %% DRAW MAP
-    if (is_display_wp_map)
-        figure(1)
-        set(figure(1), 'Position', [100, 100, 1020, 900])
-        axis([-grid_w*1.5 grid_w*(grid_size(1)+1.5) -grid_w*1.5 grid_w*(grid_size(2)+1.5)])
-        title('hTetro Waypoint Map')
-        hold on
     
-
+    if (is_display_wp_map)
+        figure(1);
+        set(figure(1), 'Position', [720, 495, 560, 500])
+        marginspace = 0;
+        axis([-grid_w*marginspace grid_w*(grid_size(1)+marginspace) -grid_w*marginspace grid_w*(grid_size(2)+marginspace)])
+        title('hTetro Waypoint Sequence Map')
+        hold on
+        
      % Draw Waypoints
     if (is_display_wp)
-        for idx = 1: size(Wp,1)
-            Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+        for idx = 1: size(Wp_hack,1)
+            Circle_Wp(idx) = plot(Wp_hack(idx, 1), Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
         end
     end
 
@@ -370,7 +365,7 @@ for run = 1
         end
     end
     end
-    
+
     txt_endLine = [0 0];
     txt_endLine_last = [0 0];
 
@@ -404,7 +399,6 @@ for run = 1
                                 rotated_relative_grid_pos(2,:);
                                 rotated_relative_grid_pos(3,:)] + robot_center_Grid;
 
-
             % Waypoint clearing
             % Transformation
             is_require_transform = false;
@@ -429,85 +423,6 @@ for run = 1
                 robot_Form = Wp(wp_current, 3);
                 heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
                 is_transforming = false;
-                
-                if mod(robot_Form, 7) == 2
-                    if mod(Wp(wp_current, 3) , 7) == 3
-                        count_OtoJ_tf = count_LtoJ_tf + 1;
-                    elseif mod(Wp(wp_current, 3) , 7) == 4
-                        count_OtoL_tf = count_LtoJ_tf + 1;
-                    elseif mod(Wp(wp_current, 3) , 7) == 5
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    elseif mod(Wp(wp_current, 3) , 7) == 6
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    elseif mod(Wp(wp_current, 3) , 7) == 7
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    if dif == 1 || dif == -3
-                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_L_rot_180deg = count_L_rot_180deg + 1;
-                    end
-                elseif mod(robot_Form, 7) == 3
-                    if mod(Wp(wp_current, 3) , 7) == 4
-                        count_JtoL_tf = count_JtoL_tf + 1;
-                    end
-                    dif = heading_command_compensate-prev_heading_command_compensate;
-                    
-                    if dif == 1 || dif == -3
-                        count_J_rot_clockwise = count_J_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_J_rot_counterclockwise = count_J_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_J_rot_180deg = count_J_rot_180deg + 1;
-                    end
-                    
-                elseif mod(robot_Form, 7) == 4
-                    if mod(Wp(wp_current, 3) , 7) == 3
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    if dif == 1 || dif == -3
-                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_L_rot_180deg = count_L_rot_180deg + 1;
-                    end
-                elseif mod(robot_Form, 7) == 5
-                    if mod(Wp(wp_current, 3) , 7) == 3
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    if dif == 1 || dif == -3
-                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_L_rot_180deg = count_L_rot_180deg + 1;
-                    end
-                elseif mod(robot_Form, 7) == 6
-                    if mod(Wp(wp_current, 3) , 7) == 3
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    if dif == 1 || dif == -3
-                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_L_rot_180deg = count_L_rot_180deg + 1;
-                    end
-               elseif mod(robot_Form, 7) == 7
-                    if mod(Wp(wp_current, 3) , 7) == 3
-                        count_LtoJ_tf = count_LtoJ_tf + 1;
-                    end
-                    if dif == 1 || dif == -3
-                        count_L_rot_clockwise = count_L_rot_clockwise + 1;
-                    elseif  dif == 3 || dif == -1
-                        count_L_rot_counterclockwise = count_L_rot_counterclockwise + 1;
-                    elseif dif == 2 || -2
-                        count_L_rot_180deg = count_L_rot_180deg + 1;
-                    end     
-                end
                 prev_heading_command_compensate = heading_command_compensate;
             end
 
@@ -590,16 +505,12 @@ for run = 1
                     break;
                 end
             end
-
-            
-
             % calibrate pos here
             pos_x = pos_uwb(1,step);
             pos_nx = pos_uwb(1, step+1);
             pos_y = pos_uwb(2,step);
             pos_ny = pos_uwb(2, step+1);
 
-            
             % Determine Robot center
             pos_center(2,:, step) = [pos_x pos_y];
             pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
@@ -623,60 +534,65 @@ for run = 1
                                        [sin(-pi/4 + heading(3))+sin(pi/4 + heading(4)) ...
                                         cos(-pi/4 + heading(3))+cos(pi/4 + heading(4))]; 
             
-            
             distance_travelled = distance_travelled + norm(pos_uwb(:,step+1)-pos_uwb(:,step));
             
           %% Figure!!
           
             if (is_display_wp_map)
-                figure(1)
+                figure(1);
                 % remove previous robot line plot
 
-                Line_Border = [];
-
-                if (~isempty(Line_Border))
-                    delete(Line_Border);
-                end
-                
-                
                 if (is_clear_wp)
                     if (~isempty(Circle_Wp))
                         delete(Circle_Wp);
                     end
-               
+                     if (~isempty(Circle_Wp_outer))
+                        delete(Circle_Wp_outer);
+                     end
+                    
                     Circle_Wp = [];
+                    Circle_Wp_outer = [];
                     if (is_display_wp)
                         for idx = wp_current: size(Wp,1)
-                            Circle_Wp(idx) = plot(Wp(idx, 1), Wp(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+                            newIndex = find( ismember(Wp_hack,Wp(idx,:),'row'),1);
+                            if (~isempty(newIndex));
+                                %if newIndex == wp_current
+                                    %Circle_Wp_outer(idx) = plot(Wp(idx, 1),Wp(idx, 2),'Color', [1 0.5 0], 'LineWidth', 7, 'Marker', 'o');
+                                %end
+                                Circle_Wp(idx) = plot(Wp_hack(newIndex, 1),Wp_hack(newIndex, 2),'Color', 'r', 'LineWidth', 3, 'Marker', 'o');
+
+                            end
                         end
                     end
                 end
-
-                % Draw Outer Border
-                Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
-                Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
-                Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
-                Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
-
-
+                
+                
+                Line_gridx = [];
+                Line_gridy = [];
+                if (~isempty(Line_gridx))
+                    delete(Line_gridx);
+                end
+                if (~isempty(Line_gridy))
+                    delete(Line_gridy);
+                end
                 if (is_display_grid_on)
                     for idxx = 1:(grid_size(1) + 1)
-                        line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
+                        Line_gridx(idxx)=line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
                     end
                     for idxy = 1:(grid_size(2) + 1)
-                        line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
+                        Line_gridy(idxy)=line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
                     end
                 end
-
+                
+                
                 % Draw Robot Outline
-
                 if (~isempty(Line_Robot))
                     delete(Line_Robot);
                 end
                 Line_Robot = [];
 
                 for robidx = 1:4
-                    line([pos_x pos_nx], [pos_y pos_ny])
+                   % line([pos_x pos_nx], [pos_y pos_ny])
                     Line_Robot(robidx,1) = line([pos_center(robidx, 1, step)+grid_dhw*cos(pi/4 - heading(robidx)) ...
                                                              pos_center(robidx, 1, step)+grid_dhw*sin(pi/4 - heading(robidx))], ...
                                                             [pos_center(robidx, 2, step)+grid_dhw*sin(pi/4 -  heading(robidx)) ...
@@ -698,7 +614,7 @@ for run = 1
             
         
             Grid_coverage(:,:,step+1) = Grid_coverage(:,:,step);
-            if(is_calculate_coverage && updateCoverageMap)
+            if(is_calculate_coverage && updateCoverageMap && ~is_transforming)
 
                 for  idxx = 1:grid_coverage_sample_size(1)
                     for idxy = 1:grid_coverage_sample_size(2)
@@ -765,24 +681,29 @@ for run = 1
             
             if (is_display_grid_coverage_map)
                 figure(2)
-                set(figure(2), 'Position', [100, 100, 1020, 900])
-                title('hTetro Coverage Map')
+                set(figure(2),'Position', [1290, 495, 630, 500])
+                title('hTetro Coverage Heat Map')
                 imagesc(flipud(transpose(Grid_coverage(:,:,step+1))), clims)
                 cmap = colormap(grid_coverage_colormap);
                 cmap(1,:) = zeros(1,3);
                 colormap(cmap);
                 colorbar
+               
             end
             
-            % Draw Robot Center
             Robot_center(step,1,1:2) = [pos_x pos_nx];
             Robot_center(step,2,1:2) = [pos_y pos_ny];
             
-            if (is_display_rbt_center)
-               % line([pos_center(2,1,step) pos_center(2,1,step+1)], [pos_center(2,2,step) pos_center(2,2,step+1)]) 
-            end
-            
             if (step == 1)
+                figure(2)
+                set(figure(2),'Position', [1290, 495, 630, 500])
+                title('hTetro Coverage Heat Map')
+                imagesc(flipud(transpose(Grid_coverage(:,:,step+1))), clims)
+                cmap = colormap(grid_coverage_colormap);
+                cmap(1,:) = zeros(1,3);
+                colormap(cmap);
+                colorbar
+                linkdata on
                 pause(10)
             end
         end
@@ -803,7 +724,8 @@ for run = 1
             tot_ele = tot_ele + coverage_Array(eleidx);
         end
     end
-    avg_grid_spent_time = (tot_ele/num_ele/6);
+    
+    avg_grid_spent_time = (tot_ele/num_ele/4);
     
     if (is_calculate_coverage)
         
@@ -811,16 +733,16 @@ for run = 1
         disp(['Average Grid Spent Time: ',  num2str(avg_grid_spent_time), '']);
         disp(['Total Distance Travelled: ',  num2str(distance_travelled), ' cm']);
         
-                    
-        figure(2)
-        set(figure(2), 'Position', [100, 100, 1020, 900])
-        title('hTetro Coverage Map')
+        figure(2);
+        set(figure(2),'Position', [1290, 495, 630, 500])
+        title('hTetro Coverage Heat Map')
         imagesc(flipud(transpose(Grid_coverage(:,:,step))), clims)
         cmap = colormap(grid_coverage_colormap);
         cmap(1,:) = zeros(1,3);
         colormap(cmap);
         colorbar
-        
+        linkdata on
+        hold on
         %disp(['L rotation angle: ',  num2str(count_L_rot_clockwise), ' degrees']);
         %disp(['J rotation angle: ',  num2str(count_J_rot), ' degrees']);
         %disp(['L to J  transformation: ',  num2str(count_LtoJ_tf), ' times']);
@@ -852,5 +774,7 @@ for run = 1
     T = table(Data, 'RowNames', Name);
     writetable(T,['TilingSet' ,num2str(run) ,'.csv'],'WriteRowNames',true);
     
+    figure(1)
+    figure(2)
     %saveas(figure(1),['TilingSet' +num2str(run) +'.jpg']);
 end

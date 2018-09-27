@@ -10,8 +10,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
 file_map = 'Empty';   % Set Map as 'Empty' for empty map
-grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
-WaypointMapMode = 'empty';
+grid_size = [11 11];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
 tol_wp = 2; %18    % Waypoint tolerance (unit:cm)               
@@ -27,7 +26,7 @@ navigation_mode = 'MultipleRun';
 zigzag_mode = 'simple';
 
 % Time Frame Setup
-max_step = 10000;   % Maximum system steps
+max_step = 5000;   % Maximum system steps
 interval_system_time = 1;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
@@ -60,12 +59,12 @@ baudrate = 9600;    % default:9600
 % Toggle 
 
 is_display_wp_map = true;
-is_display_grid_coverage_map = true;
-
+is_display_grid_coverage_map = false;
 is_clear_wp = true;
 is_calculate_coverage = true;
 is_calculate_grid_coverage_duration = false;
 is_display_wp = true;   
+is_display_wp_clearing = true;
 is_display_rbt_center = true;
 is_display_grid_on = true;
 is_display_obstacle = false;
@@ -157,7 +156,7 @@ Robot_center = [];
 %Wp_series = {};
 if (strcmp(navigation_mode,'MultipleRun'))
     disp('Generating waypoints...')
-    [Wp_series, Wp_hack_series] = MultipleRunImport_Veera(grid_size, grid_w, WaypointMapMode);
+    [Wp_series, Wp_hack_series] = MultipleRunImport_Veera(grid_w);
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -165,7 +164,7 @@ else
 end
 
 
-for run = 1
+for run = 3
     
     clf
     robot_Form =11; % Robot starting shape
@@ -303,9 +302,12 @@ for run = 1
     is_rotating = false;
 
     Circle_Wp = [];
+    Circle_Wp_outer = [];
     Obstacles = [];
     Line_Robot = [];
     Line_Robot_area = [];
+    Line_gridx = [];
+    Line_gridy = [];
     Line_Border = [];
     loc_center = [0 0];
 
@@ -346,7 +348,7 @@ for run = 1
         axis([-grid_w*marginspace grid_w*(grid_size(1)+marginspace) -grid_w*marginspace grid_w*(grid_size(2)+marginspace)])
         title('hTetro Waypoint Sequence Map')
         hold on
-
+    
      % Draw Waypoints
     if (is_display_wp)
         for idx = 1: size(Wp_hack,1)
@@ -363,7 +365,7 @@ for run = 1
         end
     end
     end
-    
+
     txt_endLine = [0 0];
     txt_endLine_last = [0 0];
 
@@ -397,7 +399,6 @@ for run = 1
                                 rotated_relative_grid_pos(2,:);
                                 rotated_relative_grid_pos(3,:)] + robot_center_Grid;
 
-
             % Waypoint clearing
             % Transformation
             is_require_transform = false;
@@ -422,7 +423,6 @@ for run = 1
                 robot_Form = Wp(wp_current, 3);
                 heading_command_compensate = floor((Wp(wp_current, 3)-1)/7);
                 is_transforming = false;
-                
                 prev_heading_command_compensate = heading_command_compensate;
             end
 
@@ -495,7 +495,8 @@ for run = 1
                     end
                 end
             end
-         
+          
+            
             if(norm(pos_uwb(:, step+1).' - Wp(wp_current, 1:2)) < tol_wp )
                 wp_current = wp_current + 1;
                 char_command = 'S';
@@ -504,13 +505,12 @@ for run = 1
                     break;
                 end
             end
-
             % calibrate pos here
             pos_x = pos_uwb(1,step);
             pos_nx = pos_uwb(1, step+1);
             pos_y = pos_uwb(2,step);
             pos_ny = pos_uwb(2, step+1);
-            
+
             % Determine Robot center
             pos_center(2,:, step) = [pos_x pos_y];
             pos_center(1,:, step) =  pos_center(2,:,step) + grid_dhw* ...
@@ -541,36 +541,49 @@ for run = 1
             if (is_display_wp_map)
                 figure(1);
                 % remove previous robot line plot
-                Line_Border = [];
 
-                if (~isempty(Line_Border))
-                    delete(Line_Border);
-                end
                 if (is_clear_wp)
+                    
                     if (~isempty(Circle_Wp))
                         delete(Circle_Wp);
                     end
                     Circle_Wp = [];
+                    Circle_Wp_outer = [];
                     if (is_display_wp)
-                        for idx = wp_current: size(Wp_hack,1)
-                            Circle_Wp(idx) = plot(Wp_hack(idx, 1),Wp_hack(idx, 2),'Color', 'r', 'LineWidth', 2, 'Marker', 'o');
+                        for idx = wp_current: size(Wp,1)
+                            newIndex = find( ismember(Wp_hack,Wp(idx,:),'row'),1);
+                            if (~isempty(newIndex));
+                                Circle_Wp(idx) = plot(Wp_hack(newIndex, 1),Wp_hack(newIndex, 2),'Color', 'r', 'LineWidth', 3, 'Marker', 'o');
+                            end
                         end
                     end
                 end
-
+                
+                Line_Border = [];
+                if (~isempty(Line_Border))
+                    delete(Line_Border);
+                end
                 % Draw Outer Border
                 Line_Border(1) = line([0 0], [0 grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
                 Line_Border(2) =line([0 grid_w*grid_size(1)], [0 0], 'Color', 'black', 'LineWidth', 2);
                 Line_Border(3) =line([grid_w*grid_size(1) 0], [grid_w*grid_size(2) grid_w*grid_size(2)], 'Color', 'black', 'LineWidth', 2);
                 Line_Border(4) =line([grid_w*grid_size(1) grid_w*grid_size(1)], [grid_w*grid_size(2) 0], 'Color', 'black', 'LineWidth', 2);
 
-
+                
+                Line_gridx = [];
+                Line_gridy = [];
+                if (~isempty(Line_gridx))
+                    delete(Line_gridx);
+                end
+                if (~isempty(Line_gridy))
+                    delete(Line_gridy);
+                end
                 if (is_display_grid_on)
                     for idxx = 1:(grid_size(1) + 1)
-                        line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
+                        Line_gridx(idxx)=line(grid_w*[(idxx-1) (idxx-1)], grid_w*[0 grid_size(2)], 'Color', 'black', 'LineWidth', 0.5);
                     end
                     for idxy = 1:(grid_size(2) + 1)
-                        line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
+                        Line_gridy(idxy)=line(grid_w*[0 grid_size(1)], grid_w*[(idxy-1) (idxy-1)], 'Color', 'black', 'LineWidth', 0.5);
                     end
                 end
 
@@ -678,18 +691,22 @@ for run = 1
                 cmap(1,:) = zeros(1,3);
                 colormap(cmap);
                 colorbar
-                hold on
+               
             end
             
-            % Draw Robot Center
             Robot_center(step,1,1:2) = [pos_x pos_nx];
             Robot_center(step,2,1:2) = [pos_y pos_ny];
             
-            if (is_display_rbt_center)
-               % line([pos_center(2,1,step) pos_center(2,1,step+1)], [pos_center(2,2,step) pos_center(2,2,step+1)]) 
-            end
-            
             if (step == 1)
+                figure(2)
+                set(figure(2),'Position', [1290, 495, 630, 500])
+                title('hTetro Coverage Heat Map')
+                imagesc(flipud(transpose(Grid_coverage(:,:,step+1))), clims)
+                cmap = colormap(grid_coverage_colormap);
+                cmap(1,:) = zeros(1,3);
+                colormap(cmap);
+                colorbar
+                linkdata on
                 pause(10)
             end
         end
@@ -720,13 +737,15 @@ for run = 1
         disp(['Total Distance Travelled: ',  num2str(distance_travelled), ' cm']);
         
         figure(2);
+        set(figure(2),'Position', [1290, 495, 630, 500])
         title('hTetro Coverage Heat Map')
         imagesc(flipud(transpose(Grid_coverage(:,:,step))), clims)
         cmap = colormap(grid_coverage_colormap);
         cmap(1,:) = zeros(1,3);
         colormap(cmap);
         colorbar
-        
+        linkdata on
+        hold on
         %disp(['L rotation angle: ',  num2str(count_L_rot_clockwise), ' degrees']);
         %disp(['J rotation angle: ',  num2str(count_J_rot), ' degrees']);
         %disp(['L to J  transformation: ',  num2str(count_LtoJ_tf), ' times']);
