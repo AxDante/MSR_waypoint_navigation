@@ -472,7 +472,7 @@ for run = wp_run
                 grid_coverage_sample_w = grid_size*grid_w./grid_coverage_sample_size;
                 for  idxx = 1:grid_coverage_sample_size(1)
                     for idxy = 1:grid_coverage_sample_size(2)
-                        sample_pos = [(idxx-0.5)*grid_coverage_sample_w(2) (idxy-0.5)*grid_coverage_sample_w(1)];
+                        sample_pos = [(idxx-0.5)*grid_coverage_sample_w(2) (idxy-0.5)*grid_coverage_sample_w(2)];
                         if (norm(pos_center(2, :, step)-sample_pos) < 3*sqrt(2)*grid_w)
                             for robidx = 1:4
                                 if (abs(sample_pos(1)-pos_center(robidx, 1, step)) <= grid_w/2+0.2) && (abs(sample_pos(2)-pos_center(robidx, 2, step)) <= grid_w/2+0.2)
