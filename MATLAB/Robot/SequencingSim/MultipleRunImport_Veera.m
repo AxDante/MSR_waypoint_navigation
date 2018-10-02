@@ -266,12 +266,19 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
              8 4 14
              8 3 21
              8 1 27
+             8 6 14
              9 6 14
              9 8 19
              10 10 14
+             8 10 14
+             8 4 20
              10 4 20
+             10 9 20
              11 9 21
-             12 10 26
+             12 10 19
+             12 9 19
+             13 9 19
+             13 1 19
              12 1 27
              13 2 26
              13 4 21

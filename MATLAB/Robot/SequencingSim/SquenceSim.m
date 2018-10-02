@@ -9,7 +9,7 @@ addpath([erase(mfilename('fullpath'),mfilename), 'map'])
 % General Map Setup
 file_map = 'obs2';   % Set Map as 'Empty' for empty map
 WaypointMapMode = 'obs2';
-wp_run =1;
+wp_run =3;
 starting_pause_time = 1;
 
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
@@ -56,7 +56,7 @@ update_rate_sim = 1; % Robot position update rate during simulation
 % Toggle 
 
 is_display_wp_map = false;
-is_display_grid_coverage_map = true;
+is_display_grid_coverage_map = false;
 
 is_calculate_coverage = true;
 is_calculate_grid_coverage_duration = false;
