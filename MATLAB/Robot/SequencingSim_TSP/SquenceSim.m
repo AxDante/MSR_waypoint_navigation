@@ -7,9 +7,9 @@ clc;
 addpath([erase(mfilename('fullpath'),mfilename), 'map'])
 
 % General Map Setup
-file_map = 'obs1';   % Set Map as 'Empty' for empty map
-WaypointMapMode = 'obs1';
-wp_run =5;
+file_map = 'obs2';   % Set Map as 'Empty' for empty map
+WaypointMapMode = 'obs2';
+wp_run =4;
 starting_pause_time = 1;
 
 grid_size = [10 10];   % Assign values for grid size if an empty map is chosen

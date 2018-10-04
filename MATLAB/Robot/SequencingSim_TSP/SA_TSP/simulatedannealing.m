@@ -42,11 +42,11 @@ iterations = 1;
 complete_temperature_iterations = 0;
 
 % This is my objective function, the total distance for the routes.
-previous_distance = mean(distance(inputcities));
+previous_distance = distance_htetro(inputcities);
 
 while iterations < threshold
     temp_cities = swapcities(inputcities,numberofcitiestoswap);
-    current_distance = mean(distance(inputcities));
+    current_distance = distance_htetro(inputcities);
     diff = abs(current_distance - previous_distance);
     if current_distance < previous_distance
         inputcities = temp_cities;

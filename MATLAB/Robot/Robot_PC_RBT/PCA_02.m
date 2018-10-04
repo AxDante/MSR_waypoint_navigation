@@ -33,7 +33,6 @@ zigzag_mode = 'simple';
 % Time Frame Setup
 max_step = 1500;   % Maximum system steps
 interval_system_time = 2;   % Robot dynamics update intervals
-interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
 
 % Robot Dynamics Setup
@@ -56,12 +55,9 @@ is_display_route_clearing = true;
 is_display_grid_on = true;
 is_display_obstacle = true;
 is_display_grid_coverage_map = false;
-is_display_ignite_swept_grid = true;
 is_display_rbt_center = true;
 is_print_coverage = false;
 is_print_sent_commands = true;
-is_print_route_deviation = false;
-is_fixed_offset = false;
 is_sim_normal_noise_on= false;
 is_sim_large_noise_y_on = false;
 is_sim_heading_correction = false;
@@ -181,16 +177,12 @@ prev_char_command = 'S';
 command_count_normal_linear = 0;
 command_count_rotation = 0;
 
-Dy_force = zeros(4, 2, max_step);       % Simulated movement force
-Dy_a = zeros(4, 2, max_step);            % Simulated movement acceleration
 Dy_v = zeros(4, 2, max_step);            % Simulated movement velocity
 
 is_rotating = false;
 
 Obstacles = [];
-
 Line_Linear_Route = [];
-
 Line_Robot = [];
 Line_Robot_area = [];
 Line_Border = [];

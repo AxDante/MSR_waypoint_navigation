@@ -5,22 +5,22 @@ function f = plotcities(inputcities)
 % the number of cities. Apart from the location the symmetric route is also
 % plotted.
 shg
-temp_1  = plot(inputcities(1,:),inputcities(2,:),'b*');
+temp_1  = plot(inputcities(:,2),inputcities(:,3),'b*');
 set(temp_1,'erasemode','none');
-temp_2 = line(inputcities(1,:),inputcities(2,:),'Marker','*');
+temp_2 = line(inputcities(:,2),inputcities(:,3),'Marker','*');
 set(temp_2,'color','r');
-x = [inputcities(1,1) inputcities(1,length(inputcities))];
-y = [inputcities(2,1) inputcities(2,length(inputcities))];
-xl = 10*round(min(inputcities(1,:))/10);
-yl = 10*round(min(inputcities(2,:))/10);
+x = [inputcities(1,2) inputcities(size(inputcities,1),2)];
+y = [inputcities(1,3) inputcities(size(inputcities,1),3)];
+xl = 10*round(min(inputcities(:,2))/10);
+yl = 10*round(min(inputcities(:,3))/10);
 if xl > 0
     xl = 0;
 end
 if yl > 0
     yl = 0;
 end
-xu = 10*round(max(inputcities(1,:))/10);
-yu = 10*round(max(inputcities(2,:))/10);
+xu = 10*round(max(inputcities(:,2))/10);
+yu = 10*round(max(inputcities(:,3))/10);
 if xu == 0
     xu = 1;
 end
@@ -30,7 +30,7 @@ end
 axis([xl xu yl yu]) ;
 temp_3 = line(x,y);
 set(temp_3,'color','r');
-dist = distance(inputcities);
+dist = distance_htetro(inputcities);
 distance_print = sprintf(...
      'The roundtrip length for %d cities is % 4.6f units'...
      ,length(inputcities),dist);

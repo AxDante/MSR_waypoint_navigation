@@ -220,7 +220,8 @@ switch selection
     case 9
         loadpcb442;
     case 10
-        loadeil535;
+        load28waypoints;
+    %    loadeil535;
 end
 if selection ~= 1
     set(handles.initial_temperature, 'Enable', 'Off')
