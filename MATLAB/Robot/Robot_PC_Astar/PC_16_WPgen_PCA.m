@@ -30,7 +30,7 @@ grid_coverage_sim_increase = 8; % Grid color map value increased for each step d
 grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Algorithms
-navigation_mode = 'Astar_algorithm';
+navigation_mode = 'Astar_algorithm_OLD';
 wp_gen_set = 'demo01';
 zigzag_mode = 'simple';
 

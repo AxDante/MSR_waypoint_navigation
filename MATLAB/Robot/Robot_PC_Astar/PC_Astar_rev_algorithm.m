@@ -29,8 +29,6 @@ function Wp = PC_Astar_rev_algorithm(gs, Gobs, shape, scg, gcg)
     OPEN=[];
     CLOSED=Gobs;
     
-    %
-    Gvis = zeros(gs(1),gs(2));
     
     CLOSED_COUNT=size(CLOSED,1);
     %set the starting node as the first node
@@ -45,7 +43,7 @@ function Wp = PC_Astar_rev_algorithm(gs, Gobs, shape, scg, gcg)
     NoPath=1;
 
     while((rcg(1) ~= gcg(1) || rcg(2) ~= gcg(2)) && NoPath == 1)
-     [exp_array, Gvis]=Robot_PC_expand_array_rev(rcg,path_cost,gcg,gs,shape,Gobs,Gvis);
+     [exp_array]=Robot_PC_expand_array_rev(rcg,path_cost,gcg,gs,shape,Gobs);
      exp_count=size(exp_array,1);
      for i=1:exp_count
         flag=0;

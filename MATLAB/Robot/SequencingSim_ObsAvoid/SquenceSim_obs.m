@@ -6,7 +6,7 @@ clc;
 
 addpath([erase(mfilename('fullpath'),mfilename), 'map'])
 
-% General Map Setup
+
 file_map = 'obs2';   % Set Map as 'Empty' for empty map
 WaypointMapMode = 'obs2';
 wp_run =3;

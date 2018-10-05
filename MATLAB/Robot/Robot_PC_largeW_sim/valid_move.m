@@ -1,4 +1,4 @@
- function [isvalid, Rg_cmd, Gvis_new, cost] = valid_move(rcg, shape, command, Gobs, gs, Gvis, cost, side_as_wall)
+ function [isvalid, Rg_cmd, cost] = valid_move(rcg, shape, command, Gobs, gs, cost, side_as_wall)
 
     Rgp = [0 -1; 0 1; 0 2;                         % Relative grid positions between modules
               0 -1; 1 0; 1 -1;
@@ -7,15 +7,14 @@
               1 0; 0 1; -1 1;
               1 -1; 1 0; 2 0;
               1 -1; 1 0; 2 -1];
-  
+          
    RRgp = rotationMatrix(Rgp, shape);       % Rotated Relative grid positions
    
    Rg = [ RRgp(1,:);                                % Robot Grid values
              0 0;
              RRgp(2,:);
              RRgp(3,:)] +rcg;
-    
-    
+         
     rms = robot_motion_sequence(shape);  % Robot Motion Sequece Array
     
     switch command
