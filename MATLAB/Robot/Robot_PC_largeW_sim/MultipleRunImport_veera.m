@@ -1,4 +1,4 @@
-function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointMapMode)
+function [Wp_series_out, Wp_hack_out]= MultipleRunImport_veera(gw, WaypointMapMode)
    
    Wp_series_init = {};
    Wp_hack_init = {};

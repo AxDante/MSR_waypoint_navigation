@@ -7,12 +7,12 @@ clc;
 addpath([erase(mfilename('fullpath'),mfilename), 'map'])
 
 % General Map Setup
-file_map = 'obs2';   % Set Map as 'Empty' for empty map
+file_map = 'Empty';   % Set Map as 'Empty' for empty map
 WaypointMapMode = 'obs2';
-wp_run =7;
+wp_run = 9;
 starting_pause_time = 1;
 
-grid_size = [10 10];   % Assign values for grid size if an empty map is chosen
+grid_size = [14 11];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
 tol_wp = 2; %18    % Waypoint tolerance (unit:cm)               
@@ -43,7 +43,7 @@ grid_coverage_sim_increase = 8; % Grid color map value increased for each step d
 grid_coverage_increase = 1; % Grid color map value increased for each step during robot demo;
 
 % Robot Dynamics Setup
-robot_Form = 11; % Robot starting shape
+robot_Form = 2; % Robot starting shape
 tol_transform = pi/50;  % Robot Transformation angle tolerance (unit:rad)
 Dy_angv_transform = pi/2;  % Robot transformation angular velocity (unit:rad)
 tol_heading = pi/7; % Robot heading deviation tolerance (unit:rad)
@@ -118,11 +118,11 @@ time_pause = interval_system_time/2000;
 
     %                                    Robot Shapes
     %   =====================================
-    %         s01     s02      s03     s04      s05        s06       s07
+    %         s01     s02      s04     s03      s05        s06       s07
     %   -----------------------------------------------------------------
     %
-    %          4                  4         4
-    %          3       2 3       3         3       4 3        2 3 4           3 4
+    %          4                   4          4
+    %          3       2 3       3          3       4 3        2 3 4           3 4
     %          2       1 4       2 1    1 2          2 1        1          2 1 
     %          1                      
     %
@@ -468,7 +468,7 @@ for run = wp_run
             
         
             Grid_coverage(:,:,step+1) = Grid_coverage(:,:,step);
-            if(is_calculate_coverage && updateCoverageMap && ~is_transforming)
+            if(is_calculate_coverage && updateCoverageMap) % && ~is_transforming)
                 grid_coverage_sample_w = grid_size*grid_w./grid_coverage_sample_size;
                 for  idxx = 1:grid_coverage_sample_size(1)
                     for idxy = 1:grid_coverage_sample_size(2)
@@ -487,6 +487,7 @@ for run = wp_run
                     end
                 end
             
+                
                 for cvg_idx = 1: numel(Cvg(:, 1))
                     if (abs(pos_center(2, :, step)-Cvg(cvg_idx, 1:2)) < 2.5*sqrt(2)*grid_w)
                         for robidx = 1:4

@@ -30,7 +30,7 @@ max_step = 5000;   % Maximum system steps
 interval_system_time = 1;   % Robot dynamics update intervals
 interval_normal_linear_command_send = 15; % Robot normal linear commands sending interval
 interval_rotation_command_send = 10;    % Robot rotation commands sending interval
-
+start_pause = 1;
 
 % Grid Map Setup
 starting_grid = [1 2];  % Robot starting grid
@@ -55,7 +55,7 @@ update_rate_sim = 1; % Robot position update rate during simulation
 
 % Toggle 
 
-is_display_wp_map = false;
+is_display_wp_map = true;
 is_display_grid_coverage_map = true;
 
 is_clear_wp = true;
@@ -154,7 +154,7 @@ Robot_center = [];
 %Wp_series = {};
 if (strcmp(navigation_mode,'MultipleRun'))
     disp('Generating waypoints...')
-    [Wp_series, Wp_hack_series] = MultipleRunImport_Veera(grid_w);
+    [Wp_series, Wp_hack_series] = MultipleRunImport_veera(grid_w, file_map );
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')
@@ -711,7 +711,7 @@ for run = 1
                 colormap(cmap);
                 colorbar
                 linkdata on
-                pause(10)
+                pause(start_pause)
             end
         end
     end

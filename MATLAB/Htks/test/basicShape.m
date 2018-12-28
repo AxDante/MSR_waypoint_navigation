@@ -8,7 +8,7 @@ close all
 max_step = 1000;
 
 size_ws = [5 5];
-size_cvg = [50 50];
+size_cvg = [100 100];
 
 s_tl = 1;
 s_rt = 1/12;
@@ -144,7 +144,13 @@ while step < max_step && wp_cur <= size(Wp,1)
                 Cvg(idxx,idxy,step+1) = 0;
             end
             for blkidx = 1:4
-                if (p_b(blkidx,:)-sample_pos < 0.6*d_r)
+                if (within)
+                    break
+                end
+                if (norm(p_b(blkidx,:)-sample_pos) < 0.2887*d_r)
+                    within = true;
+                end
+                if (norm(p_b(blkidx,:)-sample_pos) < 0.5775*d_r)
                    trig_x = [sample_pos(1) Vs(blkidx,1) Vs(blkidx,3)];
                    trig_y = [sample_pos(2) Vs(blkidx,2) Vs(blkidx,4)];
                    area_1 = polyarea(trig_x,trig_y);
@@ -158,29 +164,27 @@ while step < max_step && wp_cur <= size(Wp,1)
                    if area_1 + area_2 + area_3 <= area_trg + 0.01
                        within = true;
                    end
-               end
-               if (within)            
-                   if (Cvg(idxx,idxy,step+1) < -10)
-                        Cvg(idxx,idxy,step+1) = 0;
-                   else
-                        Cvg(idxx,idxy,step+1) = Cvg(idxx,idxy,step) + 4;
-                   end
                 end
             end
+            if (within)
+               if (Cvg(idxx,idxy,step+1) < -10)
+                    Cvg(idxx,idxy,step+1) = 0;
+               else
+                    Cvg(idxx,idxy,step+1) = Cvg(idxx,idxy,step) + 4;
+               end
+           end
         end
     end
     
-    
-        figure(2)
-        set(figure(2), 'Position', [1000, 100, 1020, 900])
-        title('hTetro Coverage Map')
-        imagesc(flipud(transpose(Cvg(:,:,step+1))), clims)
-       % axis([-d_r*1.5 d_r*(size_ws(1)+1.5) -d_r*1.5 d_r*(size_ws(2)+1.5)])
-        cmap = colormap(cvg_clrmap);
-        cmap(1,:) = zeros(1,3);
-        colormap(cmap);
-        colorbar
-    
+    figure(2)
+    set(figure(2), 'Position', [1000, 100, 1020, 900])
+    title('hTetro Coverage Map')
+    imagesc(flipud(transpose(Cvg(:,:,step+1))), clims)
+   % axis([-d_r*1.5 d_r*(size_ws(1)+1.5) -d_r*1.5 d_r*(size_ws(2)+1.5)])
+    cmap = colormap(cvg_clrmap);
+    cmap(1,:) = zeros(1,3);
+    colormap(cmap);
+    colorbar
     
     step = step + 1;
     pause(0.1)

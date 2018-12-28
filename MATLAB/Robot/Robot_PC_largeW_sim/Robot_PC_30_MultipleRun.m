@@ -9,7 +9,7 @@ addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC')
 addpath('C:\Users\IceFox\Desktop\ERMINE\MATLAB\Robot_PC\Maps')
 
 % General Map Setup
-file_map = 'Empty';   % Set Map as 'Empty' for empty map
+file_map = 'empty';   % Set Map as 'Empty' for empty map
 grid_size = [11 11];   % Assign values for grid size if an empty map is chosen
 grid_w = 25;    % Grid width (unit:cm)
 
@@ -162,7 +162,7 @@ Robot_center = [];
 %Wp_series = {};
 if (strcmp(navigation_mode,'MultipleRun'))
     disp('Generating waypoints...')
-    [Wp_series, Wp_hack_series] = MultipleRunImport_veera(grid_w);
+    [Wp_series, Wp_hack_series] = MultipleRunImport_veera(grid_w, file_map);
 else
     disp('Navigation method is invalid.')
     disp('Terminating Matlab script...')

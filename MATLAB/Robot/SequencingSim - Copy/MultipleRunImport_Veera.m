@@ -157,10 +157,6 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
             11     9    21
             13     2    26];
         
-    Wp_series_init{8} 
-    Wp_series_init{9} 
-      
-      
         Wp_hack_init{1}  =Wp_orig;
         Wp_hack_init{2}  =Wp_orig;
         Wp_hack_init{3}  =Wp_orig;
@@ -171,7 +167,7 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
      
    elseif strcmp(WaypointMapMode, 'obs2')
        
-        runs = 9;
+        runs = 7;
        %OBS MAP 01
          Wp_orig = [
              1 3 21
@@ -477,21 +473,6 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
             11     9    21; 13 10 21; 13 1 21;
             13     2    26];      
         
-        Wp_series_init{8} = [
-        1 2; 1 10; 2 10; 1 10; 1 3; 2 3; 2 1;
-        3 1; 3 3; 1 3; 1 9; 3 9; 3 10; 4 10;
-        4 9; 5 9; 5 3; 4 3; 4 1; 5 1; 5 10;
-        6 10; 6 1; 7 1; 7 10; 8 10; 8 1; 9 1; 9 10;
-        10 10; 10 7; 9 7; 9 1; 10 1; 11 1; 9 1; 9 7; 11 7; 11 10;
-        12 10; 12 7; 13 7; 13 1; 12 1; 13 1; 13 9; 13 1];
-        Wp_series_init{8} = [ Wp_series_init{8}  ones(size(Wp_series_init{8} ,1), 1)*9] + [0 1 0];
-         
-        Wp_series_init{9} = [
-        1 2; 1 10; 12 10; 12 9; 13 9; 13 1; 2 1; 2 3; 1 3;
-        1 9; 12 9; 12 7; 13 7; 13 1; 9 1; 9 2; 3 2; 3 3; 1 3; 1 9; 5 9; 5 8; 11 8; 11 7; 13 7; 13 1;
-        8 1; 8 3; 4 3; 5 3; 5 7; 10 7; 9 7; 9 4; 6 4; 6 6; 9 6; 9 5; 7 5; 7 6; 8 6; 8 5];   
-        Wp_series_init{9} = [ Wp_series_init{9}  ones(size(Wp_series_init{9} ,1), 1)*9] + [0 1 0];
-        
         Wp_hack_init{1}  =Wp_orig;
         Wp_hack_init{2}  =Wp_orig;
         Wp_hack_init{3}  =Wp_orig;
@@ -499,12 +480,11 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
         Wp_hack_init{5}  =Wp_orig;
         Wp_hack_init{6}  =Wp_orig;
         Wp_hack_init{7}  =Wp_orig;
-        Wp_hack_init{8}  =Wp_orig;
-        Wp_hack_init{9}  =Wp_orig;
+        
  
    elseif strcmp(WaypointMapMode, 'obs1')
   
-        runs = 9;
+        runs = 7;
         
        %OBS MAP 01
          Wp_orig = [1 1 4+7;
@@ -665,36 +645,7 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
          5     8    17
          5     5    23;5 7 23; 8 7 23
          8     7    10];
-
-        Wp_series_init{8} = [
-        1 1 9;
-        1 7 9;
-        2 7 9;
-        2 1 9;
-        3 1 9;
-        3 10 9;
-        4 10 9;
-        4 1 9;
-        5 1 9;
-        5 10 9;
-        6 10 9; 5 10 9; 5 7 9; 6 7 9; 5 7 9; 5 3 9; 6 3 9;
-        6 1 9;
-        7 1 9; 7 3 9; 9 3 9; 9 7 9; 7 7 9; 8 7 9; 8 10 9;
-        7 10 9;
-        8 10 9; 8 7 9; 9 7 9; 9 3 9; 8 3 9;
-        8 1 9;
-        9 1 9;
-        9 10 9;
-        10 10 9;
-        10 1 9] + [0 1 0];
-    
-        Wp_series_init{9} = [
-        1 1 9; 1 7 9; 3 7 9; 3 10 9; 10 10 9;
-        10 1 9; 2 1 9; 2 7 9; 3 7 9; 3 9 9;
-        5 9 9; 5 10 9; 9 10 9; 9 2 9; 3 2 9; 3 8 9; 5 8 9;
-        5 7 9; 8 7 9; 8 8 9; 9 8 9; 9 3 9;
-        4 3 9; 4 7 9; 9 7 9; 9 3 9; 5 3 9;5 7 9; 9 7 9; 9 3 9; 5 3 9] + [0 1 0];
-        
+ 
         Wp_hack_init{1}  =Wp_orig;
         Wp_hack_init{2}  =Wp_orig;
         Wp_hack_init{3}  =Wp_orig;
@@ -702,8 +653,6 @@ function [Wp_series_out, Wp_hack_out]= MultipleRunImport_Veera(gs, gw, WaypointM
         Wp_hack_init{5}  =Wp_orig;
         Wp_hack_init{6}  =Wp_orig;
         Wp_hack_init{7}  =Wp_orig;
-        Wp_hack_init{8}  =Wp_orig;
-        Wp_hack_init{9}  =Wp_orig;
    end
    
    for runidx = 1:runs   
