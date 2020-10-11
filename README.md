@@ -1,12 +1,12 @@
 # MSR_waypoint_navigation
 
-MSR_waypoint_navigation is a MATLAB path planning program developed for modular self reconfigurable robots (MSRs). Given a set of robot target waypoints, the program returns the best visiting sequence that yields the lowest navigation cost. The question is modeled as a typical travelling salesman problem (TSP). Path-planning techniques like A-Star(A*) are implemented in this program to solve for potential solutions. The program provides real-time navigation simulation in MATLAB with visual display of robot path and navigation heatmap. Preview images of the simulation are shown below.
+**MSR_waypoint_navigation** is a MATLAB path planning program developed for modular self reconfigurable robots (MSRs). Given a set of robot target waypoints, the program returns the best visiting sequence that yields the lowest navigation cost. The question is modeled as a typical [Travelling Salesman Problem (TSP)](https://en.wikipedia.org/wiki/Travelling_salesman_problem). Path-planning techniques like [A* search](https://en.wikipedia.org/wiki/A*_search_algorithm) are implemented in this program to solve for potential solutions. The program provides real-time navigation simulation in MATLAB with visual display of robot path and navigation heatmap. Preview images of the simulation are shown below.
 
 <img src="./images/navigation_path.png" width="272"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./images/navigation_heatmap.png" width="259"/> 
 
 
 ## Software
- - MATLAB
+ - [MATLAB](https://www.mathworks.com/products/matlab.html)
 
 ## Publications
 
